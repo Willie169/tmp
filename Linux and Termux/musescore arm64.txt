@@ -1,0 +1,5 @@
+# Musescore for ARM64
+# Install
+apt install musescore
+# Execute (computer must be connected to a X server (e.g. RVNC viewer)
+musescore

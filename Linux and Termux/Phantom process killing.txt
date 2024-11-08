@@ -1,0 +1,8 @@
+# Phantom process killing
+# [Process completed (signal 9) - press Enter]
+# Disable phantom process killing
+settings put global settings_enable_monitor_phantom_procs false
+# Re-enable phantom process killing
+settings delete global settings_enable_monitor_phantom_procs
+# Get current value
+settings get global settings_enable_monitor_phantom_procs

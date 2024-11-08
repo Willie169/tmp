@@ -1,0 +1,379 @@
+<h3 id="regular-expression-regex-cheat-sheet">Regular Expression (Regex) Cheat Sheet</h3>
+<h4 id="1-basic-characters-">1. <strong>Basic Characters</strong></h4>
+<table>
+<thead>
+<tr>
+<th><strong>Character</strong></th>
+<th><strong>Description</strong></th>
+<th><strong>Example</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>.</code></td>
+<td>Matches any character except a newline</td>
+<td><code>a.b</code> matches <code>aab</code>, <code>acb</code></td>
+</tr>
+<tr>
+<td><code>\d</code></td>
+<td>Matches any digit (0-9)</td>
+<td><code>\d\d</code> matches <code>12</code>, <code>34</code></td>
+</tr>
+<tr>
+<td><code>\D</code></td>
+<td>Matches any non-digit</td>
+<td><code>\D</code> matches <code>A</code>, <code>#</code>, <code>-</code></td>
+</tr>
+<tr>
+<td><code>\w</code></td>
+<td>Matches any word character (alphanumeric + <code>_</code>)</td>
+<td><code>\w</code> matches <code>a</code>, <code>3</code>, <code>_</code></td>
+</tr>
+<tr>
+<td><code>\W</code></td>
+<td>Matches any non-word character</td>
+<td><code>\W</code> matches <code>!</code>, <code>#</code>, <code> </code></td>
+</tr>
+<tr>
+<td><code>\s</code></td>
+<td>Matches any whitespace character</td>
+<td><code>\s</code> matches space, tab, newline</td>
+</tr>
+<tr>
+<td><code>\S</code></td>
+<td>Matches any non-whitespace character</td>
+<td><code>\S</code> matches <code>A</code>, <code>9</code>, <code>#</code></td>
+</tr>
+</tbody>
+</table>
+<p>Escape characters in regular expressions are special sequences that allow you to match characters with special meanings in regex or to use them for specific purposes. Below is a list of common escape sequences and their meanings:</p>
+<h3 id="2-general-escapes-">2. <strong>General Escapes</strong></h3>
+<table>
+<thead>
+<tr>
+<th><strong>Escape Character</strong></th>
+<th><strong>Description</strong></th>
+<th><strong>Example</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>\\</code></td>
+<td>Escapes special characters</td>
+<td><code>\.</code> matches a literal <code>.</code> instead of &quot;any character&quot;</td>
+</tr>
+<tr>
+<td><code>\n</code></td>
+<td>Matches a newline (line feed)</td>
+<td>Matches the line break</td>
+</tr>
+<tr>
+<td><code>\t</code></td>
+<td>Matches a tab character</td>
+<td>Matches a tab space</td>
+</tr>
+<tr>
+<td><code>\r</code></td>
+<td>Matches a carriage return</td>
+<td>Often found in Windows line endings (<code>\r\n</code>)</td>
+</tr>
+<tr>
+<td><code>\v</code></td>
+<td>Matches a vertical tab</td>
+<td>Less common whitespace character</td>
+</tr>
+<tr>
+<td><code>\f</code></td>
+<td>Matches a form feed</td>
+<td>Less common whitespace character</td>
+</tr>
+</tbody>
+</table>
+<h4 id="3-anchors-">3. <strong>Anchors</strong></h4>
+<table>
+<thead>
+<tr>
+<th><strong>Anchor</strong></th>
+<th><strong>Description</strong></th>
+<th><strong>Example</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>^</code></td>
+<td>Matches the start of a string</td>
+<td><code>^abc</code> matches <code>abc</code> only at start</td>
+</tr>
+<tr>
+<td><code>$</code></td>
+<td>Matches the end of a string</td>
+<td><code>abc$</code> matches <code>abc</code> only at end</td>
+</tr>
+<tr>
+<td><code>\b</code></td>
+<td>Word boundary (between word and non-word characters)</td>
+<td><code>\bcat\b</code> matches <code>cat</code> alone</td>
+</tr>
+<tr>
+<td><code>\B</code></td>
+<td>Non-word boundary</td>
+<td><code>\Bcat\B</code> matches <code>bobcat</code></td>
+</tr>
+</tbody>
+</table>
+<h4 id="4-character-sets-character-classes-">4. <strong>Character Sets (Character Classes)</strong></h4>
+<table>
+<thead>
+<tr>
+<th><strong>Set</strong></th>
+<th><strong>Description</strong></th>
+<th><strong>Example</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>[abc]</code></td>
+<td>Matches any character inside the brackets (<code>a</code>, <code>b</code>, <code>c</code>)</td>
+<td><code>[abc]</code> matches <code>a</code>, <code>b</code>, or <code>c</code></td>
+</tr>
+<tr>
+<td><code>[^abc]</code></td>
+<td>Matches any character <em>except</em> those in brackets</td>
+<td><code>[^abc]</code> matches <code>x</code>, <code>y</code>, <code>z</code>, not <code>a</code>, <code>b</code>, <code>c</code></td>
+</tr>
+<tr>
+<td><code>[a-z]</code></td>
+<td>Matches any character in the range <code>a</code> to <code>z</code></td>
+<td><code>[a-z]</code> matches any lowercase letter</td>
+</tr>
+<tr>
+<td><code>[A-Z]</code></td>
+<td>Matches any character in the range <code>A</code> to <code>Z</code></td>
+<td><code>[A-Z]</code> matches any uppercase letter</td>
+</tr>
+<tr>
+<td><code>[0-9]</code></td>
+<td>Matches any digit</td>
+<td><code>[0-9]</code> matches any digit from 0 to 9</td>
+</tr>
+</tbody>
+</table>
+<h4 id="5-quantifiers-">5. <strong>Quantifiers</strong></h4>
+<table>
+<thead>
+<tr>
+<th><strong>Quantifier</strong></th>
+<th><strong>Description</strong></th>
+<th><strong>Example</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>*</code></td>
+<td>Matches 0 or more occurrences</td>
+<td><code>ab*c</code> matches <code>ac</code>, <code>abc</code>, <code>abbc</code></td>
+</tr>
+<tr>
+<td><code>+</code></td>
+<td>Matches 1 or more occurrences</td>
+<td><code>ab+c</code> matches <code>abc</code>, <code>abbc</code>, not <code>ac</code></td>
+</tr>
+<tr>
+<td><code>?</code></td>
+<td>Matches 0 or 1 occurrence</td>
+<td><code>colou?r</code> matches <code>color</code>, <code>colour</code></td>
+</tr>
+<tr>
+<td><code>{n}</code></td>
+<td>Matches exactly <code>n</code> occurrences</td>
+<td><code>a{3}</code> matches <code>aaa</code></td>
+</tr>
+<tr>
+<td><code>{n,}</code></td>
+<td>Matches <code>n</code> or more occurrences</td>
+<td><code>a{2,}</code> matches <code>aa</code>, <code>aaa</code>, <code>aaaa</code></td>
+</tr>
+<tr>
+<td><code>{,m}</code></td>
+<td>Matches <code>m</code> or less occurrences (including 0)</td>
+<td><code>a{,2}</code> matches <code>`,</code>a<code>,</code>aa`</td>
+</tr>
+<tr>
+<td><code>{n,m}</code></td>
+<td>Matches between <code>n</code> and <code>m</code> occurrences</td>
+<td><code>a{2,4}</code> matches <code>aa</code>, <code>aaa</code>, <code>aaaa</code></td>
+</tr>
+</tbody>
+</table>
+<h4 id="6-groups-and-ranges-">6. <strong>Groups and Ranges</strong></h4>
+<table>
+<thead>
+<tr>
+<th><strong>Group</strong></th>
+<th><strong>Description</strong></th>
+<th><strong>Example</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>(abc)</code></td>
+<td>Matches <code>abc</code> as a group</td>
+<td><code>(abc)+</code> matches <code>abcabcabc</code></td>
+</tr>
+<tr>
+<td><code>(?:abc)</code></td>
+<td>Non-capturing group (doesn’t save matched result)</td>
+<td><code>(?:abc)+</code> matches but doesn&#39;t capture <code>abcabcabc</code></td>
+</tr>
+<tr>
+<td>`</td>
+<td>`</td>
+<td>Alternation (OR)</td>
+<td>`a</td>
+<td>b<code>matches</code>a<code>or</code>b`</td>
+</tr>
+</tbody>
+</table>
+<h4 id="7-lookahead-and-lookbehind-zero-width-assertions-">7. <strong>Lookahead and Lookbehind (Zero-Width Assertions)</strong></h4>
+<table>
+<thead>
+<tr>
+<th><strong>Assertion</strong></th>
+<th><strong>Description</strong></th>
+<th><strong>Example</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>(?=...)</code></td>
+<td>Positive lookahead: ensures the following pattern exists</td>
+<td><code>a(?=b)</code> matches <code>a</code> if followed by <code>b</code></td>
+</tr>
+<tr>
+<td><code>(?!...)</code></td>
+<td>Negative lookahead: ensures the following pattern does not exist</td>
+<td><code>a(?!b)</code> matches <code>a</code> if not followed by <code>b</code></td>
+</tr>
+<tr>
+<td><code>(?&lt;=...)</code></td>
+<td>Positive lookbehind: ensures preceding pattern exists</td>
+<td><code>(?&lt;=a)b</code> matches <code>b</code> if preceded by <code>a</code></td>
+</tr>
+<tr>
+<td><code>(?&lt;!...)</code></td>
+<td>Negative lookbehind: ensures preceding pattern does not exist</td>
+<td><code>(?&lt;!a)b</code> matches <code>b</code> if not preceded by <code>a</code></td>
+</tr>
+</tbody>
+</table>
+<h4 id="8-flags-">8. <strong>Flags</strong></h4>
+<table>
+<thead>
+<tr>
+<th><strong>Flag</strong></th>
+<th><strong>Description</strong></th>
+<th><strong>Example</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>i</code></td>
+<td>Case-insensitive matching</td>
+<td><code>/(?i)abc/</code> matches <code>abc</code>, <code>ABC</code></td>
+</tr>
+<tr>
+<td><code>g</code></td>
+<td>Global search (find all matches)</td>
+<td><code>/abc/g</code> matches all occurrences of <code>abc</code></td>
+</tr>
+<tr>
+<td><code>m</code></td>
+<td>Multiline mode: <code>^</code> and <code>$</code> match line breaks</td>
+<td><code>/^abc$/m</code> matches <code>abc</code> at line breaks</td>
+</tr>
+<tr>
+<td><code>s</code></td>
+<td>Dotall mode: <code>.</code> matches newline</td>
+<td><code>/abc.s/</code> matches <code>abc\ns</code> with <code>s</code> flag</td>
+</tr>
+</tbody>
+</table>
+<h4 id="9-common-regex-patterns-">9. <strong>Common Regex Patterns</strong></h4>
+<table>
+<thead>
+<tr>
+<th><strong>Pattern</strong></th>
+<th><strong>Description</strong></th>
+<th><strong>Example</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>\b\w+\b</code></td>
+<td>Matches a whole word</td>
+<td><code>regex</code> in &quot;regex is cool&quot;</td>
+</tr>
+<tr>
+<td><code>^\d{4}-\d{2}-\d{2}$</code></td>
+<td>Matches a date in the format <code>YYYY-MM-DD</code></td>
+<td><code>2024-09-11</code></td>
+</tr>
+<tr>
+<td><code>\b\d{3}-\d{2}-\d{4}\b</code></td>
+<td>Matches a U.S. Social Security Number</td>
+<td><code>123-45-6789</code></td>
+</tr>
+<tr>
+<td><code>([A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,})</code></td>
+<td>Matches an email address</td>
+<td><code>someone@example.com</code></td>
+</tr>
+<tr>
+<td>`(http</td>
+<td>https)://[^\s/$.?#].[^\s]*`</td>
+<td>Matches a URL</td>
+<td><code>https://www.example.com</code></td>
+</tr>
+</tbody>
+</table>
+<h4 id="10-advanced-techniques-">10. <strong>Advanced Techniques</strong></h4>
+<table>
+<thead>
+<tr>
+<th><strong>Technique</strong></th>
+<th><strong>Description</strong></th>
+<th><strong>Example</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Named Groups</td>
+<td>Captures a group with a name using <code>(?P&lt;name&gt;...)</code></td>
+<td><code>(?P&lt;area&gt;\d{3})-(?P&lt;number&gt;\d{3}-\d{4})</code> captures <code>area</code> and <code>number</code></td>
+</tr>
+<tr>
+<td>Conditional Match</td>
+<td>Uses <code>(?(</code>condition`)true</td>
+<td>false)` to match based on conditions</td>
+<td>`(?(\d{3})a</td>
+<td>b)<code>matches</code>a<code>if number is 3 digits, otherwise</code>b`</td>
+</tr>
+</tbody>
+</table>
+<h4 id="11-examples-in-code-">11. <strong>Examples in Code</strong></h4>
+<ul>
+<li><p><strong>Python</strong>:</p>
+<pre><code class="lang-python"><span class="hljs-keyword">import</span> re
+pattern = <span class="hljs-string">r"\d{3}-\d{2}-\d{4}"</span>  <span class="hljs-comment"># US SSN pattern</span>
+result = re.search(pattern, <span class="hljs-string">"My SSN is 123-45-6789"</span>)
+print(result.group())  <span class="hljs-comment"># Output: 123-45-6789</span>
+</code></pre>
+</li>
+<li><p><strong>JavaScript</strong>:</p>
+<pre><code class="lang-javascript"><span class="hljs-keyword">const</span> pattern = /\b\d{<span class="hljs-number">3</span>}-\d{<span class="hljs-number">2</span>}-\d{<span class="hljs-number">4</span>}\b/;
+<span class="hljs-keyword">const</span> <span class="hljs-built_in">text</span> = <span class="hljs-string">"My SSN is 123-45-6789"</span>;
+<span class="hljs-keyword">const</span> result = <span class="hljs-built_in">text</span>.<span class="hljs-built_in">match</span>(pattern);
+console.<span class="hljs-built_in">log</span>(result[<span class="hljs-number">0</span>]);  <span class="hljs-comment">// Output: 123-45-6789</span>
+</code></pre>
+</li>
+</ul>
