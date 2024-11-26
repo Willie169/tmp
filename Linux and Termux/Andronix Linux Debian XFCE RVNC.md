@@ -53,5 +53,3 @@ pkg update -y && pkg install wget curl proot tar -y && wget https://raw.githubus
 ```
 wget https://raw.githubusercontent.com/AndronixApp/AndronixOrigin/master/Uninstall/Debian/UNI-debian.sh && chmod +x UNI-debian.sh && bash UNI-debian.sh
 ```
-## Note
-Ubuntu might have some issues in installations of packages after installed.

@@ -1,0 +1,48 @@
+Below, NOS='not open source', ANR='My Android Non Root tutorial support.'
+
+F-Droid: App store for open source apps.
+Dev and Android:
+Termux (F-Droid ver): The one my termux-sh working on, literally a Linhx computer. ANR.
+AndroidIDE: Small Android Studio.
+Cxxdroid: C/C++, NOS
+Pydroid: Python, NOS
+Jvdroid: Java, NOS
+Code Editor: HTML, CSS, JavaScript, NOS.
+VerbTeX: LaTeX, NOS, use server to run, kind of slow. I recommend use Termux Debian VM TeXLive.
+ Shizuku: Android Debug Bridge local acess. ANR
+ SystemUI Tuner: Change invisible settings. I use it with Shizuku to prevent disconnection and to connect while dev opt off. ANR
+AVNC: VNC Client. ANR
+Termux-X11: VNC Client.
+Multiapp: Android container/VM (idk) NOS, can run another app instance in it.
+
+Connection:
+TC/TrakcerControl (F-Droid ver): Tracker blocker, support port forwarding. ANR
+Invizible pro: DNS, Tor, I2P proxy/VPN, compatible with TC. ANR
+Tor browser: As name suggested. ANR.
+Orbot: Official Tor VPN. Not recommended to use with TC, etc. due to less cutomisable.
+ Proton VPN: NOS. VPN.
+ 
+Utilities:
+PopupFactory2: As name suggested.
+ Universal copy: Copy text from screen.
+ VLC: Video, audio player.
+MacroDroid: Define macros and more. NOS. Very useful.
+PPP: Maybe an Open source MacroDroid like thing. I haven't test.
+Click assistant: Auto click, NOS.
+ Sound assistant: Adjust sound volume etc. Samsung specific(?
+Duckduckgo: Browser with search engine.
+
+Download:
+LoliSnatcher: Booru viewer and downloader.
+Z-Library: E-Book downloader. 
+LibreTorrent: BitTorrent client.
+
+Alternative open source client:
+PipePipe: YouTube, Bilibili, NicoNico, etc 
+Xtra : Twitch.
+
+AI/LLM:
+DuckDuckGo AI (Web app)
+Gemini
+Claude
+ChatGPT

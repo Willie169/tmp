@@ -1,0 +1,10 @@
+Use Termux: https://f-droid.org/packages/com.termux. Termux is an Android terminal emulator and Linux environment app that works directly with no rooting or setup required. A minimal base system is installed automatically - additional packages are available using the APT package manager.
+
+If Termux itself can't fulfill your demamd, below are some VM environments options to install on it:
+
+1. Proot: Use can use proot with your own rootf made on your computer or rooted Android or with rootf made by proot-distro, Andronix, etc. Proot wiki: https://wiki.termux.com/wiki/PRoot. Proot: https://github.com/termux/proot. Proot-distro: https://github.com/termux/proot-distro. Andronix: https://github.com/AndronixApp/AndronixOrigin. Proot-distro Kali Nethunter: https://github.com/sagar040/proot-distro-nethunter.
+2. Box64 with Proot: Box 64 is a Linux Userspace x86_64 Emulator with a twist, targeted at ARM64 Linux devices. Install a proot first, and install Box64 on it. Box64: https://github.com/ptitSeb/box64. My script to install Box64, Wine64, and Winetricks: https://github.com/Willie169/termux-sh/blob/main/box64-wine64-winetricks.sh.
+3. QEMU User Emulation: Similar to Box64 but with lower speed and better virtualization. Doc: https://www.qemu.org/docs/master/user/main.html.
+4. QEMU System Emulation: Full platform and hardware virtualization but with lowest speed. Use can use ISO image and configure things yourself or download pre-made QCOW2 image and simply resize it. Install with `pkg install qemu-common qemu-utils -y && apt install qemu-system-x86_64 -y` on Termux. Doc: https://www.qemu.org/docs/master/system/index.html. Debian QCOW2 image: https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-nocloud-amd64.qcow2.
+
+This is my setup scripts for Termux that contains development packages and VM environments setup things: https://github.com/Willie169/termux-sh.

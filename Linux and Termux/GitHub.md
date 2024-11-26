@@ -12,15 +12,11 @@ apt install gh
 ```
 gh auth login
 ```
-2. **Auth delete repo**:
+2. **Auth all**
 ```
-gh auth refresh -h github.com -s delete_repo
+gh auth login --scopes repo,read:org,admin:org,workflow,gist,notifications,delete_repo,write:packages,read:packages
 ```
-3. **Auth admin org**:
-```
-gh auth refresh -h github.com -s admin:org
-```
-4. **Auth check status**:
+3. **Check status**:
 ```
 gh auth status
 ```
