@@ -1,18 +1,19 @@
-apt update && apt upgrade -y && apt install automake bash build-essential bzip2 clang cmake command-not-found curl dbus file gdb gh git golang grep libboost-all-dev libreoffice libssl-dev iproute2 jq make maven mc nano neovim nodejs openjdk-17-jdk openssh-client openssh-server openssl pandoc perl procps python3-pip python3-all-dev python3-venv rust-all tar texlive-full tmux vim wget zsh -y
+sudo apt update && sudo apt upgrade -y && sudo apt install automake bash build-essential bzip2 clang cmake command-not-found curl dbus file gdb gh git golang grep libboost-all-dev libreoffice libssl-dev iproute2 jq make maven mc nano neovim nodejs openjdk-17-jdk openssh-client openssh-server openssl pandoc perl procps python3-pip python3-all-dev python3-venv rust-all tar texlive-full tmux vim wget zsh -y
 npm install node-html-markdown && npm install showdown && npm install jsdom
 go install github.com/danielmiessler/fabric@latest
 python3 -m venv myenv
 source myenv/bin/activate
 pip3 install numpy sympy matplotlib setuptools selenium jupyter pandas meson ninja
-mkdir /usr/share/fonts/opentype/xits
+deactivate
+sudo mkdir /usr/share/fonts/opentype/xits
 cd /usr/share/fonts/opentype/xits
 wget https://github.com/aliftype/xits/releases/download/v1.302/XITS-1.302.zip
 unzip XITS-1.302.zip
 cd XITS-1.302
 mv *.otf ..
 cd ..
-rm -rf XITS-1.302*
-mkdir /usr/share/fonts/noto-cjk
+sudo rm -rf XITS-1.302*
+sudo mkdir /usr/share/fonts/noto-cjk
 cd /usr/share/fonts/noto-cjk
 wget https://raw.githubusercontent.com/notofonts/noto-cjk/main/Sans/SubsetOTF/TC/NotoSansTC-Thin.otf
 wget https://raw.githubusercontent.com/notofonts/noto-cjk/main/Sans/SubsetOTF/TC/NotoSansTC-Regular.otf
@@ -95,3 +96,17 @@ wget https://raw.githubusercontent.com/notofonts/noto-cjk/main/Sans/Mono/NotoSan
 wget https://raw.githubusercontent.com/notofonts/noto-cjk/main/Sans/Mono/NotoSansMonoCJKkr-Regular.otf
 wget https://raw.githubusercontent.com/notofonts/noto-cjk/main/Sans/Mono/NotoSansMonoCJKkr-Bold.otf
 fc-cache -fv
+sudo dpkg --add-architecture i386
+code=$(cat /etc/os-release | grep "UBUNTU_CODENAME")
+if test -z "$code"; then
+code=$(cat /etc/os-release | grep "VERSION_CODENAME")
+dist='debian'
+else
+dist='ubuntu'
+fi
+code=$(echo $code | sed 's/^[^=]*=//')
+sudo mkdir -pm755 /etc/apt/keyrings
+wget -O - https://dl.winehq.org/wine-builds/winehq.key | sudo gpg --dearmor -o /etc/apt/keyrings/winehq-archive.key -
+sudo wget -NP /etc/apt/sources.list.d/ https://dl.winehq.org/wine-builds/$dist/dists/$code/winehq-$code.sources
+sudo apt update
+sudo apt install --install-recommends winehq-devel -y
