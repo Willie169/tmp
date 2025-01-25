@@ -1,8 +1,25 @@
 sudo apt update
 sudo apt purge fcitx* -y
 sudo apt install fcitx5 fcitx5-* -y
-im-config
-sudo apt upgrade -y && sudo apt install automake bash build-essential bzip2 clang cmake command-not-found curl dbus file gdb gh git gnome-session-flashback golang grep libboost-all-dev libreoffice libssl-dev iproute2 jq make maven mc nano neovim nodejs openjdk-17-jdk openssh-client openssh-server openssl pandoc perl procps python3-pip python3-all-dev python3-venv rust-all tar texlive-full tigervnc-standalone-server tigervnc-viewer tigervnc-xorg-extension tmux vim wget zsh -y
+im-config # set to fcitx5
+sudo apt install openssh-client openssh-server tigervnc-standalone-server tigervnc-viewer tigervnc-xorg-extension -y
+sudo systemctl enable ssh
+sudo systemctl start ssh
+sudo ufw enable
+sudo ufw allow ssh
+vncpasswd
+echo '#!/bin/sh
+unset SESSION_MANAGER
+unset DBUS_SESSION_BUS_ADDRESS
+[ -x /etc/vnc/xstartup ] && exec /etc/vnc/xstartup
+[ -r $HOME/.Xresources ] && xrdb $HOME/.Xresources
+export XKL_XMODMAP_DISABLE=1
+export XDG_CURRENT_DESKTOP="GNOME-Flashback:Unity"
+export XDG_MENU_PREFIX="gnome-flashback-"
+gnome-session --session=gnome-flashback-metacity --disable-acceleration-check
+' >> ~/.vnc/xstartup
+chmod +x ~/.vnc/xstartup
+sudo apt upgrade -y && sudo apt install automake bash build-essential bzip2 clang cmake command-not-found curl dbus file gdb gh git gnome-session-flashback golang grep libboost-all-dev libreoffice libssl-dev iproute2 jq make maven mc nano neovim nodejs openjdk-17-jdk openssl pandoc perl procps python3-pip python3-all-dev python3-venv rust-all tar texlive-full tmux vim wget zsh -y
 npm install node-html-markdown && npm install showdown && npm install jsdom
 go install github.com/danielmiessler/fabric@latest
 python3 -m venv myenv
@@ -114,19 +131,3 @@ wget -O - https://dl.winehq.org/wine-builds/winehq.key | sudo gpg --dearmor -o /
 sudo wget -NP /etc/apt/sources.list.d/ https://dl.winehq.org/wine-builds/$dist/dists/$code/winehq-$code.sources
 sudo apt update
 sudo apt install --install-recommends winehq-devel -y
-sudo systemctl enable ssh
-sudo systemctl start ssh
-sudo ufw enable
-sudo ufw allow ssh
-vncpasswd
-echo '#!/bin/sh
-unset SESSION_MANAGER
-unset DBUS_SESSION_BUS_ADDRESS
-[ -x /etc/vnc/xstartup ] && exec /etc/vnc/xstartup
-[ -r $HOME/.Xresources ] && xrdb $HOME/.Xresources
-export XKL_XMODMAP_DISABLE=1
-export XDG_CURRENT_DESKTOP="GNOME-Flashback:Unity"
-export XDG_MENU_PREFIX="gnome-flashback-"
-gnome-session --session=gnome-flashback-metacity --disable-acceleration-check
-' >> ~/.vnc/xstartup
-chmod +x ~/.vnc/xstartup
