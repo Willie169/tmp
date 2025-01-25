@@ -1,4 +1,8 @@
-sudo apt update && sudo apt upgrade -y && sudo apt install automake bash build-essential bzip2 clang cmake command-not-found curl dbus file gdb gh git gnome-session-flashback golang grep libboost-all-dev libreoffice libssl-dev iproute2 jq make maven mc nano neovim nodejs openjdk-17-jdk openssh-client openssh-server openssl pandoc perl procps python3-pip python3-all-dev python3-venv rust-all tar texlive-full tigervnc-standalone-server tigervnc-viewer tigervnc-xorg-extension tmux vim wget zsh -y
+sudo apt update
+sudo apt purge fcitx* -y
+sudo apt install fcitx5 fcitx5-* -y
+im-config
+sudo apt upgrade -y && sudo apt install automake bash build-essential bzip2 clang cmake command-not-found curl dbus file gdb gh git gnome-session-flashback golang grep libboost-all-dev libreoffice libssl-dev iproute2 jq make maven mc nano neovim nodejs openjdk-17-jdk openssh-client openssh-server openssl pandoc perl procps python3-pip python3-all-dev python3-venv rust-all tar texlive-full tigervnc-standalone-server tigervnc-viewer tigervnc-xorg-extension tmux vim wget zsh -y
 npm install node-html-markdown && npm install showdown && npm install jsdom
 go install github.com/danielmiessler/fabric@latest
 python3 -m venv myenv
