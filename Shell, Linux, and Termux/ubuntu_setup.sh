@@ -21,7 +21,6 @@ gnome-session --session=gnome-flashback-metacity --disable-acceleration-check
 chmod +x ~/.vnc/xstartup
 sudo apt upgrade -y && sudo apt install automake bash build-essential bzip2 clang cmake command-not-found curl dbus file gdb gh git gnome-session-flashback golang grep libboost-all-dev libreoffice libssl-dev iproute2 jq make maven mc nano neovim net-tools nodejs npm openjdk-17-jdk openssl pandoc perl procps python3-pip python3-all-dev python3-venv rust-all tar texlive-full tmux vim wget zsh -y
 sudo npm install -g node-html-markdown && npm install showdown && npm install jsdom
-go install github.com/danielmiessler/fabric@latest
 python3 -m venv myenv
 source myenv/bin/activate
 pip3 install numpy sympy matplotlib setuptools selenium jupyter pandas meson ninja
