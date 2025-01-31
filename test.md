@@ -47,7 +47,7 @@ If for whatever reason you want to send me money, here are where you may do so:
 * Many sections of the tutorial mention **Tor**. Read the tutorial about it in [Introduction of Tor](#introduction-of-tor).
 * Uncommenting a line means to remove the comment signs (`#` for bash) from the beginning of the line.
 * When the tutorial uses text editor such as `nano`, `vim`, or `vi` to edit a file, you can use any text editor you want.
-* Turn off battery optimization, auto sleeping, or any other battery restrictions to prevent apps from being killed. See [**DontKillMyApp**](#dontkillmyapp-dontkillmyapp-make-apps-work-by-urbandroid-team-urbandroid-team-petr-nálevka-urbandroid) for more information.
+* Turn off battery optimization, auto sleeping, or any other battery restrictions to prevent apps from being killed. See [**DontKillMyApp**](#dontkillmyapp-dontkillmyapp-make-apps-work-by-urbandroid-team-urbandroid-team-petr-nalevka-urbandroid) for more information.
 
 ---
 
