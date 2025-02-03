@@ -16,4 +16,4 @@ Icon=$PREFIX/android-studio/bin/studio.png
 Terminal=false
 Type=Application
 Categories=Development;IDE;' >> ~/usr/share/applications/android-studio.desktop
-chmod +x ~/usr/share/applications/android-studio.desktop
+sudo chmod +x ~/usr/share/applications/android-studio.desktop
