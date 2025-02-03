@@ -11,8 +11,8 @@ echo '[Desktop Entry]
 Version=1.0
 Name=Android Studio
 Comment=Android Studio IDE
-Exec=$PREFIX/android-studio/bin/studio
-Icon=$PREFIX/android-studio/bin/studio.png
+Exec=$home/android-studio/bin/studio
+Icon=$home/android-studio/bin/studio.png
 Terminal=false
 Type=Application
 Categories=Development;IDE;' >> ~/.local/share/applications/android-studio.desktop
