@@ -7,11 +7,12 @@ cd android-studio/bin
 echo 'export PATH="$PREFIX/android-studio/bin:$PATH"' >> ~/.bashrc
 source ~/.bashrc
 ./studio.sh
+echo '$home/android-studio/bin/studio' >> ~/.local/share/android-studio.sh
 echo '[Desktop Entry]
 Version=1.0
 Name=Android Studio
 Comment=Android Studio IDE
-Exec=$home/android-studio/bin/studio
+Exec=$home/.local/share/android-studio.sh
 Icon=$home/android-studio/bin/studio.png
 Terminal=false
 Type=Application
