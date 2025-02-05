@@ -1,3 +1,5 @@
+# Not compatible with GPU
+
 sudo apt update
 sudo apt purge fcitx* -y
 sudo apt install fcitx5 fcitx5-* -y
@@ -7,6 +9,8 @@ sudo systemctl enable ssh
 sudo systemctl start ssh
 sudo ufw enable
 sudo ufw allow ssh
+ip route
+sudo nano /etc/ssh/sshd_config
 vncpasswd
 echo '#!/bin/sh
 unset SESSION_MANAGER

@@ -1,1 +1,0 @@
-wget ftp.tw.debian.org/debian/pool/main/m/mesa/libegl1-mesa_22.3.6-1+deb12u1_amd64.deb wget https://sourceforge.net/projects/virtualgl/files/3.1/virtualgl_3.1_amd64.deb sudo dpkg -i libegl1-mesa_22.3.6-1+deb12u1_amd64.deb sudo dpkg -i virtualgl_3.1_amd64.deb

@@ -19,3 +19,5 @@ ssh -L 5901:localhost:5901 user@ip
 ## source
 
 https://www.youtube.com/watch?v=0ICSWkuKlG4
+
+not compatible with nvidia
