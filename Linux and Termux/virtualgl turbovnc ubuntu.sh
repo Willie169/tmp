@@ -8,14 +8,7 @@ rm turbovnc_3.1_amd64.deb*
 wget https://sourceforge.net/projects/libjpeg-turbo/files/3.0.1/libjpeg-turbo-official_3.0.1_amd64.deb
 sudo dpkg -i libjpeg-turbo-official_3.0.1_amd64.deb
 rm libjpeg-turbo-official_3.0.1_amd64.deb*
-sudo apt install libglu1-mesa mesa-utils xfce4 xfce4-goodies -y
-# Use default gdm3 display manager
-echo '#!/bin/sh
-unset SESSION_MANAGER
-unset DBUS_SESSION_BUS_ADDRESS
-[ -r $HOME/.Xresources ] && xrdb $HOME/.Xresources
-startxfce4 &' >> ~/.vnc/xstartup.turbovnc
-chmod +x ~/.vnc/xstartup.turbovnc
+sudo apt install dbus-x11 libglu1-mesa mesa-utils -y
 vncpasswd
 sudo vglserver_config
 # 1, yes
@@ -34,4 +27,6 @@ sudo chmod 750 /etc/opt/VirtualGL
 # xdpyinfo -display :1
 ## Below is roughly the same as vncserver of tigervnc
 # /opt/TurboVNC/bin/vncserver
+## But xstartup need to be specified
+# /opt/TurboVNC/bin/vncserver -xstartup ~/.vnc/xstartup
 ## Source: https://www.google.com/amp/s/blog.gtwang.org/linux/nvidia-tesla-p40-virtualgl-vnc-remote-3d-rendering-server-installation/amp

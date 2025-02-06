@@ -1,44 +1,36 @@
-Press ESC on boot to enter GRUB to select which OS to boot
+## Things to Disable when Dual Boot
 
-disabe fast boot or secure boot in BIOS for dual boot
+- Disabe fast boot and secure boot in BIOS.
+- In some OS, `sudo nano /etc/grub.d/30_os_prober`, edit to `quick_boot="0"`.
+- `sudo nano /etc/default/grub`, edit to `GRUB_DISABLE_OS_PROBER=false` and with and non-zero `GRUB_TIMEOUT` (when `GRUB_TIMEOUT_STYLE=menu`) or `GRUB_HIDDEN_TIMEOUT` (when otherwise).
 
-In some OS (for dual boot), 
+## GRUB Menu
 
-sudo nano /etc/grub.d/30_os_prober
+- When `GRUB_TIMEOUT_STYLE=menu`, after `GRUB_TIMEOUT`, highlighted option will be booted.
+- When `GRUB_TIMEOUT_STYLE=hidden` or `GRUB_TIMEOUT_STYLE=countdown`, during `GRUB_HIDDEN_TIMEOUT`, press `ESC` to enter GRUB menu.
+- In menu, default highlighted option is the default option. 
 
-change 
+## GRUB Configuration
 
-quick_boot="1"
-
-to
-
-quick_boot="0"
-
-# Change default boot OS
+```
 sudo nano /etc/default/grub
+``` 
 
-look for
+to edit configuration, 
 
-GRUB_DEFAULT=0
-
-and change (numbers are showed in GRUB, press ESC in boot to see)
-in some OS also (when dual boot):
-
-GRUB_DISABLE_OS_PROBER=false
-
+```
 sudo update-grub
 sudo reboot
+```
 
+to apply.
 
-
-
-GRUB_TIMEOUT_STYLE=
-- hidden: Hide menu without countdown GRUB_HIDDEN_TIMEOUT shown when booted. Show menu when esc, shift is pressed within GRUB_HIDDEN_TIMEOUT.
-- menu: Show menu when booted.
-- countdown: Hide menu with countdown GRUB_HIDDEN_TIMEOUT shown when booted. Show menu when esc, shift is pressed within GRUB_HIDDEN_TIMEOUT.
-GRUB_TIMEOUT=
-When GRUB_TIMEOUT_STYLE=menu, the timeout before booting into highlighted option. Some versions may need 0.0 for 0.
-GRUB_HIDDEN_TIMEOUT=
-When GRUB_TIMEOUT_STYLE=hidden, the timeout before booting into default option. Some versions may need 0.0 for 0.
-GRUB_HIDDEN_TIMEOUT_QUIET=
-<deprecated, false equivalent to GRUB_TIMEOUT_STYLE=countdown now, hidden equivalent to GRUB_TIMEOUT_STYLE=hidden, may not work correctly in newer versions.>
+- `GRUB_DEFAULT=<number>`: Default boot option to boot. Options and their numbers are showed in GRUB menu.
+- `GRUB_TIMEOUT_STYLE=<string>`: GRUB timeout style when booting.
+  - `menu`: Show menu, wait until `GRUB_TIMEOUT` ends, and boot default option.
+  - `hidden`: Hide menu with black screen, wait until `GRUB_HIDDEN_TIMEOUT` ends, and boot highlighted option. Show menu when `ESC` is pressed during `GRUB_HIDDEN_TIMEOUT`.
+  - `countdown`: Hide menu with countdown shown on screen, wait until `GRUB_HIDDEN_TIMEOUT` ends, and boot default option. Show menu when `ESC` is pressed during `GRUB_HIDDEN_TIMEOUT`.
+- `GRUB_TIMEOUT=<number>`: When `GRUB_TIMEOUT_STYLE=menu`, the timeout before booting into highlighted option, `-1` for forever. Some versions may need `0.0` for `0`.
+- `GRUB_HIDDEN_TIMEOUT=<number>`: When `GRUB_TIMEOUT_STYLE=hidden` or `GRUB_TIMEOUT_STYLE=countdown`, the timeout before booting into the default option. Some versions may need `0.0` for `0`.
+- `GRUB_HIDDEN_TIMEOUT_QUIET=<boolean>`: DEPRECATED. `GRUB_TIMEOUT_STYLE=hidden` and `GRUB_HIDDEN_TIMEOUT_QUIET=false` is equivalent to `GRUB_TIMEOUT_STYLE=countdown`; `GRUB_TIMEOUT_STYLE=hidden` and `GRUB_HIDDEN_TIMEOUT_QUIET=true` is equivalent to `GRUB_TIMEOUT_STYLE=hidden`. There's a known bug that make this not work as expected in some versions after this is deprecated.
+- `GRUB_DISABLE_OS_PROBER=<boolean>`: Whether to disable OS prober. Set it to `false` when dual booting.
