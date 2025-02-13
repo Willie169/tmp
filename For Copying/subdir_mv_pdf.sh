@@ -1,0 +1,1 @@
+find */ -type f -name "*.pdf" -exec mv {} ~/b/ \;
