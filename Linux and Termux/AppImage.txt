@@ -1,3 +1,0 @@
-./your-appimage-file.AppImage --appimage-extract
-cd squashfs-root
-./AppRun

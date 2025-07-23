@@ -1,5 +1,0 @@
-https://github.com/FreeTubeApp/FreeTube
-download deb
-
-sudo chown root:root /opt/FreeTube/chrome-sandbox
-sudo chmod 4755 /opt/FreeTube/chrome-sandbox
