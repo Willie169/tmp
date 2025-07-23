@@ -1,0 +1,1 @@
+apt update && apt full-upgrade -y && apt --fix-broken install && apt autoremove --purge && apt clean
