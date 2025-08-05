@@ -1,1 +1,1 @@
-sudo apt update && sudo apt full-upgrade -y && sudo apt --fix-broken install && sudo apt autoremove --purge && sudo apt clean
+sudo apt update && sudo apt full-upgrade -y && sudo apt --fix-broken install && sudo apt autoremove --purge -y && sudo apt clean
