@@ -1,1 +1,1 @@
-pkg update && pkg upgrade -y && pkg clean && apt update && apt full-upgrade -y && apt --fix-broken install && apt autoremove --purge -y && apt clean
+pkg update && pkg upgrade -y && pkg clean && apt update && apt full-upgrade -y && apt install -f -y && apt autoremove --purge -y && apt clean
