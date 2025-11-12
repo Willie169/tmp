@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="SDL" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Debug">
+				<Option output="bin/Debug/SDL" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Debug/" />
+				<Option type="0" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<!-- Windows includes -->
+					<Add directory="SDL2-2.30.9/x86_64-w64-mingw32/include" platform="windows" />
+					<Add directory="SDL2-2.30.9/x86_64-w64-mingw32/include/SDL2" platform="windows" />
+					<Add directory="SDL_bgi-3.0.2/src" platform="windows" />
+					<Add directory="SDL2_image-2.8.2/x86_64-w64-mingw32/include/SDL2" platform="windows" />
+					<Add directory="SDL2_mixer-2.8.0/x86_64-w64-mingw32/include/SDL2" platform="windows" />
+					<Add directory="SDL2_ttf-2.22.0/x86_64-w64-mingw32/include/SDL2" platform="windows" />
+
+					<!-- Linux includes -->
+					<Add directory="/usr/include/SDL2" platform="linux" />
+					<Add directory="SDL_bgi-3.0.2/src" platform="linux" />
+
+					<!-- Common options -->
+					<Add option="-g" />
+				</Compiler>
+				<Linker>
+					<!-- Windows linker -->
+					<Add option="-lmingw32" platform="windows" />
+					<Add option="-L/mingw64/bin" platform="windows" />
+					<Add option="-lSDL_bgi" platform="windows" />
+					<Add option="-lSDL2_ttf" platform="windows" />
+					<Add option="-lSDL2_mixer" platform="windows" />
+					<Add option="-lSDL2_image" platform="windows" />
+					<Add option="-lSDL2main" platform="windows" />
+					<Add option="-lSDL2" platform="windows" />
+					<Add directory="SDL2-2.30.9/x86_64-w64-mingw32/lib" platform="windows" />
+					<Add directory="SDL_bgi-3.0.2/bin/MSYS2" platform="windows" />
+					<Add directory="SDL2_image-2.8.2/x86_64-w64-mingw32/lib" platform="windows" />
+					<Add directory="SDL2_mixer-2.8.0/x86_64-w64-mingw32/lib" platform="windows" />
+					<Add directory="SDL2_ttf-2.22.0/x86_64-w64-mingw32/lib" platform="windows" />
+
+					<!-- Linux linker -->
+					<Add option="-lSDL2" platform="linux" />
+					<Add option="-lSDL2_image" platform="linux" />
+					<Add option="-lSDL2_mixer" platform="linux" />
+					<Add option="-lSDL2_ttf" platform="linux" />
+					<Add option="-lSDL_bgi" platform="linux" />
+				</Linker>
+			</Target>
+
+			<Target title="Release">
+				<Option output="bin/Release/SDL" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Release/" />
+				<Option type="0" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<!-- Windows includes -->
+					<Add directory="SDL2-2.30.9/x86_64-w64-mingw32/include" platform="windows" />
+					<Add directory="SDL2-2.30.9/x86_64-w64-mingw32/include/SDL2" platform="windows" />
+					<Add directory="SDL_bgi-3.0.2/src" platform="windows" />
+					<Add directory="SDL2_image-2.8.2/x86_64-w64-mingw32/include/SDL2" platform="windows" />
+					<Add directory="SDL2_mixer-2.8.0/x86_64-w64-mingw32/include/SDL2" platform="windows" />
+					<Add directory="SDL2_ttf-2.22.0/x86_64-w64-mingw32/include/SDL2" platform="windows" />
+
+					<!-- Linux includes -->
+					<Add directory="/usr/include/SDL2" platform="linux" />
+					<Add directory="SDL_bgi-3.0.2/src" platform="linux" />
+
+					<!-- Common options -->
+					<Add option="-O2" />
+				</Compiler>
+				<Linker>
+					<!-- Windows linker -->
+					<Add option="-s" platform="windows" />
+					<Add option="-lmingw32" platform="windows" />
+					<Add option="-L/mingw64/bin" platform="windows" />
+					<Add option="-lSDL_bgi" platform="windows" />
+					<Add option="-lSDL2_ttf" platform="windows" />
+					<Add option="-lSDL2_mixer" platform="windows" />
+					<Add option="-lSDL2_image" platform="windows" />
+					<Add option="-lSDL2main" platform="windows" />
+					<Add option="-lSDL2" platform="windows" />
+
+					<!-- Linux linker -->
+					<Add option="-s" platform="linux" />
+					<Add option="-lSDL2" platform="linux" />
+					<Add option="-lSDL2_image" platform="linux" />
+					<Add option="-lSDL2_mixer" platform="linux" />
+					<Add option="-lSDL2_ttf" platform="linux" />
+					<Add option="-lSDL_bgi" platform="linux" />
+				</Linker>
+			</Target>
+		</Build>
+
+		<Compiler>
+			<Add option="-Wall" />
+		</Compiler>
+
+		<Unit filename="sample.cpp" />
+		<Extensions>
+			<lib_finder disable_auto="1" />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>
