@@ -1,3 +1,0 @@
-
-#include<std>:wq
-:wq
