@@ -10,36 +10,105 @@
 \titletocdoc
 \sct{第一部分：專題整體}
 \sct{第二部分：個人程式設計說明}
-\ssc{總論}
-\sssc{我撰寫的部分}
+\ssc{我撰寫的部分}
+以下檔案為完全由我撰寫的符合 C++20 標準的仿 STL 函式庫，置於 namespace mystd 下與 include 資料夾中：
 \bit
-\item \verb|include/algorithm-copy.hpp|：全部
-\item \verb|include/array.hpp|：全部
-\item \verb|include/range-access.hpp|：全部
-\item \verb|include/algorithm-find.hpp|：全部
-\item \verb|include/circulate.hpp|：全部
-\item \verb|include/swap.hpp|：全部
-\item \verb|include/algorithm-heap.hpp|：全部
-\item \verb|include/ignore.hpp|：全部
-\item \verb|include/tuple.hpp|：全部
-\item \verb|include/algorithm-remove.hpp|：全部
-\item \verb|include/priority_queue.hpp|：全部
-\item \verb|include/tuple-using.hpp|：全部
-\item \verb|include/allocator.hpp|：全部
-\item \verb|include/qsort.hpp|：全部
-\item \verb|include/vector.hpp|：全部
-\item \verb|Mods.hpp|：全部
-\item \verb|mods/GameOfLife.hpp|：全部
-\item \verb|Game.hpp|：全部
-\item \verb|Renderer.hpp|：全部
-\item \verb|generate-notes.hpp|：全部
-\item \verb|KeyNoteData.hpp|：全部
-\item \verb|RhythmQuest.cpp|：大部分
+\item \verb|include/algorithm-copy.hpp|
+\item \verb|include/array.hpp|
+\item \verb|include/range-access.hpp|
+\item \verb|include/algorithm-find.hpp|
+\item \verb|include/circulate.hpp|
+\item \verb|include/swap.hpp|
+\item \verb|include/algorithm-heap.hpp|
+\item \verb|include/ignore.hpp|
+\item \verb|include/tuple.hpp|
+\item \verb|include/algorithm-remove.hpp|
+\item \verb|include/priority_queue.hpp|
+\item \verb|include/tuple-using.hpp|
+\item \verb|include/allocator.hpp|
+\item \verb|include/qsort.hpp|
+\item \verb|include/vector.hpp|
 \eit
-\sssc{報告架構}
-在本章節後續內容中，我將依照課程要求之 A、B、C、D 四項題目（如適用），分別以模組或檔案群組為單位進行說明。
+遊戲鍵盤音符判定與渲染、模組註冊系統、康威生命棋完全由我撰寫，分散在以下檔案：
+\bit
+\item \verb|Mods.hpp|
+\item \verb|mods/GameOfLife.hpp|
+\item \verb|Game.hpp|
+\item \verb|Renderer.hpp|
+\item \verb|generate-notes.hpp|
+\item \verb|KeyNoteData.hpp|
+\item \verb|RhythmQuest.cpp|
+\eit
+\ssc{報告架構}
+在本章節中，我首先進行總論。此部分涵蓋要求的 A、B、C、D 四項題目，並進一步細分，闡述我在實作中所運用的 C++ 功能、概念、慣例以及最佳實踐。隨後，我將以模組或檔案群組為單位，依照課程要求，針對 A、B、C、D 四項題目（如適用）逐一進行說明。
+\ssc{總論}
+\sssc{Resource Acquisition Is Initialization (RAII)}
+RAII is a programming idiom in C++ used to manage resource lifetimes automatically. The key idea is:
+\begin{itemize}
+    \item Resources (e.g., memory, file handles, sockets) are acquired in the constructor of a class.
+    \item Resources are released in the destructor, ensuring deterministic cleanup and exception safety.
+\end{itemize}
+RAII is applied throughout my STL implementation in all classes and structures to manage resources safely and efficiently.
+\sssc{Substitution Failure Is Not An Error (SFINAE)}
+SFINAE is a compile-time technique in template programming. If substituting template parameters results in an invalid type or expression, the compiler silently ignores that overload instead of producing an error. This mechanism enables selective template instantiation and overload resolution.
+\sssc{Concepts}
+C++20 introduces \textbf{concepts}, which allow explicit constraints on template parameters in a readable and expressive way. Concepts replace some uses of SFINAE with clearer syntax. Key benefits include:
+\begin{itemize}
+    \item Clear compile-time diagnostics.
+    \item Explicit template constraints.
+    \item Improved code readability and maintainability.
+\end{itemize}
+In my STL implementation, concepts are heavily used to determine the appropriate overload or \texttt{if constexpr} branch. This technique enables optimizations for trivially copyable types, contiguous iterators, allocator traits-based optimization, etc.
+\sssc{Rule of Three / Five / Zero}
+\begin{itemize}
+    \item \textbf{Rule of Three:} If a class defines a destructor, copy constructor, or copy assignment operator, it likely needs all three.
+    \item \textbf{Rule of Five:} Extends the Rule of Three by including move constructor and move assignment for C++11 and later.
+    \item \textbf{Rule of Zero:} Prefer using RAII and standard containers to avoid manually managing special member functions.
+\end{itemize}
+These rules are applied consistently in all containers of my STL implementation to ensure correct and safe resource management.
+\sssc{Class Template Argument Deduction (CTAD)}
+C++17 introduced \textbf{Class Template Argument Deduction (CTAD)}, allowing the compiler to deduce template parameters from constructor arguments. STL containers provide \textbf{deduction guides} to assist this process, which are also implemented in my library to improve usability.
+\sssc{Exception Safety Guarantees and \texttt{noexcept}}
+STL containers follow strict \textbf{exception safety guarantees} during operations such as insertion, deletion, or reallocation:
+\begin{itemize}
+    \item \textbf{No-throw guarantee:} The operation never throws an exception.
+    \item \textbf{Strong guarantee:} If an exception occurs, the container's state remains unchanged.
+    \item \textbf{Basic guarantee:} Some changes may occur, but the container remains in a valid state.
+\end{itemize}
+In my implementation, I use \texttt{try-catch} blocks and proper deallocation to handle exceptions, prefer \texttt{noexcept} branches when possible, and provide explicit \texttt{noexcept} specifications.
+\sssc{\texttt{const}, \texttt{static}, \texttt{constexpr}, \texttt{inline}, and \texttt{explicit}}
+These keywords are applied appropriately throughout my code to enforce immutability, enable compile-time evaluation, reduce code duplication, prevent unintended implicit conversions, etc.
+\sssc{Lvalue and Rvalue References}
+Lvalue and rvalue references are used extensively in function parameters and member functions to enable move semantics, perfect forwarding, and efficient resource management.
+\sssc{Argument-Dependent Lookup (ADL)}
+ADL, also known as \textbf{Koenig lookup}, allows the compiler to search for functions not only in the current scope but also in the namespaces of the function argument types. This enables intuitive and unqualified function calls.
+\sssc{Structured Bindings}
+Structured bindings, introduced in C++17, allow unpacking of tuples, pairs, arrays, or user-defined types into individual variables. In my STL implementation, \verb|include/tuple-using.hpp| provides \verb|std::tuple_size| and \verb|std::tuple_element| support for \verb|mystd::array| and \verb|mystd::tuple|.
+\sssc{\texttt{auto}}
+The \verb|auto| keyword allows the compiler to deduce variable types from initializers. C++14 introduced \verb|auto| return type deduction, but all return statements must produce the same type according to the standard.  
+\sssc{\texttt{decltype(auto)}}
+\verb|decltype(auto)| preserves the exact type of the initializer, including references, and is used together with perfect forwarding and template overloads in \verb|mystd::tuple| and other components.
+\sssc{Empty Base Optimization (EBO)}
+In C++, an empty class normally has size 1 to ensure unique addresses. EBO is a compiler optimization that allows empty base classes to occupy no additional storage when used as a base. In my implementation, EBO is applied in \verb|_tuple_impl|, the internal recursive inheritance mechanism for \verb|mystd::tuple|.
+\sssc{\texttt{[[no\_unique\_address]]}}
+Introduced in C++20, this attribute allows empty member objects to be optimized similarly to empty bases, reducing storage overhead. It is used for allocator members in my STL containers.
+\sssc{Template Compile-Time Recursion}
+Templates can perform computation at compile time using recursion:
+\begin{itemize}
+    \item Each template instantiation computes one step of the recursion.
+    \item Recursion terminates at a base case specialization.
+    \item Computation occurs entirely at compile time, producing constant expressions.
+\end{itemize}
+This technique is used in \verb|include/tuple.hpp| for \verb|_tuple_impl|, \verb|tuple|, and related non-member functions.
+
+
+
+
+
+
+
 \ssc{include/algorithm-copy.hpp}
-The \verb|algorithm-copy.hpp| file provides three basic data transfer algorithms: \verb|copy|, \verb|copy_if|, and \verb|copy_backward|. This file serves as the algorithm module for this project's custom standard function library, mimicking the interface design of C++20 \verb|<algorithm>|. The copy function family demonstrates the polymorphism programming techniques, particularly conceptual parameter constraints and conditional optimization strategies.
+The \verb|algorithm-copy.hpp| file provides three basic data transfer algorithms: \verb|copy|, \verb|copy_if|, and \verb|copy_backward|, mimicking the interface design of C++20 \verb|<algorithm>|. The copy function family demonstrates the polymorphism programming techniques, particularly conceptual parameter constraints and conditional optimization strategies.
 
 I utilize concepts for constraints, such as \verb|std::input_iterator|, \verb|std::weakly_incrementable|, \verb|std::bidirectional_iterator|, and \verb|std::indirectly_writable| in the definition, and
 \verb|std::contiguous_iterator| and \verb|std::is_trivially_copyable_v| for specialized acceleration.
@@ -102,78 +171,12 @@ constexpr BidirIt2 copy_backward(BidirIt1 first, BidirIt1 last,
   }
 }
 \end{lstlisting}
-\subsection{include/allocator.hpp}
-
-The file \texttt{allocator.hpp} implements a custom memory management system for the project's containers, including \texttt{vector}, \texttt{priority\_queue}, and other generic data structures. It defines both the \texttt{allocator} class and the \texttt{allocator\_traits} class, along with helper templates and utilities to enable allocator-aware construction and deallocation, following C++20 standard.
-\subsubsection*{題目 A — Class and Module Structure}
-The allocator module consists of the following main components:
-\begin{itemize}
-  \item \textbf{\texttt{mystd::allocator<T>}}: A template class that implements memory allocation, deallocation, and default construction/destruction for type \texttt{T}. Key features include:
-    \begin{itemize}
-      \item \texttt{allocate(n)}: Allocates memory for \texttt{n} objects of type \texttt{T}, with overflow checks.
-      \item \texttt{deallocate(p, n)}: Deallocates memory previously allocated for \texttt{n} objects at pointer \texttt{p}.
-      \item Default constructors, copy constructors, and destructor are trivial or \texttt{noexcept}.
-      \item Supports equality comparison between different allocator types.
-      \item Provides type aliases like \texttt{value\_type}, \texttt{size\_type}, \texttt{difference\_type}, and propagation traits.
-    \end{itemize}
-  \item \textbf{\texttt{mystd::allocator\_traits<Alloc>}}: A template struct that encapsulates allocator traits and provides generic interfaces to interact with any allocator type. Key responsibilities:
-    \begin{itemize}
-      \item Deduce \texttt{pointer}, \texttt{const\_pointer}, \texttt{void\_pointer}, \texttt{const\_void\_pointer}, \texttt{size\_type}, and \texttt{difference\_type} from \texttt{Alloc}.
-      \item Provide facilities for \texttt{allocate} and \texttt{deallocate}, optionally with a memory hint.
-      \item Provide construction and destruction methods that respect allocator capabilities: \texttt{construct(a, p, args...)} and \texttt{destroy(a, p)}.
-      \item Provide container propagation flags: \texttt{propagate\_on\_container\_copy\_assignment}, \texttt{propagate\_on\_container\_move\_assignment}, \texttt{propagate\_on\_container\_swap}, and \texttt{is\_always\_equal}.
-      \item Support allocator rebinds: \texttt{rebind\_alloc<U>} and \texttt{rebind\_traits<U>}.
-    \end{itemize}
-  \item \textbf{Helper Templates}:
-    \begin{itemize}
-      \item \texttt{\_\_rebind\_helper<Alloc, T>}: Determines the allocator type rebound to a different element type \texttt{T}, supporting both classic \texttt{rebind} and variadic template allocators.
-      \item Pointer type helpers (\texttt{pointer\_helper}, \texttt{const\_pointer\_helper}, etc.): Deduce correct pointer types, with SFINAE detection for user-defined types.
-      \item Compile-time detection helpers (\texttt{has\_construct}, \texttt{has\_destroy}, \texttt{test}): Detects whether an allocator provides specialized construct/destroy interfaces.
-    \end{itemize}
-  \item \textbf{Allocator-aware Object Construction Utilities}:
-    \begin{itemize}
-      \item \texttt{uses\_allocator\_construction\_args}: Computes the proper argument tuple for constructing an object of type \texttt{T} with a given allocator.
-      \item \texttt{make\_obj\_using\_allocator}: Constructs a new object using the allocator-aware arguments tuple.
-      \item \texttt{uninitialized\_construct\_using\_allocator}: Constructs an object at a pre-allocated memory location using allocator-aware construction.
-      \item Traits and utility functions for \texttt{uses\_allocator} and allocator-aware construction, supporting tuples, piecewise construction, and pairs.
-    \end{itemize}
-\end{itemize}
-\subsubsection*{題目 B — Constructors, Destructors, and Object Management}
-
-\begin{itemize}
-  \item The \texttt{allocator} class provides default constructors and destructors that are trivial and \texttt{noexcept}.
-  \item Allocation is performed via \texttt{::operator new}, with overflow protection for large object counts.
-  \item Deallocation is performed via \texttt{::operator delete}, ensuring memory safety.
-  \item Object construction uses either the allocator’s \texttt{construct} method (if available) or \texttt{std::construct\_at}, determined at compile-time via SFINAE and \texttt{if constexpr}.
-  \item Object destruction similarly uses either \texttt{destroy} from the allocator or \texttt{std::destroy\_at}.
-  \item Rebinding support allows the allocator to be reused for different element types in generic containers.
-\end{itemize}
-
-\subsubsection*{題目 C — Object-Oriented and Modern C++ Techniques}
-
-\begin{itemize}
-  \item \textbf{Template Meta-programming}: Uses SFINAE (\texttt{std::void\_t}) and compile-time detection to adapt behavior depending on allocator capabilities.
-  \item \textbf{Concept-based Type Checking}: Ensures generic allocator functions work with any type satisfying allocator requirements.
-  \item \textbf{Tuple-based Forwarding for Allocator-aware Construction}: Correctly forwards arguments to constructors depending on whether the type supports \texttt{uses\_allocator}.
-  \item \textbf{Piecewise Construction Support}: For pair types, supports tuple-based piecewise construction.
-  \item \textbf{Compile-time Optimizations}: Uses \texttt{if constexpr} to select the appropriate construction/destruction path without runtime overhead.
-\end{itemize}
-
-\begin{verbatim}
-// Example of allocator-aware construction (simplified)
-auto args = mystd::uses_allocator_construction_args<MyType>(alloc, arg1, arg2);
-std::apply([&](auto&&... xs){ std::construct_at(p, std::forward<decltype(xs)>(xs)...); }, args);
-\end{verbatim}
-
-\subsubsection*{題目 D — Special Techniques and Performance Optimizations}
-
-\begin{itemize}
-  \item Zero-overhead abstraction for allocator traits and memory management.
-  \item Compile-time detection of allocator capabilities prevents unnecessary runtime checks.
-  \item Propagation flags reduce unnecessary copies or allocations when containers are copied, moved, or swapped.
-  \item Efficient construction and destruction mechanisms via tuple forwarding and SFINAE minimize unnecessary object copies.
-  \item Integrates seamlessly with project containers to maintain memory safety, correct alignment, and high performance for large-scale container operations.
-  \item Supports generic programming and software reuse across multiple container types without sacrificing efficiency.
-\end{itemize}
 
 
+
+
+
+
+
+
+I originally struggled on implementating \verb|operator<=>| for \verb|_tuple_impl|, the internal recursive inheritance implementation for tuple, since different element may return different type for auto deduct to fail and deducing type recursively with conditional_t will face initialization of undefined template parameters even though it will not be chose. Even though it succeeded to compile in g++, that is not complying with standard and not compiled in clang. Latter, I add element_type internal type alias in \verb|_tuple_impl| that calculate based on index and recursively define the alias. And use it and get in tuple directly to deduce type at the initialization iteratively instead of recursively, which succeeded.
