@@ -1,4 +1,4 @@
-\documentclass[a4paper,12pt]{report}
+\documentclass[a4paper,12pt]{article}
 \setcounter{secnumdepth}{5}
 \setcounter{tocdepth}{3}
 \input{/usr/share/LaTeX-ToolKit/template.tex}
@@ -8,9 +8,10 @@
 \author{沈威宇}
 \date{\temtoday}
 \titletocdoc
-\ch{第二部分：個人}
-\sct{總論}
-\ssc{我撰寫的部分}
+\sct{第一部分：專題整體}
+\sct{第二部分：個人程式設計說明}
+\ssc{總論}
+\sssc{我撰寫的部分}
 \bit
 \item \verb|include/algorithm-copy.hpp|：全部
 \item \verb|include/array.hpp|：全部
@@ -35,4 +36,144 @@
 \item \verb|KeyNoteData.hpp|：全部
 \item \verb|RhythmQuest.cpp|：大部分
 \eit
+\sssc{報告架構}
+在本章節後續內容中，我將依照課程要求之 A、B、C、D 四項題目（如適用），分別以模組或檔案群組為單位進行說明。
+\ssc{include/algorithm-copy.hpp}
+The \verb|algorithm-copy.hpp| file provides three basic data transfer algorithms: \verb|copy|, \verb|copy_if|, and \verb|copy_backward|. This file serves as the algorithm module for this project's custom standard function library, mimicking the interface design of C++20 \verb|<algorithm>|. The copy function family demonstrates the polymorphism programming techniques, particularly conceptual parameter constraints and conditional optimization strategies.
+
+I utilize concepts for constraints, such as \verb|std::input_iterator|, \verb|std::weakly_incrementable|, \verb|std::bidirectional_iterator|, and \verb|std::indirectly_writable| in the definition, and
+\verb|std::contiguous_iterator| and \verb|std::is_trivially_copyable_v| for specialized acceleration.
+
+In \verb|copy| algorithms, I use \verb|std::memcpy| when possible and element-wise assignment only when necessary, as demonstrated below (excerpted from \verb|include/algorithm-copy.hpp| lines 7-32)
+\begin{lstlisting}[language=C++]
+template <std::input_iterator InputIt, std::weakly_incrementable OutputIt>
+  requires std::indirectly_writable<OutputIt, std::iter_value_t<InputIt>>
+constexpr OutputIt copy(InputIt first, InputIt last, OutputIt d_first) {
+  if constexpr (std::contiguous_iterator<InputIt> &&
+                std::contiguous_iterator<OutputIt> &&
+                std::is_trivially_copyable_v<
+                    typename std::iterator_traits<InputIt>::value_type> &&
+                std::is_same_v<
+                    typename std::iterator_traits<InputIt>::value_type,
+                    typename std::iterator_traits<OutputIt>::value_type>) {
+    if (first == last)
+      return d_first;
+    const auto *src = std::to_address(first);
+    const auto *src_end = std::to_address(last);
+    auto *dest = std::to_address(d_first);
+    const std::size_t count = (src_end - src) * sizeof(*src);
+    std::memcpy(dest, src, count);
+    return d_first + (last - first);
+  }
+  while (first != last) {
+    *d_first = *first;
+    ++first;
+    ++d_first;
+  }
+  return d_first;
+}
 \end{lstlisting}
+
+Similarly, in \verb|copy_backward| algorithm, \verb|std::memmove| is used when possible, as demonstrated below (excerpted from \verb|include/algorithm-copy.hpp| lines 49-73)
+\begin{lstlisting}[language=C++]
+template <std::bidirectional_iterator BidirIt1,
+          std::bidirectional_iterator BidirIt2>
+constexpr BidirIt2 copy_backward(BidirIt1 first, BidirIt1 last,
+                                 BidirIt2 d_last) {
+  using ValueType1 = typename std::iterator_traits<BidirIt1>::value_type;
+  using ValueType2 = typename std::iterator_traits<BidirIt2>::value_type;
+  if constexpr (std::contiguous_iterator<BidirIt1> &&
+                std::contiguous_iterator<BidirIt2> &&
+                std::is_trivially_copyable_v<ValueType1> &&
+                std::is_same_v<ValueType1, ValueType2>) {
+    auto n = last - first;
+    if (n > 0) {
+      std::memmove(std::addressof(*d_last) - n, std::addressof(*first),
+                   n * sizeof(ValueType1));
+    }
+    return d_last - n;
+  } else {
+    while (first != last) {
+      --last;
+      --d_last;
+      *d_last = *last;
+    }
+    return d_last;
+  }
+}
+\end{lstlisting}
+\subsection{include/allocator.hpp}
+
+The file \texttt{allocator.hpp} implements a custom memory management system for the project's containers, including \texttt{vector}, \texttt{priority\_queue}, and other generic data structures. It defines both the \texttt{allocator} class and the \texttt{allocator\_traits} class, along with helper templates and utilities to enable allocator-aware construction and deallocation, following C++20 standard.
+\subsubsection*{題目 A — Class and Module Structure}
+The allocator module consists of the following main components:
+\begin{itemize}
+  \item \textbf{\texttt{mystd::allocator<T>}}: A template class that implements memory allocation, deallocation, and default construction/destruction for type \texttt{T}. Key features include:
+    \begin{itemize}
+      \item \texttt{allocate(n)}: Allocates memory for \texttt{n} objects of type \texttt{T}, with overflow checks.
+      \item \texttt{deallocate(p, n)}: Deallocates memory previously allocated for \texttt{n} objects at pointer \texttt{p}.
+      \item Default constructors, copy constructors, and destructor are trivial or \texttt{noexcept}.
+      \item Supports equality comparison between different allocator types.
+      \item Provides type aliases like \texttt{value\_type}, \texttt{size\_type}, \texttt{difference\_type}, and propagation traits.
+    \end{itemize}
+  \item \textbf{\texttt{mystd::allocator\_traits<Alloc>}}: A template struct that encapsulates allocator traits and provides generic interfaces to interact with any allocator type. Key responsibilities:
+    \begin{itemize}
+      \item Deduce \texttt{pointer}, \texttt{const\_pointer}, \texttt{void\_pointer}, \texttt{const\_void\_pointer}, \texttt{size\_type}, and \texttt{difference\_type} from \texttt{Alloc}.
+      \item Provide facilities for \texttt{allocate} and \texttt{deallocate}, optionally with a memory hint.
+      \item Provide construction and destruction methods that respect allocator capabilities: \texttt{construct(a, p, args...)} and \texttt{destroy(a, p)}.
+      \item Provide container propagation flags: \texttt{propagate\_on\_container\_copy\_assignment}, \texttt{propagate\_on\_container\_move\_assignment}, \texttt{propagate\_on\_container\_swap}, and \texttt{is\_always\_equal}.
+      \item Support allocator rebinds: \texttt{rebind\_alloc<U>} and \texttt{rebind\_traits<U>}.
+    \end{itemize}
+  \item \textbf{Helper Templates}:
+    \begin{itemize}
+      \item \texttt{\_\_rebind\_helper<Alloc, T>}: Determines the allocator type rebound to a different element type \texttt{T}, supporting both classic \texttt{rebind} and variadic template allocators.
+      \item Pointer type helpers (\texttt{pointer\_helper}, \texttt{const\_pointer\_helper}, etc.): Deduce correct pointer types, with SFINAE detection for user-defined types.
+      \item Compile-time detection helpers (\texttt{has\_construct}, \texttt{has\_destroy}, \texttt{test}): Detects whether an allocator provides specialized construct/destroy interfaces.
+    \end{itemize}
+  \item \textbf{Allocator-aware Object Construction Utilities}:
+    \begin{itemize}
+      \item \texttt{uses\_allocator\_construction\_args}: Computes the proper argument tuple for constructing an object of type \texttt{T} with a given allocator.
+      \item \texttt{make\_obj\_using\_allocator}: Constructs a new object using the allocator-aware arguments tuple.
+      \item \texttt{uninitialized\_construct\_using\_allocator}: Constructs an object at a pre-allocated memory location using allocator-aware construction.
+      \item Traits and utility functions for \texttt{uses\_allocator} and allocator-aware construction, supporting tuples, piecewise construction, and pairs.
+    \end{itemize}
+\end{itemize}
+\subsubsection*{題目 B — Constructors, Destructors, and Object Management}
+
+\begin{itemize}
+  \item The \texttt{allocator} class provides default constructors and destructors that are trivial and \texttt{noexcept}.
+  \item Allocation is performed via \texttt{::operator new}, with overflow protection for large object counts.
+  \item Deallocation is performed via \texttt{::operator delete}, ensuring memory safety.
+  \item Object construction uses either the allocator’s \texttt{construct} method (if available) or \texttt{std::construct\_at}, determined at compile-time via SFINAE and \texttt{if constexpr}.
+  \item Object destruction similarly uses either \texttt{destroy} from the allocator or \texttt{std::destroy\_at}.
+  \item Rebinding support allows the allocator to be reused for different element types in generic containers.
+\end{itemize}
+
+\subsubsection*{題目 C — Object-Oriented and Modern C++ Techniques}
+
+\begin{itemize}
+  \item \textbf{Template Meta-programming}: Uses SFINAE (\texttt{std::void\_t}) and compile-time detection to adapt behavior depending on allocator capabilities.
+  \item \textbf{Concept-based Type Checking}: Ensures generic allocator functions work with any type satisfying allocator requirements.
+  \item \textbf{Tuple-based Forwarding for Allocator-aware Construction}: Correctly forwards arguments to constructors depending on whether the type supports \texttt{uses\_allocator}.
+  \item \textbf{Piecewise Construction Support}: For pair types, supports tuple-based piecewise construction.
+  \item \textbf{Compile-time Optimizations}: Uses \texttt{if constexpr} to select the appropriate construction/destruction path without runtime overhead.
+\end{itemize}
+
+\begin{verbatim}
+// Example of allocator-aware construction (simplified)
+auto args = mystd::uses_allocator_construction_args<MyType>(alloc, arg1, arg2);
+std::apply([&](auto&&... xs){ std::construct_at(p, std::forward<decltype(xs)>(xs)...); }, args);
+\end{verbatim}
+
+\subsubsection*{題目 D — Special Techniques and Performance Optimizations}
+
+\begin{itemize}
+  \item Zero-overhead abstraction for allocator traits and memory management.
+  \item Compile-time detection of allocator capabilities prevents unnecessary runtime checks.
+  \item Propagation flags reduce unnecessary copies or allocations when containers are copied, moved, or swapped.
+  \item Efficient construction and destruction mechanisms via tuple forwarding and SFINAE minimize unnecessary object copies.
+  \item Integrates seamlessly with project containers to maintain memory safety, correct alignment, and high performance for large-scale container operations.
+  \item Supports generic programming and software reuse across multiple container types without sacrificing efficiency.
+\end{itemize}
+
+
