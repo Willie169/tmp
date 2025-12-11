@@ -71,21 +71,21 @@ In my STL implementation, concepts are heavily used to determine the appropriate
 These rules are applied consistently in all containers of my STL implementation to ensure correct and safe resource management.
 \sssc{Class Template Argument Deduction (CTAD)}
 C++17 introduced \textbf{Class Template Argument Deduction (CTAD)}, allowing the compiler to deduce template parameters from constructor arguments. STL containers provide \textbf{deduction guides} to assist this process, which are also implemented in my library to improve usability.
-\sssc{Exception Safety Guarantees and \texttt{noexcept}}
+\sssc{Exception Safety Guarantees}
 STL containers follow strict \textbf{exception safety guarantees} during operations such as insertion, deletion, or reallocation:
 \begin{itemize}
     \item \textbf{No-throw guarantee:} The operation never throws an exception.
     \item \textbf{Strong guarantee:} If an exception occurs, the container's state remains unchanged.
     \item \textbf{Basic guarantee:} Some changes may occur, but the container remains in a valid state.
 \end{itemize}
-In my implementation, I use \texttt{try-catch} blocks and proper deallocation to handle exceptions, prefer \texttt{noexcept} branches when possible, and provide explicit \texttt{noexcept} specifications.
+In my implementation, I use \texttt{try-catch} blocks and proper deallocation to handle exceptions, prefer no-throwing branches when possible, and provide explicit \texttt{noexcept} specifications.
 \sssc{Argument-Dependent Lookup (ADL)}
 ADL, also known as \textbf{Koenig lookup}, allows the compiler to search for functions not only in the current scope but also in the namespaces of the function argument types. This enables intuitive and unqualified function calls.
 \sssc{Structured Bindings}
 Structured bindings, introduced in C++17, allow unpacking of tuples, pairs, arrays, or user-defined types into individual variables. In my STL implementation, \verb|include/tuple-using.hpp| provides \verb|std::tuple_size| and \verb|std::tuple_element| support for \verb|mystd::array| and \verb|mystd::tuple|.
 \sssc{Empty Base Optimization (EBO)}
 In C++, an empty class normally has size 1 to ensure unique addresses. EBO is a compiler optimization that allows empty base classes to occupy no additional storage when used as a base. In my implementation, EBO is applied in \verb|_tuple_impl|, the internal recursive inheritance mechanism for \verb|mystd::tuple|.
-\sssc{\texttt{[[no\_unique\_address]]}}
+\sssc{\texttt{[[no\_unique\_address]]} Attribute}
 Introduced in C++20, this attribute allows empty member objects to be optimized similarly to empty bases, reducing storage overhead. It is used for allocator members in my STL containers.
 \sssc{Template Compile-Time Recursion}
 Templates can perform computation at compile time using recursion:
@@ -95,8 +95,8 @@ Templates can perform computation at compile time using recursion:
     \item Computation occurs entirely at compile time, producing constant expressions.
 \end{itemize}
 This technique is used in \verb|include/tuple.hpp| for \verb|_tuple_impl|, \verb|tuple|, and related non-member functions.
-\sssc{\texttt{std::declval}}
-\texttt{std::declval<T>()} is a utility intended exclusively for use in unevaluated contexts (such as within \texttt{decltype}, \texttt{sizeof}, or SFINAE expressions). It provides a fictional value of type \texttt{T} or \texttt{T\&} without requiring that the type be constructible. This enables compile-time type deduction even for non-instantiable or non-default-constructible types.
+\sssc{\texttt{std::declval} Template}
+\texttt{std::declval<T>()} defined in \texttt{<utility>} is a template intended exclusively for use in unevaluated contexts (such as within \texttt{decltype}, \texttt{sizeof}, or SFINAE expressions). It provides a fictional value of type \texttt{T} or \texttt{T\&} without requiring that the type be constructible. This enables compile-time type deduction even for non-instantiable or non-default-constructible types.
 
 \texttt{std::declval} is indispensable in implementing traits and SFINAE-based detection idioms.
 \sssc{Ref-Qualified Member Functions}
@@ -129,10 +129,49 @@ expression category.
 \verb|decltype(auto)| preserves the exact type of the initializer.
 
 \texttt{decltype} is crucial in producing type traits or meta-functions in template metaprogramming in many templates in my implementation, and \verb|decltype(auto)| is also used together with perfect forwarding and template overloads in my implementation.
-\sssc{\texttt{constexpr}}
+\sssc{\texttt{constexpr} function}
+The constexpr specifier is introduced in C++11, and declares that it is possible to evaluate the value of the entities at compile time. Such entities can then be used where only compile time constant expressions are allowed (provided that appropriate function arguments are given).
 
-
-
+Since C++20, many functions in STL is constexpr, notably many of the constructors and member functions of most containers. The list below is the specification of constexpr function in C++20, the standard my implementation complies with.
+\bit
+\item A constexpr specifier used in the first declaration of a function or static data member implies inline. If any declaration of a function or function template has a constexpr specifier, then every declaration must contain that specifier.
+\item A function or function template can be declared constexpr. A function is constexpr-suitable if all following conditions are satisfied:
+\bit
+\item If it is a constructor or destructor, its class does not have any virtual base class. 
+\item Its return type (if exists) is a literal type.
+\item Each of its parameter types is a literal type.
+\item It is not a coroutine.
+\item Its function body is = default, = delete, or does not enclose the following: 
+\bit
+\item goto statements
+\item statements with labels other than case and default 
+\item definitions of variables of non-literal types
+\item definitions of variables of static or thread storage duration 
+\eit
+\item Except for instantiated constexpr functions, non-templated constexpr functions must be constexpr-suitable.
+\item For a non-constructor constexpr function that is neither defaulted nor templated, if no argument values exist such that an invocation of the function could be an evaluated subexpression of a core constant expression, the program is ill-formed, no diagnostic required.
+\item For a templated constexpr function, if no specialization of the function/class template would make the templated function constexpr-suitable when considered as a non-templated function, the program is ill-formed, no diagnostic required.
+\item An invocation of a constexpr function in a given context produces the same result as an invocation of an equivalent non-constexpr function in the same context in all respects, with the following exceptions:
+\bit
+\item An invocation of a constexpr function can appear in a constant expression.
+\item Copy elision is not performed in a constant expression. 
+\eit
+\item constexpr constructor: On top of the requirements of constexpr functions, a constructor also needs to satisfy all following conditions to be constexpr-suitable:
+\bit
+\item Its function body is = delete or satisfies the following additional requirements: 
+\bit
+\item Every non-variant non-static data member and base class subobject is initialized.
+\item If the constructor is a delegating constructor, the target constructor is a constexpr constructor.
+\item If the constructor is a non-delegating constructor, every constructor selected to initialize non-static data members and base class subobjects is a constexpr constructor.
+\eit
+\item The class does not have any virtual base class. 
+\item For a constexpr constructor that is neither defaulted nor templated, if no argument values exist such that an invocation of the function could be an evaluated subexpression of the initialization full-expression of some object subject to constant expression, the program is ill-formed, no diagnostic required.
+\item constexpr destructor: On top of the requirements of constexpr functions, a destructor also needs to satisfy all following conditions to be constexpr-suitable:
+\bit
+\itrm For every subobject of class type or (possibly multi-dimensional) array thereof, that class type has a constexpr destructor.
+\item The class does not have any virtual base class. 
+\eit
+\eit
 
 
 
