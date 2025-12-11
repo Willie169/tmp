@@ -79,18 +79,10 @@ STL containers follow strict \textbf{exception safety guarantees} during operati
     \item \textbf{Basic guarantee:} Some changes may occur, but the container remains in a valid state.
 \end{itemize}
 In my implementation, I use \texttt{try-catch} blocks and proper deallocation to handle exceptions, prefer \texttt{noexcept} branches when possible, and provide explicit \texttt{noexcept} specifications.
-\sssc{\texttt{const}, \texttt{static}, \texttt{constexpr}, \texttt{inline}, and \texttt{explicit}}
-These keywords are applied appropriately throughout my code to enforce immutability, enable compile-time evaluation, reduce code duplication, prevent unintended implicit conversions, etc.
-\sssc{Lvalue and Rvalue References}
-Lvalue and rvalue references are used extensively in function parameters and member functions to enable move semantics, perfect forwarding, and efficient resource management.
 \sssc{Argument-Dependent Lookup (ADL)}
 ADL, also known as \textbf{Koenig lookup}, allows the compiler to search for functions not only in the current scope but also in the namespaces of the function argument types. This enables intuitive and unqualified function calls.
 \sssc{Structured Bindings}
 Structured bindings, introduced in C++17, allow unpacking of tuples, pairs, arrays, or user-defined types into individual variables. In my STL implementation, \verb|include/tuple-using.hpp| provides \verb|std::tuple_size| and \verb|std::tuple_element| support for \verb|mystd::array| and \verb|mystd::tuple|.
-\sssc{\texttt{auto}}
-The \verb|auto| keyword allows the compiler to deduce variable types from initializers. C++14 introduced \verb|auto| return type deduction, but all return statements must produce the same type according to the standard.  
-\sssc{\texttt{decltype(auto)}}
-\verb|decltype(auto)| preserves the exact type of the initializer, including references, and is used together with perfect forwarding and template overloads in \verb|mystd::tuple| and other components.
 \sssc{Empty Base Optimization (EBO)}
 In C++, an empty class normally has size 1 to ensure unique addresses. EBO is a compiler optimization that allows empty base classes to occupy no additional storage when used as a base. In my implementation, EBO is applied in \verb|_tuple_impl|, the internal recursive inheritance mechanism for \verb|mystd::tuple|.
 \sssc{\texttt{[[no\_unique\_address]]}}
@@ -103,6 +95,41 @@ Templates can perform computation at compile time using recursion:
     \item Computation occurs entirely at compile time, producing constant expressions.
 \end{itemize}
 This technique is used in \verb|include/tuple.hpp| for \verb|_tuple_impl|, \verb|tuple|, and related non-member functions.
+\sssc{\texttt{std::declval}}
+\texttt{std::declval<T>()} is a utility intended exclusively for use in unevaluated contexts (such as within \texttt{decltype}, \texttt{sizeof}, or SFINAE expressions). It provides a fictional value of type \texttt{T} or \texttt{T\&} without requiring that the type be constructible. This enables compile-time type deduction even for non-instantiable or non-default-constructible types.
+
+\texttt{std::declval} is indispensable in implementing traits and SFINAE-based detection idioms.
+\sssc{Ref-Qualified Member Functions}
+C++11 introduced \textbf{ref-qualified} member functions. These allow a class to distinguish overloads based on whether the object is an lvalue (\texttt{\&}) or an rvalue (\texttt{\&\&}). For example:
+\begin{lstlisting}[language=C++]
+template <class T>
+struct S {
+    T data;
+    T& get() & { return data; }
+    T&& get() && { return std::move(data); }
+};
+\end{lstlisting}
+This mechanism is widely used in the member functions overloads in STL to control move semantics.
+\sssc{Named Return Value Optimization (NRVO)}
+Named Return Value Optimization (NRVO) is a compiler optimization that eliminates unnecessary copy or move constructions when returning a local object from a function.
+
+If a function returns a named local variable matching the function's return type directly without parenthesis, the compiler is allowed to construct the object directly in the caller's storage, bypassing temporary objects.
+\sssc{\texttt{decltype}}
+\texttt{decltype} is a compile-time operator that deduces the declared type of an expression without performing the expression's evaluation. Unlike \verb|auto|, which uses assignment-like deduction rules, \texttt{decltype} preserves the exact type, including references and cv-qualifiers.
+
+Given an expression \verb|e|, the type deduced by \texttt{decltype(e)} depends on the
+expression category.
+\begin{itemize}
+    \item If \verb|e| is a unparenthesized id-expression naming a variable, then \texttt{decltype(e)} yields the declared type of the variable. Note that a parenthesized one is a lvalue expression.
+    \item If \verb|e| is an \emph{lvalue} expression, \texttt{decltype(e)} yields \verb|T\&|.
+    \item If \verb|e| is an \emph{xvalue}, \texttt{decltype(e)} yields \verb|T&&|.
+    \item If \verb|e| is a \emph{prvalue}, \texttt{decltype(e)} yields \verb|T|.
+\end{itemize}
+
+\verb|decltype(auto)| preserves the exact type of the initializer.
+
+\texttt{decltype} is crucial in producing type traits or meta-functions in template metaprogramming in many templates in my implementation, and \verb|decltype(auto)| is also used together with perfect forwarding and template overloads in my implementation.
+\sssc{\texttt{constexpr}}
 
 
 
