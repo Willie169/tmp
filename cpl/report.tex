@@ -172,15 +172,11 @@ Since C++20, many functions in STL is constexpr, notably many of the constructor
 \item The class does not have any virtual base class. 
 \eit
 \eit
-
-
-
-
 \ssc{include/algorithm-copy.hpp}
-The \verb|algorithm-copy.hpp| file provides three basic data transfer algorithms: \verb|copy|, \verb|copy_if|, and \verb|copy_backward|, mimicking the interface design of C++20 \verb|<algorithm>|. The copy function family demonstrates the polymorphism programming techniques, particularly conceptual parameter constraints and conditional optimization strategies.
-
+The \verb|algorithm-copy.hpp| file provides three basic data transfer algorithms: \verb|copy|, \verb|copy_if|, and \verb|copy_backward|, of C++20 \verb|<algorithm>|. The copy function family demonstrates the polymorphism programming techniques, particularly conceptual parameter constraints and conditional optimization strategies.
+\sssc{題目D}
 I utilize concepts for constraints, such as \verb|std::input_iterator|, \verb|std::weakly_incrementable|, \verb|std::bidirectional_iterator|, and \verb|std::indirectly_writable| in the definition, and
-\verb|std::contiguous_iterator| and \verb|std::is_trivially_copyable_v| for specialized acceleration.
+\verb|std::contiguous_iterator| and \verb|std::is_trivially_copyable_v| in specialized acceleration.
 
 In \verb|copy| algorithms, I use \verb|std::memcpy| when possible and element-wise assignment only when necessary, as demonstrated below (excerpted from \verb|include/algorithm-copy.hpp| lines 7-32)
 \begin{lstlisting}[language=C++]
@@ -240,6 +236,9 @@ constexpr BidirIt2 copy_backward(BidirIt1 first, BidirIt1 last,
   }
 }
 \end{lstlisting}
+\ssc{include/algorithm-find.hpp}
+The \verb|algorithm-find.hpp| file provides the algorithm \verb|find_if| of C++20 \verb|<algorithm>|.
+\ssc{include/algorithm-heap.hpp}
 
 
 
