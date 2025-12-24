@@ -1,0 +1,251 @@
+\documentclass[a4paper,12pt]{article}
+\setcounter{secnumdepth}{5}
+\setcounter{tocdepth}{3}
+\input{/usr/share/LaTeX-ToolKit/template.tex}
+\renewcommand{\arraystretch}{1.5}
+\begin{document}
+\title{計算機程式期末專題期末報告}
+\author{沈威宇}
+\date{\temtoday}
+\titletocdoc
+\sct{第一部分：專題整體}
+\sct{第二部分：個人程式設計說明}
+\ssc{我撰寫的部分}
+以下檔案為完全由我撰寫的符合 C++20 標準的 STL 函式庫，在 namespace mystd 之下：
+\bit
+\item \verb|include/algorithm-copy.hpp|
+\item \verb|include/array.hpp|
+\item \verb|include/range-access.hpp|
+\item \verb|include/algorithm-find.hpp|
+\item \verb|include/swap.hpp|
+\item \verb|include/algorithm-heap.hpp|
+\item \verb|include/ignore.hpp|
+\item \verb|include/tuple.hpp|
+\item \verb|include/algorithm-remove.hpp|
+\item \verb|include/priority_queue.hpp|
+\item \verb|include/tuple-using.hpp|
+\item \verb|include/allocator.hpp|
+\item \verb|include/vector.hpp|
+\eit
+非依照 STL 函式庫的自製資料結構與演算法：
+\bit
+\item \verb|include/qsort.hpp|
+\item \verb|include/circulate.hpp|
+\eit
+遊戲鍵盤音符判定與渲染、模組註冊系統、康威生命棋完全由我撰寫，分散在以下檔案：
+\bit
+\item \verb|Mods.hpp|
+\item \verb|mods/GameOfLife.hpp|
+\item \verb|Game.hpp|
+\item \verb|Renderer.hpp|
+\item \verb|generate-notes.hpp|
+\item \verb|KeyNoteData.hpp|
+\item \verb|RhythmQuest.cpp|
+\eit
+\ssc{報告架構}
+在本章節中，我首先進行總論。此部分涵蓋要求的 A、B、C、D 四項題目，並進一步細分，闡述我在實作中所運用的 C++ 功能、概念、慣例以及最佳實踐。隨後，我將以模組或檔案群組為單位，依照課程要求，針對 A、B、C、D 四項題目（如適用）逐一進行說明。
+\ssc{總論}
+\sssc{Resource Acquisition Is Initialization (RAII)}
+RAII is a programming idiom in C++ used to manage resource lifetimes automatically. The key idea is:
+\begin{itemize}
+    \item Resources (e.g., memory, file handles, sockets) are acquired in the constructor of a class.
+    \item Resources are released in the destructor, ensuring deterministic cleanup and exception safety.
+\end{itemize}
+RAII is applied throughout my STL implementation in all classes and structures to manage resources safely and efficiently.
+\sssc{Substitution Failure Is Not An Error (SFINAE)}
+SFINAE is a compile-time technique in template programming. If substituting template parameters results in an invalid type or expression, the compiler silently ignores that overload instead of producing an error. This mechanism enables selective template instantiation and overload resolution.
+\sssc{Concepts}
+C++20 introduces \textbf{concepts}, which allow explicit constraints on template parameters in a readable and expressive way. Concepts replace some uses of SFINAE with clearer syntax. Key benefits include:
+\begin{itemize}
+    \item Clear compile-time diagnostics.
+    \item Explicit template constraints.
+    \item Improved code readability and maintainability.
+\end{itemize}
+In my STL implementation, concepts are heavily used to determine the appropriate overload or \texttt{if constexpr} branch. This technique enables optimizations for trivially copyable types, contiguous iterators, allocator traits-based optimization, etc.
+\sssc{Rule of Three / Five / Zero}
+\begin{itemize}
+    \item \textbf{Rule of Three:} If a class defines a destructor, copy constructor, or copy assignment operator, it likely needs all three.
+    \item \textbf{Rule of Five:} Extends the Rule of Three by including move constructor and move assignment for C++11 and later.
+    \item \textbf{Rule of Zero:} Prefer using RAII and standard containers to avoid manually managing special member functions.
+\end{itemize}
+These rules are applied consistently in all containers of my STL implementation to ensure correct and safe resource management.
+\sssc{Class Template Argument Deduction (CTAD)}
+C++17 introduced \textbf{Class Template Argument Deduction (CTAD)}, allowing the compiler to deduce template parameters from constructor arguments. STL containers provide \textbf{deduction guides} to assist this process, which are also implemented in my library to improve usability.
+\sssc{Exception Safety Guarantees}
+STL containers follow strict \textbf{exception safety guarantees} during operations such as insertion, deletion, or reallocation:
+\begin{itemize}
+    \item \textbf{No-throw guarantee:} The operation never throws an exception.
+    \item \textbf{Strong guarantee:} If an exception occurs, the container's state remains unchanged.
+    \item \textbf{Basic guarantee:} Some changes may occur, but the container remains in a valid state.
+\end{itemize}
+In my implementation, I use \texttt{try-catch} blocks and proper deallocation to handle exceptions, prefer no-throwing branches when possible, and provide explicit \texttt{noexcept} specifications.
+\sssc{Argument-Dependent Lookup (ADL)}
+ADL, also known as \textbf{Koenig lookup}, allows the compiler to search for functions not only in the current scope but also in the namespaces of the function argument types. This enables intuitive and unqualified function calls.
+\sssc{Structured Bindings}
+Structured bindings, introduced in C++17, allow unpacking of tuples, pairs, arrays, or user-defined types into individual variables. In my STL implementation, \verb|include/tuple-using.hpp| provides \verb|std::tuple_size| and \verb|std::tuple_element| support for \verb|mystd::array| and \verb|mystd::tuple|.
+\sssc{Empty Base Optimization (EBO)}
+In C++, an empty class normally has size 1 to ensure unique addresses. EBO is a compiler optimization that allows empty base classes to occupy no additional storage when used as a base. In my implementation, EBO is applied in \verb|_tuple_impl|, the internal recursive inheritance mechanism for \verb|mystd::tuple|.
+\sssc{\texttt{[[no\_unique\_address]]} Attribute}
+Introduced in C++20, this attribute allows empty member objects to be optimized similarly to empty bases, reducing storage overhead. It is used for allocator members in my STL containers.
+\sssc{Template Compile-Time Recursion}
+Templates can perform computation at compile time using recursion:
+\begin{itemize}
+    \item Each template instantiation computes one step of the recursion.
+    \item Recursion terminates at a base case specialization.
+    \item Computation occurs entirely at compile time, producing constant expressions.
+\end{itemize}
+This technique is used in \verb|include/tuple.hpp| for \verb|_tuple_impl|, \verb|tuple|, and related non-member functions.
+\sssc{\texttt{std::declval} Template}
+\texttt{std::declval<T>()} defined in \texttt{<utility>} is a template intended exclusively for use in unevaluated contexts (such as within \texttt{decltype}, \texttt{sizeof}, or SFINAE expressions). It provides a fictional value of type \texttt{T} or \texttt{T\&} without requiring that the type be constructible. This enables compile-time type deduction even for non-instantiable or non-default-constructible types.
+
+\texttt{std::declval} is indispensable in implementing traits and SFINAE-based detection idioms.
+\sssc{Ref-Qualified Member Functions}
+C++11 introduced \textbf{ref-qualified} member functions. These allow a class to distinguish overloads based on whether the object is an lvalue (\texttt{\&}) or an rvalue (\texttt{\&\&}). For example:
+\begin{lstlisting}[language=C++]
+template <class T>
+struct S {
+    T data;
+    T& get() & { return data; }
+    T&& get() && { return std::move(data); }
+};
+\end{lstlisting}
+This mechanism is widely used in the member functions overloads in STL to control move semantics.
+\sssc{Named Return Value Optimization (NRVO)}
+Named Return Value Optimization (NRVO) is a compiler optimization that eliminates unnecessary copy or move constructions when returning a local object from a function.
+
+If a function returns a named local variable matching the function's return type directly without parenthesis, the compiler is allowed to construct the object directly in the caller's storage, bypassing temporary objects.
+\sssc{\texttt{decltype}}
+\texttt{decltype} is a compile-time operator that deduces the declared type of an expression without performing the expression's evaluation. Unlike \verb|auto|, which uses assignment-like deduction rules, \texttt{decltype} preserves the exact type, including references and cv-qualifiers.
+
+Given an expression \verb|e|, the type deduced by \texttt{decltype(e)} depends on the
+expression category.
+\begin{itemize}
+    \item If \verb|e| is a unparenthesized id-expression naming a variable, then \texttt{decltype(e)} yields the declared type of the variable. Note that a parenthesized one is a lvalue expression.
+    \item If \verb|e| is an \emph{lvalue} expression, \texttt{decltype(e)} yields \verb|T\&|.
+    \item If \verb|e| is an \emph{xvalue}, \texttt{decltype(e)} yields \verb|T&&|.
+    \item If \verb|e| is a \emph{prvalue}, \texttt{decltype(e)} yields \verb|T|.
+\end{itemize}
+
+\verb|decltype(auto)| preserves the exact type of the initializer.
+
+\texttt{decltype} is crucial in producing type traits or meta-functions in template metaprogramming in many templates in my implementation, and \verb|decltype(auto)| is also used together with perfect forwarding and template overloads in my implementation.
+\sssc{\texttt{constexpr} function}
+The constexpr specifier is introduced in C++11, and declares that it is possible to evaluate the value of the entities at compile time. Such entities can then be used where only compile time constant expressions are allowed (provided that appropriate function arguments are given).
+
+Since C++20, many functions in STL is constexpr, notably many of the constructors and member functions of most containers. The list below is the specification of constexpr function in C++20, the standard my implementation complies with.
+\bit
+\item A constexpr specifier used in the first declaration of a function or static data member implies inline. If any declaration of a function or function template has a constexpr specifier, then every declaration must contain that specifier.
+\item A function or function template can be declared constexpr. A function is constexpr-suitable if all following conditions are satisfied:
+\bit
+\item If it is a constructor or destructor, its class does not have any virtual base class. 
+\item Its return type (if exists) is a literal type.
+\item Each of its parameter types is a literal type.
+\item It is not a coroutine.
+\item Its function body is = default, = delete, or does not enclose the following: 
+\bit
+\item goto statements
+\item statements with labels other than case and default 
+\item definitions of variables of non-literal types
+\item definitions of variables of static or thread storage duration 
+\eit
+\item Except for instantiated constexpr functions, non-templated constexpr functions must be constexpr-suitable.
+\item For a non-constructor constexpr function that is neither defaulted nor templated, if no argument values exist such that an invocation of the function could be an evaluated subexpression of a core constant expression, the program is ill-formed, no diagnostic required.
+\item For a templated constexpr function, if no specialization of the function/class template would make the templated function constexpr-suitable when considered as a non-templated function, the program is ill-formed, no diagnostic required.
+\item An invocation of a constexpr function in a given context produces the same result as an invocation of an equivalent non-constexpr function in the same context in all respects, with the following exceptions:
+\bit
+\item An invocation of a constexpr function can appear in a constant expression.
+\item Copy elision is not performed in a constant expression. 
+\eit
+\item constexpr constructor: On top of the requirements of constexpr functions, a constructor also needs to satisfy all following conditions to be constexpr-suitable:
+\bit
+\item Its function body is = delete or satisfies the following additional requirements: 
+\bit
+\item Every non-variant non-static data member and base class subobject is initialized.
+\item If the constructor is a delegating constructor, the target constructor is a constexpr constructor.
+\item If the constructor is a non-delegating constructor, every constructor selected to initialize non-static data members and base class subobjects is a constexpr constructor.
+\eit
+\item The class does not have any virtual base class. 
+\item For a constexpr constructor that is neither defaulted nor templated, if no argument values exist such that an invocation of the function could be an evaluated subexpression of the initialization full-expression of some object subject to constant expression, the program is ill-formed, no diagnostic required.
+\item constexpr destructor: On top of the requirements of constexpr functions, a destructor also needs to satisfy all following conditions to be constexpr-suitable:
+\bit
+\itrm For every subobject of class type or (possibly multi-dimensional) array thereof, that class type has a constexpr destructor.
+\item The class does not have any virtual base class. 
+\eit
+\eit
+
+
+
+
+\ssc{include/algorithm-copy.hpp}
+The \verb|algorithm-copy.hpp| file provides three basic data transfer algorithms: \verb|copy|, \verb|copy_if|, and \verb|copy_backward|, mimicking the interface design of C++20 \verb|<algorithm>|. The copy function family demonstrates the polymorphism programming techniques, particularly conceptual parameter constraints and conditional optimization strategies.
+
+I utilize concepts for constraints, such as \verb|std::input_iterator|, \verb|std::weakly_incrementable|, \verb|std::bidirectional_iterator|, and \verb|std::indirectly_writable| in the definition, and
+\verb|std::contiguous_iterator| and \verb|std::is_trivially_copyable_v| for specialized acceleration.
+
+In \verb|copy| algorithms, I use \verb|std::memcpy| when possible and element-wise assignment only when necessary, as demonstrated below (excerpted from \verb|include/algorithm-copy.hpp| lines 7-32)
+\begin{lstlisting}[language=C++]
+template <std::input_iterator InputIt, std::weakly_incrementable OutputIt>
+  requires std::indirectly_writable<OutputIt, std::iter_value_t<InputIt>>
+constexpr OutputIt copy(InputIt first, InputIt last, OutputIt d_first) {
+  if constexpr (std::contiguous_iterator<InputIt> &&
+                std::contiguous_iterator<OutputIt> &&
+                std::is_trivially_copyable_v<
+                    typename std::iterator_traits<InputIt>::value_type> &&
+                std::is_same_v<
+                    typename std::iterator_traits<InputIt>::value_type,
+                    typename std::iterator_traits<OutputIt>::value_type>) {
+    if (first == last)
+      return d_first;
+    const auto *src = std::to_address(first);
+    const auto *src_end = std::to_address(last);
+    auto *dest = std::to_address(d_first);
+    const std::size_t count = (src_end - src) * sizeof(*src);
+    std::memcpy(dest, src, count);
+    return d_first + (last - first);
+  }
+  while (first != last) {
+    *d_first = *first;
+    ++first;
+    ++d_first;
+  }
+  return d_first;
+}
+\end{lstlisting}
+
+Similarly, in \verb|copy_backward| algorithm, \verb|std::memmove| is used when possible, as demonstrated below (excerpted from \verb|include/algorithm-copy.hpp| lines 49-73)
+\begin{lstlisting}[language=C++]
+template <std::bidirectional_iterator BidirIt1,
+          std::bidirectional_iterator BidirIt2>
+constexpr BidirIt2 copy_backward(BidirIt1 first, BidirIt1 last,
+                                 BidirIt2 d_last) {
+  using ValueType1 = typename std::iterator_traits<BidirIt1>::value_type;
+  using ValueType2 = typename std::iterator_traits<BidirIt2>::value_type;
+  if constexpr (std::contiguous_iterator<BidirIt1> &&
+                std::contiguous_iterator<BidirIt2> &&
+                std::is_trivially_copyable_v<ValueType1> &&
+                std::is_same_v<ValueType1, ValueType2>) {
+    auto n = last - first;
+    if (n > 0) {
+      std::memmove(std::addressof(*d_last) - n, std::addressof(*first),
+                   n * sizeof(ValueType1));
+    }
+    return d_last - n;
+  } else {
+    while (first != last) {
+      --last;
+      --d_last;
+      *d_last = *last;
+    }
+    return d_last;
+  }
+}
+\end{lstlisting}
+
+
+
+
+
+
+
+
+I originally struggled on implementating \verb|operator<=>| for \verb|_tuple_impl|, the internal recursive inheritance implementation for tuple, since different element may return different type for auto deduct to fail and deducing type recursively with conditional_t will face initialization of undefined template parameters even though it will not be chose. Even though it succeeded to compile in g++, that is not complying with standard and not compiled in clang. Latter, I add element_type internal type alias in \verb|_tuple_impl| that calculate based on index and recursively define the alias. And use it and get in tuple directly to deduce type at the initialization iteratively instead of recursively, which succeeded.
