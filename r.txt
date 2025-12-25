@@ -1,0 +1,34 @@
+p*h: \xmat*{x}{n}{m}{g}{h} g and h add if not provided, use original / \xmat*{x}{n}{m}{g}{h}{t}{u} after g h add t u that are integers to make indices start at t and u / \xmat{x}{n}{m}[p][q] p and q add if not provided, not use ellipses there / \xmat{x}{n}{m}[p][q][r][s] after p q add r s such that the ellipses become at the rth sth one, if t and r, or u and s are provided together, t and u has no effect, if r s and first o [012] is provided together, r s is superior to [012] but the not provided one (if any) still use [012] / final xmat signature will be \DeclareDocumentCommand\xmatrix{ s o m m m o o o o g g g g } / closure see render out as what / symbol: \bbF / inverted frac and qty inv fracs / \dv Dv pdv (){} -> {()}{} / \dd\Dd\pdd allow [] as power / \dfr\Dfr\pdfr \frac{\dd\Dd\pdd#}{} / mb \dd\Dd\pdd or new command to support infinite [power]{content} and now power when no [] / mixed partial derivativ \mpdv[]{}{[]{}[]{}...} with []{}{} similar to pdv but denominator as infinite \pdd / documentation: date, 3 force options, shorttextbold, binary relations, operators, operator system, alphabettrig and alphabetop, nicematrix, utility mb split or rename, check all.
+
+t*h 2 ub* see Lin*: mysql / postgresql.
+t*h 2 ub* pkg: libheif-examples / plantuml.
+ub*:
+sudo add-apt-repository ppa:bkryza/clang-uml
+sudo apt update
+sudo apt install clang-uml
+t*h 2 ub* wget: plantuml.jar from github latest.
+t*h *se* pkg: libheif-progs
+ub* bashrc: bottles dir var.
+t*h 2 ub* bashrc: vncserver, kill, clear /tmp two lock files shorthands / g++ sdl2 bgi and not functions / export PLANTUML_JAR="$HOME/plantuml.jar".
+t*h 3 ub* pkg: gtkwave.
+t*3 ub* bashrc: g++20 with all optimization flags aliases / source #1/bin/activate.
+
+*9 *o: FenKe score and rank / experience add year / add BeatRunner / add territorial.io.
+
+[new]: Earphone Alarm Android App.
+
+my*: circulate documentation / stlextend in extend and in mystd in R* and *9 and *o / integer_sequence / make_obj_using_allocator / uninitialized_construct_using_allocator / deque check / fill / uninitialized_* / move / move_if_noexcept / exchange / vector<bool>: erase range and insert count fix and test, try catch, mb migrate to bitset, allocator mb wrong, review for exception like w+1<end-1 needed etc., #ifndef no vector bool, vector.hpp include bits vector-bool.hpp.
+
+S*: mb delete and change to a new repo for verilog / carry-lookahead adder / half adder / half subtractor / adder-subtractor / carry-save adder review / Brent-Kung adder / Kogge-Stone adder / carry-select adder / carry-skip adder / multipliers / dividers.
+
+L*t: remove subseteq arrows etc. that has been in p*h / move begin document after date / forcedefaultall p*h / pkg pgffor / \checkmark shorthand / after p*h 4.0 out, use new options for it / add support for book, minimal, standalone, beamer, etc. document class / mb map \$ to $ in lstset / esymbol similar command with circuittikz.
+
+[new]?: unsigned, two's complement, integer, and IEEE single and double precision float number + - * / % implementation in Cpp using <bitset> etc. / qsort / uint128_t, int128_t, template<N> uint64n_t, template<N> int64n_t, infinite bits int and uint container, similar to python.
+
+A*t: Termux:GUI / permission pilot / Droid-ify / Shizuku F-Droid / bilimiao / GMaps WV / Samsung Debloat / Xed-Editor / Obtainium / Shelter / Dhizuku / Ente Authenticator (Ente Auth).
+
+man*d: layout change according to issue 2.
+
+github-link-converter-downloader: add gh release latest download certain file allow *.
+
+t*h: change proots to use user (shortcuts, proot install script, use user user mb) / reinstall termux to calculate size.
