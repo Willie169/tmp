@@ -1,6 +1,9 @@
+% openout_any=a lualatex --shell-escape report.tex
+
 \documentclass[a4paper,12pt]{article}
 \setcounter{secnumdepth}{5}
 \setcounter{tocdepth}{3}
+\usepackage{plantuml}
 \input{/usr/share/LaTeX-ToolKit/template.tex}
 \renewcommand{\arraystretch}{1.5}
 \begin{document}
@@ -9,13 +12,13 @@
 \date{\temtoday}
 \titletocdoc
 \sct{專題整體}
-\ssc*{1-1 專題整體介紹與說明⽂案}
-\ssc*{1-2 功能設計}
-\ssc*{1-3 美⼯介⾯設計}
-\ssc*{2-1 程式架構}
-\ssc*{3-1 ⼼得與建議}
+\ssc{1-1 專題整體介紹與說明⽂案}
+\ssc{1-2 功能設計}
+\ssc{1-3 美⼯介⾯設計}
+\ssc{2-1 程式架構}
+\ssc{3-1 ⼼得與建議}
 \sct{個人程式設計說明}
-\ssc*{2-A-1-1 描述 class 之間的關係}
+\ssc{2-A-1-1 描述 class 之間的關係}
 \sssc{include/tuple.hpp}
 \begin{itemize}
 \item \verb|template <typename T> struct _is_tuple| inherits from \verb|std::false_type|, serving as a primary type trait to determine whether a given type is a tuple. (line~20)
@@ -31,149 +34,116 @@
 \item \verb|template <class... Types> struct tuple_size<mystd::tuple<Types...>>| inherits from \verb|std::integral_constant<std::size_t, sizeof...(Types)>|, integrating \verb|mystd::tuple| with the standard tuple interface. (line~739)
 \item \verb|template <std::size_t I, class Head, class... Tail> struct tuple_element<I, mystd::tuple<Head, Tail...>>| inherits from \verb|tuple_element<I - 1, mystd::tuple<Tail...>>|, forming a recursive inheritance structure to map indices to element types. (line~748)
 \end{itemize}
-\ssc*{2-A-1-2 畫出 class 之間的關係圖}
-Core structure, taking \verb|tuple<T1, T2, T3>| for example:
-\begin{center}
-\begin{tikzpicture}[
-  node distance=12mm,
-  every node/.style={draw, rectangle, rounded corners, align=center},
-  inherit/.style={->, thick},
-  compose/.style={->, thick, dashed}
-]
-\node (tuple) {\verb|tuple<T1, T2, T3>|};
-\node (impl0) [below=of tuple]
-{\verb|_tuple_impl<0, T1, T2, T3>|};
-\node (impl1) [below=of impl0]
-{\verb|_tuple_impl<1, T2, T3>|};
-\node (impl2) [below=of impl1]
-{\verb|_tuple_impl<2, T3>|};
-\node (impl3) [below=of impl2]
-{\verb|_tuple_impl<3>|\\(base case)};
-\draw[compose] (tuple) -- node[right]{has-a} (impl0);
-\draw[inherit] (impl0) -- node[right]{inherits} (impl1);
-\draw[inherit] (impl1) -- node[right]{inherits} (impl2);
-\draw[inherit] (impl2) -- node[right]{inherits} (impl3);
-\end{tikzpicture}
-\end{center}
-Each specialization of \verb|_tuple_impl| in the chain contains one logical tuple element in \verb|Head head| that is the head of the sub-tuple since it:
-\begin{center}
-\begin{tikzpicture}[
-  node distance=14mm,
-  every node/.style={draw, rectangle, rounded corners, align=center},
-  compose/.style={->, thick, dashed}
-]
-\node (impl) {\verb|_tuple_impl<I, Head, Tail...>|};
-\node (head) [right=of impl] {\verb|Head head|};
-\draw[compose] (impl) -- node[above]{has-a} (head);
-\end{tikzpicture}
-\end{center}
-\verb|_is_tuple|:
-\begin{center}
-\begin{tikzpicture}[
-  node distance=16mm,
-  every node/.style={draw, rectangle, rounded corners, align=center},
-  inherit/.style={->, thick}
-]
-\node (false) {\verb|std::false_type|};
-\node (true) [right=of false] {\verb|std::true_type|};
-\node (is_tuple) [below=of false]
-{\verb|_is_tuple<T>|};
-\node (is_tuple_spec) [below=of true]
-{\verb|_is_tuple<tuple<Ts...>>|};
-\draw[inherit] (is_tuple) -- node[left]{inherits} (false);
-\draw[inherit] (is_tuple_spec) -- node[right]{inherits} (true);
-\end{tikzpicture}
-\end{center}
-\verb|_count_of_type|:
-\begin{center}
-\begin{tikzpicture}[
-  node distance=14mm,
-  every node/.style={draw, rectangle, rounded corners, align=center},
-  inherit/.style={->, thick}
-]
-\node (base)
-{\verb|integral_constant<size_t, 0>|};
-\node (count1) [below=of base]
-{\verb|_count_of_type<T>|};
-\node (count2) [below=of count1]
-{\verb|_count_of_type<T, Head, Tail...>|};
-\draw[inherit] (count1) -- node[right]{inherits} (base);
-\draw[inherit] (count2) -- node[right]{inherits recursively} (count1);
-\end{tikzpicture}
-\end{center}
-\verb|_index_of_type|:
-\begin{center}
-\begin{tikzpicture}[
-  node distance=14mm,
-  every node/.style={draw, rectangle, rounded corners, align=center},
-  inherit/.style={->, thick}
-]
-\node (base)
-{\verb|integral_constant<size_t, 0>|};
-\node (index1) [below=of base]
-{\verb|_index_of_type<T>|};
-\node (index2) [below=of index1]
-{\verb|_index_of_type<T, Head, Tail...>|};
-\draw[inherit] (index1) -- node[right]{inherits} (base);
-\draw[inherit] (index2) -- node[right]{inherits recursively} (index1);
-\end{tikzpicture}
-\end{center}
-Standard trait adaptation:
-\begin{tikzpicture}[
-  node distance=16mm,
-  every node/.style={draw, rectangle, rounded corners, align=center},
-  inherit/.style={->, thick}
-]
-\node (integral)
-{\verb|std::integral_constant<size_t, N>|};
-\node (tsize) [below=of integral]
-{\verb|tuple_size<tuple<Ts...>>|};
-\node (telem) [right=of tsize]
-{\verb|tuple_element<I, tuple<...>>|};
-\node (alloc) [left=of tsize]
-{\verb|uses_allocator<tuple<...>, Alloc>|};
-\draw[inherit] (tsize) -- node[right]{inherits} (integral);
-\draw[inherit] (telem) -- node[above]{recursive inherits} (telem |- integral);
-\draw[inherit] (alloc) -- node[left]{inherits} (integral);
-\end{tikzpicture}
-\end{center}
-\ssc*{2-A-2-1 繼承關係}
+\ssc{2-A-1-2 畫出 class 之間的關係圖}
+\sssc{include/tuple.hpp}
 Each specialization corresponds to one logical tuple element, where the template parameter \verb|I| denotes the zero-based index of the current element. The inheritance chain terminates at a base specialization with an empty parameter pack. This design decomposes the tuple into a linear sequence of base classes, enabling element access, type computation, and index-based operations to be resolved entirely at compile time without runtime overhead.
-\ssc*{2-A-3-1 public 變數使用與原因}
-\ssc*{2-A-3-2 private 變數使用與原因}
-\ssc*{2-A-3-4 friend 使用與原因}
-\ssc*{2-A-3-5 class composition}
-\ssc*{2-B-1-1 建構⼦、複製建構⼦、解構⼦}
-\ssc*{2-B-1-2 指標成員處理}
-\ssc*{2-B-1-3 建構⼦、複製建構⼦、解構⼦特殊語法}
-\ssc*{2-B-3-1-1 組裝關係}
-\ssc*{2-B-3-1-2 繼承關係}
-\ssc*{2-B-3-2 指標的操作之巧思}
-\ssc*{2-B-3-3 功能巧思}
-\ssc*{2-C-1-1 Operator Overloading 實作與呼叫位置}
-\ssc*{2-C-1-2 Operator Overloading 語法與使⽤⽅式描述與範例}
-\ssc*{2-C-1-3 Operator Overloading 演算法設計}
-\ssc*{2-C-1-4 Operator Overloading 有無的差異}
-\ssc*{2-C-1-5 Operator Overloading 巧思}
-\ssc*{2-C-2-1 static member 宣告}
-\ssc*{2-C-2-2 static member 程式碼位置}
-\ssc*{2-C-2-3 static member 用途}
-\ssc*{2-C-2-4 static member 有無的差異}
-\ssc*{2-C-3-1 const member 宣告}
-\ssc*{2-C-3-2 const member 程式碼位置}
-\ssc*{2-C-3-3 const member 用途}
-\ssc*{2-C-3-4 const member 有無的差異}
-\ssc*{2-C-4-1 polymorphism 宣告}
-\ssc*{2-C-4-2 polymorphism 成員}
-\ssc*{polymorphism 相關的 class 或 function 間的對應關係}
-\ssc*{2-D-1-1-1 演算法設計用途}
-\ssc*{2-D-1-2-1 演算法設計有無的差異}
-\ssc*{2-D-1-3-1 演算法設計額外加分}
-\ssc*{2-D-1-1-2 程式執⾏效率優化用途}
-\ssc*{2-D-1-2-2 程式執⾏效率優化有無的差異}
-\ssc*{2-D-1-3-2 程式執⾏效率優化額外加分}
-\ssc*{2-D-1-1-3 程式碼管理版本控制用途}
-\ssc*{2-D-1-2-3 程式碼管理版本控制有無的差異}
-\ssc*{2-D-1-3-3 程式碼管理版本控制額外加分}
-\ssc*{2-D-2-1 美⼯細節}
-\ssc*{2-D-2-2 音樂細節}
+
+Inheritance is used deliberately as a compile-time recursion mechanism. Each instantiation step corresponds to a UML generalization, while the recursion unfolds as a deterministic compile-time sequence. UML sequence diagrams are therefore appropriate to visualize template instantiation order.
+\begin{plantuml}
+@startuml
+
+' Base empty _tuple_impl
+class "_tuple_impl<I>" as TupleImplEmpty {
+  +template <std::size_t J> element_type = void
+  +_tuple_impl()
+  +swap(other)
+}
+
+' Recursive _tuple_impl
+class "_tuple_impl<I, Head, Tail...>" as TupleImpl {
+  +Head head
+  +template <std::size_t J> get()
+  +swap(other)
+}
+
+' tuple class
+class "tuple<Types...>" as Tuple {
+  +_tuple_impl<0, Types...> _impl
+  +get<I>()
+  +swap(other)
+}
+
+' Type traits and helpers (optional)
+class "_is_tuple<T>" as IsTuple {
+  +inherits std::false_type
+}
+class "_is_tuple<mystd::tuple<Ts...>>" as IsTupleSpecialized {
+  +inherits std::true_type
+}
+
+class "_count_of_type<T, Types...>" as CountType
+class "_index_of_type<T, Types...>" as IndexType
+
+' Inheritance / composition
+TupleImpl <|-- TupleImplEmpty
+TupleImplEmpty <|-- TupleImpl
+TupleImpl --> Tuple : composition
+Tuple --> IsTupleSpecialized : uses
+IsTupleSpecialized <|-- IsTuple
+
+@enduml
+\end{plantuml}
+\begin{plantuml}
+@startuml
+actor Compiler
+
+participant "_index_of_type<int, char, double, int, float>" as L0
+participant "_index_of_type<int, double, int, float>" as L1
+participant "_index_of_type<int, int, float>" as L2
+
+Compiler -> L0 : instantiate
+L0 -> L1 : recurse (Head ≠ T)
+L1 -> L2 : recurse (Head == T)
+
+L2 --> L1 : value = 0
+L1 --> L0 : value = 1
+L0 --> Compiler : value = 2
+
+note over Compiler,L2
+  Each arrow represents
+  a template instantiation
+  during compilation
+end note
+
+@enduml
+\end{plantuml}
+
+\ssc{2-A-3-1 public 變數使用與原因}
+\ssc{2-A-3-2 private 變數使用與原因}
+\ssc{2-A-3-4 friend 使用與原因}
+\ssc{2-A-3-5 class composition}
+\ssc{2-B-1-1 建構⼦、複製建構⼦、解構⼦}
+\ssc{2-B-1-2 指標成員處理}
+\ssc{2-B-1-3 建構⼦、複製建構⼦、解構⼦特殊語法}
+\ssc{2-B-3-1-1 組裝關係}
+\ssc{2-B-3-1-2 繼承關係}
+\ssc{2-B-3-2 指標的操作之巧思}
+\ssc{2-B-3-3 功能巧思}
+\ssc{2-C-1-1 Operator Overloading 實作與呼叫位置}
+\ssc{2-C-1-2 Operator Overloading 語法與使⽤⽅式描述與範例}
+\ssc{2-C-1-3 Operator Overloading 演算法設計}
+\ssc{2-C-1-4 Operator Overloading 有無的差異}
+\ssc{2-C-1-5 Operator Overloading 巧思}
+\ssc{2-C-2-1 static member 宣告}
+\ssc{2-C-2-2 static member 程式碼位置}
+\ssc{2-C-2-3 static member 用途}
+\ssc{2-C-2-4 static member 有無的差異}
+\ssc{2-C-3-1 const member 宣告}
+\ssc{2-C-3-2 const member 程式碼位置}
+\ssc{2-C-3-3 const member 用途}
+\ssc{2-C-3-4 const member 有無的差異}
+\ssc{2-C-4-1 polymorphism 宣告}
+\ssc{2-C-4-2 polymorphism 成員}
+\ssc{2-C-4-3 polymorphism 相關的 class 或 function 間的對應關係}
+\ssc{2-D-1-1-1 演算法設計用途}
+\ssc{2-D-1-2-1 演算法設計有無的差異}
+\ssc{2-D-1-3-1 演算法設計額外加分}
+\ssc{2-D-1-1-2 程式執⾏效率優化用途}
+\ssc{2-D-1-2-2 程式執⾏效率優化有無的差異}
+\ssc{2-D-1-3-2 程式執⾏效率優化額外加分}
+\ssc{2-D-1-1-3 程式碼管理版本控制用途}
+\ssc{2-D-1-2-3 程式碼管理版本控制有無的差異}
+\ssc{2-D-1-3-3 程式碼管理版本控制額外加分}
+\ssc{2-D-2-1 美⼯細節}
+\ssc{2-D-2-2 音樂細節}
+\end{document}
