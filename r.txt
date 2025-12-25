@@ -1,8 +1,7 @@
 p*h: \xmat*{x}{n}{m}{g}{h} g and h add if not provided, use original / \xmat*{x}{n}{m}{g}{h}{t}{u} after g h add t u that are integers to make indices start at t and u / \xmat{x}{n}{m}[p][q] p and q add if not provided, not use ellipses there / \xmat{x}{n}{m}[p][q][r][s] after p q add r s such that the ellipses become at the rth sth one, if t and r, or u and s are provided together, t and u has no effect, if r s and first o [012] is provided together, r s is superior to [012] but the not provided one (if any) still use [012] / final xmat signature will be \DeclareDocumentCommand\xmatrix{ s o m m m o o o o g g g g } / closure see render out as what / symbol: \bbF / inverted frac and qty inv fracs / \dv Dv pdv (){} -> {()}{} / \dd\Dd\pdd allow [] as power / \dfr\Dfr\pdfr \frac{\dd\Dd\pdd#}{} / mb \dd\Dd\pdd or new command to support infinite [power]{content} and now power when no [] / mixed partial derivativ \mpdv[]{}{[]{}[]{}...} with []{}{} similar to pdv but denominator as infinite \pdd / documentation: date, 3 force options, shorttextbold, binary relations, operators, operator system, alphabettrig and alphabetop, nicematrix, utility mb split or rename, check all.
 
 t*h 2 ub* see Lin*: mysql / postgresql.
-t*h 2 ub* bashrc: vncserver, kill, clear /tmp two lock files shorthands / g++ sdl2 bgi and not functions / export PLANTUML_JAR="$HOME/plantuml.jar".
-t*3 ub* bashrc: g++20 with all optimization flags aliases / source #1/bin/activate.
+t*h 2 ub* bashrc: vncserver, kill, clear / tmp two lock files shorthands.
 
 *9 *o: FenKe score and rank / experience add year / add BeatRunner / add territorial.io.
 
