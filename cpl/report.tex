@@ -15,8 +15,8 @@
 \ssc{1-1-3 美⼯介⾯設計}
 美工介面分工如下：
 \begin{itemize}
-\item 遊戲主選單、音量調整滑桿、選歌頁面、遊戲背景、Mouse notes 與角色動畫由于昀辰設計。
-\item Tap notes、Hold notes、遊戲中的計分與資訊文字、各類特效、設定頁面、康威生命遊戲模組頁面，以及倒數動畫由沈威宇設計。
+\item 遊戲主選單、音量調整滑桿、選歌頁面、遊戲背景、Mouse notes，以及角色動畫由于昀辰設計。
+\item Tap notes、Hold notes、遊戲中的計分與資訊文字、各類特效、設定頁面、倒數動畫，以及康威生命遊戲模組設定頁面由沈威宇設計。
 \item 結算頁面由林孜謙設計。
 \end{itemize}
 
@@ -337,126 +337,247 @@ void gameOfLifeSettings(SDL_Renderer *renderer, TTF_Font *font, int screenWidth,
 \ssc{1-2-1 程式架構}
 \label{1-2-1}
 
-以下 UML 圖由沈威宇利用 clang-uml 與 PlantUML 輔助完成，每個 class 標註作者。首張圖為 SVG 格式，可放大檢視整體結構；其後共 14 張圖為分割後的 UML 圖，每張圖對應總圖的部分區塊，橫向分為 8 區，縱向分為 2 區，排列順序依左至右、上至下，如：左一上、左一下、左二上、左二下，以此類推。
+本章節首先說明沈威宇所撰寫之程式碼範圍，接著透過 UML 圖呈現整體 classes 之間的關係。本報告中所使用之 UML 圖，皆由沈威宇使用 clang-uml 與 PlantUML 輔助產生，並經人工補註作者資訊後完成。
+
+\sssc{沈威宇撰寫的部分}
+
+以下列出符合 C++20 標準，並實作於 \texttt{namespace mystd} 之下的仿 STL 函式庫檔案：
+
+\begin{itemize}
+\item \verb|include/algorithm-copy.hpp|：\verb|copy|、\verb|copy_if|、\verb|copy_backward|。
+\item \verb|include/algorithm-find.hpp|：\verb|find_if|、\verb|find|、\verb|find_if_not|。
+\item \verb|include/algorithm-remove.hpp|：\verb|remove_if|、\verb|remove|。
+\item \verb|include/algorithm-heap.hpp|：\verb|push_heap|、\verb|pop_heap|、\verb|make_heap|、\verb|sort_heap|、\verb|is_heap|、\verb|is_heap_until|。
+\item \verb|include/range-access.hpp|：range access 相關輔助函式。
+\item \verb|include/swap.hpp|：\verb|swap|。
+\item \verb|include/ignore.hpp|：\verb|ignore_t|。
+\item \verb|include/tuple-using.hpp|：提供 \verb|std::tuple_element|、\verb|std::tuple_element_t|、\verb|std::tuple_size|、\verb|std::tuple_size_v| 之 ADL 與 structured binding 輔助，供 \verb|array| 與 \verb|tuple| 使用。
+\item \verb|include/array.hpp|：完整實作 \verb|<array>|。
+\item \verb|include/tuple.hpp|：完整實作 \verb|<tuple>|。
+\item \verb|include/priority_queue.hpp|：完整實作 \verb|<queue>| 中與 \verb|priority_queue| 相關之內容。
+\item \verb|include/allocator.hpp|：完整實作 \verb|<memory>| 中的 \verb|allocator|、\verb|allocator_traits| 與相關輔助內容。
+\item \verb|include/vector.hpp|：完整實作 \verb|<vector>|。
+\end{itemize}
+
+以下為非 STL 標準之自製資料結構與演算法：
+
+\begin{itemize}
+\item \verb|include/circulate.hpp|：提供 circular iterator，可用於 \verb|vector| 或使用者自訂容器。
+\item \verb|include/qsort.hpp|：Quick sort 演算法，介面設計仿照 \verb|std::sort|。
+\end{itemize}
+
+Tap notes 與 Hold notes 之判定、計分與渲染、遊戲資訊計算、各類特效之判定與渲染、設定頁面、倒數動畫、模組註冊系統，以及康威生命遊戲模組與其設定頁面，皆由本人獨立撰寫。相關程式碼分布於以下檔案，以下說明僅涵蓋本人撰寫之部分：
+
+\begin{itemize}
+\item \verb|Mods.hpp|：模組註冊系統。
+\item \verb|mods/GameOfLife.hpp|：康威生命遊戲模組及其設定頁面。
+\item \verb|Game.hpp|：Tap notes 與 Hold notes 之判定、計分，以及避免 edge cases 之修補。
+\item \verb|Renderer.hpp|：Tap notes、Hold notes 與各類特效之渲染。
+\item \verb|KeyNoteData.hpp|：Tap notes 與 Hold notes 之資料結構，與林孜謙撰寫之 \verb|ChartParser.hpp| 共用。
+\item \verb|BeatRunner.cpp|：
+\begin{itemize}
+  \item 遊戲資訊計算
+  \item 設定頁面
+  \item 倒數動畫
+  \item 主迴圈中 next fragment 載入、事件導向流程、程式關閉事件處理，以及 key press / release 事件呼叫對應函式
+  \item SDL 初始化與設定
+  \item 各類 edge cases 之修補
+\end{itemize}
+\end{itemize}
+
+測試用檔案如下：
+
+\begin{itemize}
+\item \verb|generate-notes.hpp|：依指定數量與比例隨機產生 Tap notes 與 Hold notes，並以 quick sort 排序。
+\item \verb|test0.cpp|：Tap notes 與 Hold notes 之初期測試程式。
+\end{itemize}
+
+\sssc{完整程式架構 UML 圖}
+
+所有 class 皆標註其作者。首張圖為 SVG 格式，可放大檢視整體架構；其後共 16 張圖為分割後之 UML 圖，每張對應總圖之一部分區塊。分割方式為橫向 8 區、縱向 2 區，排列順序依左至右、上至下，例如：左一上、左一下、左二上、左二下，以此類推。
 
 \begin{center}
 \begin{figure}[H]
 \centering
-\includesvg[width=\textwidth,angle=90]{diagrams/example_class_diagram.svg}
+\includesvg[width=\textwidth,angle=90]{diagrams/full.svg}
 \caption{完整程式架構 UML 圖（SVG，可放大檢視）}
-\label{fig:svg}
 \end{figure}
 \FloatBarrier
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{diagrams/page_w0_h0.png}
-\label{fig:w0h0}
 \end{figure}
 \FloatBarrier
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{diagrams/page_w0_h1.png}
-\label{fig:w0h1}
 \end{figure}
 \FloatBarrier
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{diagrams/page_w1_h0.png}
-\label{fig:w1h0}
 \end{figure}
 \FloatBarrier
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{diagrams/page_w1_h1.png}
-\label{fig:w1h1}
 \end{figure}
 \FloatBarrier
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{diagrams/page_w2_h0.png}
-\label{fig:w2h0}
 \end{figure}
 \FloatBarrier
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{diagrams/page_w2_h1.png}
-\label{fig:w2h1}
 \end{figure}
 \FloatBarrier
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{diagrams/page_w3_h0.png}
-\label{fig:w3h0}
 \end{figure}
 \FloatBarrier
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{diagrams/page_w3_h1.png}
-\label{fig:w3h1}
 \end{figure}
 \FloatBarrier
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{diagrams/page_w4_h0.png}
-\label{fig:w4h0}
 \end{figure}
 \FloatBarrier
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{diagrams/page_w4_h1.png}
-\label{fig:w4h1}
 \end{figure}
 \FloatBarrier
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{diagrams/page_w5_h0.png}
-\label{fig:w5h0}
 \end{figure}
 \FloatBarrier
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{diagrams/page_w5_h1.png}
-\label{fig:w5h1}
 \end{figure}
 \FloatBarrier
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{diagrams/page_w6_h0.png}
-\label{fig:w6h0}
 \end{figure}
 \FloatBarrier
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{diagrams/page_w6_h1.png}
-\label{fig:w6h1}
 \end{figure}
 \FloatBarrier
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{diagrams/page_w7_h0.png}
-\label{fig:w7h0}
 \end{figure}
 \FloatBarrier
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=\textwidth]{diagrams/page_w7_h1.png}
-\label{fig:w7h1}
+\end{figure}
+\FloatBarrier
+\end{center}
+
+\sssc{不含 mystd UML 圖}
+
+所有 class 皆標註其作者。首張圖為 SVG 格式，可放大檢視整體結構；其後兩張圖為分割後之左半與右半 UML 圖。
+
+\begin{center}
+\begin{figure}[H]
+\centering
+\includesvg[width=\textwidth,angle=90]{diagrams/exclude.svg}
+\caption{不含 mystd UML 圖（SVG，可放大檢視）}
+\end{figure}
+\FloatBarrier
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{diagrams/ex_page_w0_h0.png}
+\end{figure}
+\FloatBarrier
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{diagrams/ex_page_w1_h0.png}
+\end{figure}
+\FloatBarrier
+\end{center}
+
+\sssc{mystd UML 圖}
+
+本節所示之 UML 圖中，所有 class 均由沈威宇實作，故不標註作者。首張圖為 mystd（不含 array）之 SVG UML 圖，第二張圖為 array 之 SVG UML 圖，皆可放大檢視整體結構。其後共 6 張圖為 mystd（不含 array）之分割後 UML 圖，排列順序由左至右。
+
+\begin{center}
+\begin{figure}[H]
+\centering
+\includesvg[width=\tmytwidth,angle=90]{diagrams/mystd.svg}
+\caption{mystd（不含 array）UML 圖（SVG，可放大檢視）}
+\end{figure}
+\FloatBarrier
+
+\begin{figure}[H]
+\centering
+\includesvg[width=\tmytwidth,angle=90]{diagrams/arra.svg}
+\caption{array UML 圖（SVG，可放大檢視）}
+\end{figure}
+\FloatBarrier
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\tmytwidth]{diagrams/my_page_w0_h0.png}
+\end{figure}
+\FloatBarrier
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\tmytwidth]{diagrams/my_page_w1_h0.png}
+\end{figure}
+\FloatBarrier
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\tmytwidth]{diagrams/my_page_w2_h0.png}
+\end{figure}
+\FloatBarrier
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\tmytwidth]{diagrams/my_page_w3_h0.png}
+\end{figure}
+\FloatBarrier
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\tmytwidth]{diagrams/my_page_w4_h0.png}
+\end{figure}
+\FloatBarrier
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\tmytwidth]{diagrams/my_page_w5_h0.png}
 \end{figure}
 \FloatBarrier
 \end{center}
@@ -479,13 +600,530 @@ void gameOfLifeSettings(SDL_Renderer *renderer, TTF_Font *font, int screenWidth,
 \item \verb|template <class... Types> struct tuple_size<mystd::tuple<Types...>>| inherits from \verb|std::integral_constant<std::size_t, sizeof...(Types)>|, integrating \verb|mystd::tuple| with the standard tuple interface. (line~739)
 \item \verb|template <std::size_t I, class Head, class... Tail> struct tuple_element<I, mystd::tuple<Head, Tail...>>| inherits from \verb|tuple_element<I - 1, mystd::tuple<Tail...>>|, forming a recursive inheritance structure to map indices to element types. (line~748)
 \end{itemize}
+\sssc{其他 mystd}
+因數量甚多，僅列舉以下數例。
+\begin{itemize}
+\item \verb|mystd::circulate| 與 \verb|mystd::priority_queue| 皆為 container adapter，其預設底層容器均為 \verb|mystd::vector|。（\verb|include/circulate.hpp| line~191；\verb|include/priority_queue.hpp| line~18）
+\item \verb|mystd::circulate| 透過 iterator proxy classes \verb|_circulate_iterator|（\verb|include/circulate.hpp| line~15）與 \verb|_circulate_const_iterator|（\verb|include/circulate.hpp| line~92）實作循環式走訪語意，使 iterator 能在不改變原容器的情況下重複遍歷元素。
+\item \verb|include/allocator.hpp| 中透過大量輔助 \verb|struct| 實作 \verb|allocator_traits| 所需之型別別名與推導機制，下列程式碼節錄示範其中一個 \verb|rebind| 輔助結構之實作方式。（line~42--55）
+\begin{lstlisting}[language=C++]
+template <typename Alloc, typename T, typename = void>
+struct __rebind_helper {};
+
+template <typename Alloc, typename T>
+struct __rebind_helper<Alloc, T,
+                       std::void_t<typename Alloc::template rebind<T>::other>> {
+  using type = typename Alloc::template rebind<T>::other;
+};
+
+template <template <class, class...> class Alloc, class U, class... Args,
+          class T>
+struct __rebind_helper<Alloc<U, Args...>, T> {
+  using type = Alloc<T, Args...>;
+};
+\end{lstlisting}
+\item \verb|ignore_t| 定義於 \verb|include/ignore.hpp|，供 \verb|include/tuple.hpp| 中 \verb|mystd::tie| 使用，以支援忽略指定綁定項目之語意。（\verb|include/ignore.hpp| line~5--16）
+\begin{lstlisting}[language=C++]
+struct ignore_t {
+  template <class T>
+  constexpr const ignore_t &operator=(const T &) const noexcept {
+    return *this;
+  }
+
+  template <class T>
+  constexpr const ignore_t &operator=(T &&) const noexcept {
+    return *this;
+  }
+};
+
+inline constexpr ignore_t ignore{};
+\end{lstlisting}
+\end{itemize}
+\sssc{mystd 以外（僅列沈威宇實作部分）}
+\begin{itemize}
+\item \verb|game_priority_queue<T>| 公開繼承自 \verb|mystd::priority_queue<T>|，並將其受保護成員 \verb|c|（底層 container）提升為 public 成員。(\verb|Game.hpp| line~17--20)
+\begin{lstlisting}[language=C++]
+template <class T> class game_priority_queue : public mystd::priority_queue<T> {
+public:
+  using mystd::priority_queue<T>::c;
+};
+\end{lstlisting}
+\item \verb|game_priority_queue<Effect> centerEffects| 為 \verb|game_priority_queue| 之 template specialization，其儲存型別固定為 \verb|Effect|，用於遊戲中特效之優先序管理。此架構除滿足現行需求外，亦預留未來功能擴充之彈性。(\verb|Game.hpp| line~65)
+\item \verb|Game| 具有成員 \verb|mystd::vector<KeyNoteData> &notes|，其為對全域變數之參考，此設計係後期為配合 \verb|ChartParser| 之整合與資料共享需求而進行之調整。(\verb|Game.hpp| line~44)
+\item \verb|Game| 透過成員 \verb|laneEffects| 聚合多個 \verb|Effect|，並透過 \verb|centerEffects| 聚合一個 \verb|game_priority_queue<Effect>|，以支援集中式特效排程與依優先序處理之設計。(\verb|Game.hpp| line~64--65)
+\item \verb|Game| 具有成員物件 \verb|mystd::vector<mystd::circulate<int8_t, mystd::vector<int8_t>>> highway|，儲存 highway 上的 tap notes and hold notes。(\verb|Game.hpp| line~50)
+\item \verb|Renderer| 具有成員物件 \verb|Game &game|，持有遊戲邏輯之參考，以便於渲染階段即時存取遊戲狀態。由於兩者均在後期整合改為手動記憶體管理，故未使用 \verb|shared_ptr|，若未來專案擴展或應使用之並避免手動記憶體管理。（\verb|Renderer.hpp| line~54)
+\item \verb|Renderer| 使用\verb|std::unordered_map<mystd::tuple<int8_t, bool, uint32_t>, SDL_Texture *, NotesCacheHash>|作為 key notes 的貼圖快取容器，並透過自訂雜湊結構 \verb|NotesCacheHash| 提供雜湊函式；其餘 \verb|std::unordered_map| 則用於快取其他類型之 \verb|SDL_Texture*|。（\verb|Renderer.hpp| line~55--59)
+\end{itemize}
 \ssc{2-A-1-2 畫出 class 之間的關係圖}
-見 \hyperref[1-2-1]{1-2-1 程式架構—— UML 圖} 中「By 沈威宇」的 classes。
+請參見 \hyperref[1-2-1]{1-2-1 程式架構} 所示 UML 圖。
 \ssc{2-A-3-1 public 變數使用與原因}
+\label{2-A-3-1}
+\begin{itemize}
+\item \verb|mystd::array| 中之 \verb|T elems[N == 0 ? 1 : N];| 必須宣告為 \verb|public|，以符合 C++ 標準對 aggregate initialization 之規範；一個 class 若要成為 aggregate，其所有非靜態資料成員皆須為 \verb|public|。（\verb|include/array.hpp| line~33）
+\item \verb|_tuple_impl<I, Head, Tail...>| 中之成員 \verb|Head head;| 宣告為 \verb|public|，以利實作階段進行遞迴存取與修改。由於該型別屬於 implementation detail，並不直接對使用者暴露，因此不影響介面封裝性。
+\item \verb|template <class... Types> class tuple| 中之 \verb|_tuple_impl<0, Types...> _impl| 宣告為 \verb|public|，以支援 \verb|template <std::size_t I, class... Types> constexpr decltype(auto) get| 等介面函式的實作。該等函式透過 compile-time 的 template recursion 存取元素、編號、型別等，藉此避免任何 runtime overhead。以 \verb|_tuple_impl| 內部之 \verb|get| 函式為例，其實作節錄如下（\verb|include/tuple.hpp| line~211--253）：
+\begin{lstlisting}[language=C++]
+template <std::size_t J>
+constexpr decltype(auto) get() &
+  requires(J >= I && J <= I + sizeof...(Tail))
+{
+  if constexpr (I == J) {
+    return (head);
+  } else {
+    return static_cast<base &>(*this).template get<J>();
+  }
+}
+
+template <std::size_t J>
+constexpr decltype(auto) get() const &
+  requires(J >= I && J <= I + sizeof...(Tail))
+{
+  if constexpr (I == J) {
+    return (head);
+  } else {
+    return static_cast<const base &>(*this).template get<J>();
+  }
+}
+
+template <std::size_t J>
+constexpr decltype(auto) get() &&
+  requires(J >= I && J <= I + sizeof...(Tail))
+{
+  if constexpr (I == J) {
+    return std::move(head);
+  } else {
+    return static_cast<base &&>(*this).template get<J>();
+  }
+}
+
+template <std::size_t J>
+constexpr decltype(auto) get() const &&
+  requires(J >= I && J <= I + sizeof...(Tail))
+{
+  if constexpr (I == J) {
+    return std::move(head);
+  } else {
+    return static_cast<const base &&>(*this).template get<J>();
+  }
+}
+\end{lstlisting}
+\item \verb|game_priority_queue<T>| 將
+\verb|mystd::priority_queue<T>|
+中之受保護成員 \verb|c|（底層 container）提升為 \verb|public|，以供遍歷使用。  若為規模更大的專案，提供 public const reference 以避免資料被任意修改，將是更佳的設計方案。（\verb|Game.hpp| line~17--20）
+\item \verb|Game| 類別之資料成員目前皆為 \verb|public|，此為後期整合階段所做之調整。若未來系統擴充，較佳的設計方式為僅透過 \verb|Renderer| 持有 \verb|Game| 之 reference，與介面函式提供主迴圈所需存取。（\verb|Game.hpp| line~44--65）
+\item \verb|Renderer| 之 \verb|fps| 成員宣告為 \verb|public|，以供主迴圈即時更新並顯示 FPS 資訊。（\verb|Renderer.hpp| line~499）
+\end{itemize}
 \ssc{2-A-3-2 private 變數使用與原因}
+\label{2-A-3-2}
+\begin{itemize}
+\item \verb|Renderer| 中多數資料成員設為 \verb|private|，以避免被其他獨立渲染元件錯誤修改，確保渲染狀態與資源管理的一致性。（\verb|Renderer.hpp| line~54--70）
+\item \verb|mystd::vector| 之 allocator（無實體大小）、實際資料指標、大小與容量等內部狀態皆設為 \verb|private|，以防止使用者破壞容器不變式。（\verb|include/vector.hpp| line~46--49）
+\begin{lstlisting}[language=C++]
+[[no_unique_address]] Allocator alloc;
+T *elems;
+std::size_t sz;
+std::size_t cap;
+\end{lstlisting}
+\end{itemize}
+\ssc{2-A-3-3 protected 變數使用與原因}
+\label{2-A-3-3}
+\verb|mystd::priority_queue| 之底層容器 \verb|c| 與比較子 \verb|comp| 依據 C++ 標準設為 \verb|protected|。
+原因如下：
+\begin{itemize}
+\item \verb|priority_queue| 為 container adapter 而非 container，本身應允許被繼承與擴充。
+\item 若設為 \verb|private|，將破壞 STL 一貫的可繼承設計風格。
+\item 若設為 \verb|public|，使用者可能直接修改底層資料，破壞 heap invariant，使 \verb|priority_queue| 的語意完全失效。
+\end{itemize}
+相關實作位於 \verb|include/priority_queue.hpp| line~31--33：
+\begin{lstlisting}[language=C++]
+protected:
+  Container c = Container();
+  Compare comp = Compare();
+\end{lstlisting}
 \ssc{2-A-3-4 friend 使用與原因}
+本專題中的 \verb|friend| 宣告的主要目的為：
+\begin{itemize}
+\item 非成員運算子多載。
+\item iterator proxy 類別間的互通。
+\item 避免破壞 class 封裝性或擴大 public 介面。
+\item 與 C++20 標準或 STL 慣例保持一致。
+\end{itemize}
+擇要列舉如下：
+\begin{itemize}
+\item \verb|include/circulate.hpp| 中之 \verb|_circulate_iterator| 與 \verb|_circulate_const_iterator| 大量使用 \verb|friend| 宣告以實作非成員形式之 iterator 運算子，包括：\verb|operator+|、\verb|operator==|、\verb|operator!=| 與 \verb|operator<=>|。  此設計可確保運算子滿足對稱性（symmetry），並避免將僅供運算子使用的內部狀態暴露為 public 成員。（line~72--82、152--162、171--181）
+\item \verb|include/circulate.hpp| 中之 \verb|_circulate_iterator| 與 \verb|_circulate_const_iterator| 彼此宣告為 \verb|friend|，以支援 mutable 與 const iterator 間的比較與排序關係。  此作法符合 STL iterator 的設計慣例，並避免在介面層提供不必要的 getter 函式，確保型別安全與最小可見性。
+\item \verb|circulate| 容器本身宣告 \verb|friend bool operator==(const circulate \&lhs, const circulate \&rhs)| 以允許直接比較兩個 \verb|circulate| 物件之內部狀態。  由於此等比較運算屬於容器語意的一部分，將其實作為非成員 friend 函式可維持與標準容器一致的使用方式。（line~333）
+\item \verb|include/tuple.hpp| 中，
+\verb|tuple| 類別使用 \verb|friend| 宣告實作
+\verb|operator==| 與 \verb|operator<=>|，用以支援 tuple 間的等價與三向比較。（line~519、537、555、559）  此設計使比較運算可透過 ADL 正確解析，同時避免將內部實作細節（如遞迴結構）暴露。
+\end{itemize}
 \ssc{2-A-3-5 class composition}
-\ssc{2-B-1-1 建構⼦、複製建構⼦、解構⼦}
+\sssc{Resource Acquisition Is Initialization (RAII)}
+RAII is a programming idiom in C++ used to manage resource lifetimes automatically. The key idea is:
+\begin{itemize}
+    \item Resources (e.g., memory, file handles, sockets) are acquired in the constructor of a class.
+    \item Resources are released in the destructor, ensuring deterministic cleanup and exception safety.
+\end{itemize}
+\sssc{專題使用}
+本專題中，多數 class 採用 \textbf{composition（組合）} 方式建立內部關係，其核心目標包括：
+\begin{itemize}
+\item 將資料與功能封裝於物件內部，避免 global state 干擾。
+\item 透過明確的成員關係管理所有權與生命週期。
+\item 與 C++20 標準及 STL 慣例保持一致。
+\end{itemize}
+具體實例請參見 \hyperref[2-A-3-1]{2-A-3-1 public 變數使用與原因}、\hyperref[2-A-3-2]{2-A-3-2 private 變數使用與原因} 及 \hyperref[2-A-3-3]{2-A-3-3 protected 變數使用與原因}，其中許多資料成員均為其他 class 的實例，展現了物件內聚與結構化設計。
+\ssc{2-B-1-1 建構子、複製建構子、解構子}
+\sssc{Rule of Three / Five / Zero}
+\begin{itemize}
+    \item \textbf{Rule of Three:} If a class defines a destructor, copy constructor, or copy assignment operator, it likely needs all three.
+    \item \textbf{Rule of Five:} Extends the Rule of Three by including move constructor and move assignment for C++11 and later.
+    \item \textbf{Rule of Zero:} Prefer using RAII and standard containers to avoid manually managing special member functions.
+\end{itemize}
+These rules are applied consistently in all containers of my STL implementation to ensure correct and safe resource management.
+\sssc{include/vector.hpp}
+\begin{itemize}
+\item \verb|constexpr vector() noexcept(noexcept(Allocator()))| (line~95)：預設建構子，建立空 vector。
+\item \verb|explicit constexpr vector(const Allocator &alloc_) noexcept| (line~97)：使用指定 allocator 初始化 vector。
+\item \verb|explicit vector(std::size_t count, const Allocator &alloc_ = Allocator())| (line~100)：建立指定大小的 vector，元素未初始化。
+\item \verb|constexpr vector(std::size_t count, const T &value, const Allocator &alloc_ = Allocator())| (line~121--122)：建立指定大小的 vector，所有元素初始化為 value。
+\item \verb|constexpr vector(InputIt first, InputIt last, const Allocator &alloc_ = Allocator())| (line~147--148)：由迭代器範圍初始化 vector。
+\item \verb|constexpr vector(const vector &other)| (line~181)：複製建構子，深複製其他 vector。
+\item \verb|constexpr vector(vector &&other) noexcept| (line~205)：移動建構子，將資源從 other 移入本物件。
+\item \verb|constexpr vector(const vector &other, const Allocator &alloc_)| (line~266)：複製建構子並指定 allocator。
+\item \verb|vector(std::initializer_list<T> ilist, const Allocator &alloc_ = Allocator())| (line~288)：初始化列表建構子。
+\item \verb|constexpr ~vector()| (line~309)：解構子，釋放所管理的資源。
+\end{itemize}
+\sssc{include/tuple.hpp}
+\verb|template <std::size_t I> struct _tuple_impl<I>|：
+\begin{itemize}
+\item \verb|constexpr _tuple_impl()| (line~29)：預設建構子，建立空的 \_tuple\_impl。
+\item \verb|constexpr _tuple_impl(const _tuple_impl &) noexcept| (line~30)：複製建構子，複製另一個空 \_tuple\_impl。
+\item \verb|constexpr _tuple_impl(_tuple_impl &&) noexcept| (line~31)：移動建構子，移動另一個空 \_tuple\_impl。
+\item \verb|template <class Alloc> constexpr _tuple_impl(mystd::allocator_arg_t, const Alloc &)| (line~33--34)：allocator 預設建構子。
+\item \verb|template <class Alloc> constexpr _tuple_impl(mystd::allocator_arg_t, const Alloc &, const _tuple_impl &)| (line~36--38)：allocator 複製建構子。
+\item \verb|template <class Alloc> constexpr _tuple_impl(mystd::allocator_arg_t, const Alloc &, _tuple_impl &&)| (line~40--42)：allocator 移動建構子。
+\end{itemize}
+\verb|template <std::size_t I, class Head, class... Tail> struct _tuple_impl<I, Head, Tail...>|：
+\begin{itemize}
+\item (line~62--64)
+\begin{lstlisting}[language=C++]
+  constexpr _tuple_impl()
+    requires(std::is_default_constructible_v<Head> &&
+             (std::is_default_constructible_v<Tail> && ...))
+\end{lstlisting}
+：預設建構子，初始化 head 與 base。
+\item (line~67--71)
+\begin{lstlisting}[language=C++]
+  explicit((!std::is_convertible_v<const Head &, Head> ||
+            (!std::is_convertible_v<const Tail &, Tail> ||
+             ...))) constexpr _tuple_impl(const Head &arg, const Tail &...args)
+    requires std::is_constructible_v<Head, const Head &> &&
+                 (std::is_constructible_v<Tail, const Tail &> && ...)
+\end{lstlisting}
+：逐層複製建構子，逐層 copy 初始化 head 與 base。
+\item (line~74--80)
+\begin{lstlisting}[language=C++]
+  template <class UHead, class... UTail>
+  explicit((!std::is_convertible_v<UHead, Head> ||
+            (!std::is_convertible_v<UTail, Tail> ||
+             ...))) constexpr _tuple_impl(UHead &&arg, UTail &&...args)
+    requires(sizeof...(Tail) == sizeof...(UTail)) &&
+                std::is_constructible_v<Head, UHead> &&
+                (std::is_constructible_v<Tail, UTail> && ...)
+\end{lstlisting}
+：逐層移動建構子，支援 rvalue 初始化，逐層移動初始化 head 與 base。
+\item (line~83--86)
+\begin{lstlisting}[language=C++]
+  template <typename Alloc>
+  constexpr _tuple_impl(mystd::allocator_arg_t, const Alloc &alloc)
+    requires std::is_default_constructible_v<Head> &&
+                 (std::is_default_constructible_v<Tail> && ...)
+\end{lstlisting}
+：allocator 預設建構子。
+\item (line~96--101)
+\begin{lstlisting}[language=C++]
+  template <typename Alloc, class UHead, class... UTail>
+  constexpr _tuple_impl(mystd::allocator_arg_t, const Alloc &alloc, UHead &&arg,
+                        UTail &&...args)
+    requires(sizeof...(Tail) == sizeof...(UTail)) &&
+                std::is_constructible_v<Head, UHead> &&
+                (std::is_constructible_v<Tail, UTail> && ...)
+\end{lstlisting}
+：allocator 逐層移動建構子。
+\item (line~110--112)
+\begin{lstlisting}[language=C++]
+  constexpr _tuple_impl(_tuple_impl &&other)
+    requires(std::is_move_constructible_v<Head> &&
+             std::is_move_constructible_v<base>)
+\end{lstlisting}
+：移動建構子。
+\item (line~116--120)
+\begin{lstlisting}[language=C++]
+  template <class Alloc>
+  constexpr _tuple_impl(mystd::allocator_arg_t, const Alloc &alloc,
+                        const _tuple_impl &other)
+    requires(std::is_copy_constructible_v<Head> &&
+             std::is_copy_constructible_v<base>)
+\end{lstlisting}
+：allocator 複製建構子。
+\item (line~124--128)
+\begin{lstlisting}[language=C++]
+  template <class Alloc>
+  constexpr _tuple_impl(mystd::allocator_arg_t, const Alloc &alloc,
+                        _tuple_impl &&other)
+    requires(std::is_move_constructible_v<Head> &&
+             std::is_move_constructible_v<base>)
+\end{lstlisting}
+：allocator 移動建構子。
+\item (line~133--141)
+\begin{lstlisting}[language=C++]
+  template <class Alloc, class... UTypes>
+  constexpr _tuple_impl(mystd::allocator_arg_t, const Alloc &alloc,
+                        const _tuple_impl<I, UTypes...> &other)
+    requires(sizeof...(Tail) + 1 == sizeof...(UTypes)) &&
+                std::is_constructible_v<Head,
+                                        const typename std::remove_cvref_t<
+                                            _first_type_t<UTypes...>> &> &&
+                std::is_constructible_v<
+                    base, const typename _tuple_impl<I, UTypes...>::base &>
+\end{lstlisting}
+：allocator 逐層複製建構子，支援不同型別。
+\item (line~147--154)
+\begin{lstlisting}[language=C++]
+  template <class Alloc, class... UTypes>
+  constexpr _tuple_impl(mystd::allocator_arg_t, const Alloc &alloc,
+                        _tuple_impl<I, UTypes...> &&other)
+    requires(sizeof...(Tail) + 1 == sizeof...(UTypes)) &&
+                std::is_constructible_v<
+                    Head, std::remove_cvref_t<_first_type_t<UTypes...>>> &&
+                std::is_constructible_v<
+                    base, typename _tuple_impl<I, UTypes...>::base>
+\end{lstlisting}
+：allocator 逐層移動建構子，支援不同型別。
+\end{itemize}
+\verb|template <class... Types> class tuple|：
+\begin{itemize}
+\item (line~260--261)
+\begin{lstlisting}[language=C++]
+  constexpr tuple()
+    requires(std::is_default_constructible_v<Types> && ...)
+\end{lstlisting}
+：預設建構子。
+\item (line~264--267)
+\begin{lstlisting}[language=C++]
+  explicit((!std::is_convertible_v<const Types &, Types> ||
+            ...)) constexpr tuple(const Types &...args)
+    requires(sizeof...(Types) >= 1) &&
+            (std::is_copy_constructible_v<Types> && ...)
+\end{lstlisting}
+：逐層複製建構子。
+\item (line~270--282)
+\begin{lstlisting}[language=C++]
+  template <class... UTypes>
+  explicit((!std::is_convertible_v<UTypes, Types> ||
+            ...)) constexpr tuple(UTypes &&...args)
+    requires(sizeof...(Types) >= 1) &&
+            (sizeof...(Types) == sizeof...(UTypes)) &&
+            (std::is_constructible_v<Types, UTypes> && ...) &&
+            (sizeof...(Types) > 1 ||
+             !mystd::_is_tuple_v<
+                 std::remove_cvref_t<_first_type_t<UTypes...>>>) &&
+            (sizeof...(Types) > 3 ||
+             !std::is_same_v<std::remove_cvref_t<_first_type_t<UTypes...>>,
+                             mystd::allocator_arg_t> ||
+             std::is_same_v<_first_type_t<Types...>, mystd::allocator_arg_t>)
+\end{lstlisting}
+：逐層移動建構子，支援 rvalue 初始化。
+\item (line~285--293)
+\begin{lstlisting}[language=C++]
+  template <class... UTypes>
+  explicit((!std::is_convertible_v<Types, const UTypes &> ||
+            ...)) constexpr tuple(const tuple<UTypes...> &other)
+    requires(sizeof...(Types) == sizeof...(UTypes)) &&
+            (std::is_constructible_v<Types, const UTypes &> && ...) &&
+            (!(sizeof...(Types) == 1 &&
+               ((std::is_convertible_v<UTypes, Types> || ...) ||
+                (std::is_constructible_v<Types, UTypes> || ...) ||
+                (std::is_same_v<Types, UTypes> || ...))))
+\end{lstlisting}
+：複製建構子，支援不同型別。
+\item (line~296--304)
+\begin{lstlisting}[language=C++]
+  template <class... UTypes>
+  explicit((!std::is_convertible_v<Types, UTypes &&> ||
+            ...)) constexpr tuple(tuple<UTypes...> &&other)
+    requires(sizeof...(Types) == sizeof...(UTypes)) &&
+            (std::is_constructible_v<Types, UTypes &&> && ...) &&
+            (!(sizeof...(Types) == 1 &&
+               ((std::is_convertible_v<UTypes, Types> || ...) ||
+                (std::is_constructible_v<Types, UTypes> || ...) ||
+                (std::is_same_v<Types, UTypes> || ...))))
+\end{lstlisting}
+：移動建構子，支援不同型別。
+\item (line~307--319)
+\begin{lstlisting}[language=C++]
+  template <class U1, class U2>
+  explicit(
+      (!std::is_convertible_v<
+           U1, typename _tuple_impl<0, Types...>::template element_type<0>> ||
+       !std::is_convertible_v<
+           U2, typename _tuple_impl<0, Types...>::template element_type<
+                   1>>)) constexpr tuple(const std::pair<U1, U2> &p)
+    requires(sizeof...(Types) == 2) &&
+            std::is_constructible_v<
+                typename _tuple_impl<0, Types...>::template element_type<0>,
+                U1> &&
+            std::is_constructible_v<
+                typename _tuple_impl<0, Types...>::template element_type<1>, U2>
+\end{lstlisting}
+：\verb|std::pair| 複製建構子。
+\item (line~322--335)
+\begin{lstlisting}[language=C++]
+  template <class U1, class U2>
+  explicit((
+      !std::is_convertible_v<
+          U1 &&, typename _tuple_impl<0, Types...>::template element_type<0>> ||
+      !std::is_convertible_v<
+          U2 &&, typename _tuple_impl<0, Types...>::template element_type<
+                     1>>)) constexpr tuple(std::pair<U1, U2> &&p)
+    requires(sizeof...(Types) == 2) &&
+            std::is_constructible_v<
+                typename _tuple_impl<0, Types...>::template element_type<0>,
+                U1 &&> &&
+            std::is_constructible_v<
+                typename _tuple_impl<0, Types...>::template element_type<1>,
+                U2 &&>
+\end{lstlisting}
+：\verb|std::pair| 移動建構子。
+\item \verb|tuple(const tuple &other)| (line~338)：複製建構子。
+\item \verb|tuple(tuple &&other)| (line~340)：移動建構子。
+\item (line~342--344)
+\begin{lstlisting}[language=C++]
+  template <class Alloc>
+  constexpr tuple(mystd::allocator_arg_t, const Alloc &a)
+    requires(std::is_default_constructible_v<Types> && ...)
+\end{lstlisting}
+：allocator 預設建構子。
+\item (line~355--363)
+\begin{lstlisting}[language=C++]
+  template <class Alloc, class... UTypes>
+  explicit((!std::is_convertible_v<UTypes, Types> ||
+            ...)) constexpr tuple(mystd::allocator_arg_t, const Alloc &a,
+                                  UTypes &&...args)
+    requires(sizeof...(Types) >= 1) &&
+            (sizeof...(Types) == sizeof...(UTypes)) &&
+            (std::is_constructible_v<Types, UTypes> && ...) &&
+            (sizeof...(Types) > 1 ||
+             !mystd::_is_tuple_v<std::remove_cvref_t<_first_type_t<UTypes...>>>)
+\end{lstlisting}
+：allocator 逐層移動建構子。
+\item (line~366--375)
+\begin{lstlisting}[language=C++]
+  template <class Alloc, class... UTypes>
+  explicit((!std::is_convertible_v<Types, const UTypes &> ||
+            ...)) constexpr tuple(mystd::allocator_arg_t, const Alloc &a,
+                                  const tuple<UTypes...> &other)
+    requires(sizeof...(Types) == sizeof...(UTypes)) &&
+            (std::is_constructible_v<Types, const UTypes &> && ...) &&
+            (!(sizeof...(Types) == 1 &&
+               ((std::is_convertible_v<UTypes, Types> || ...) ||
+                (std::is_constructible_v<Types, UTypes> || ...) ||
+                (std::is_same_v<Types, UTypes> || ...))))
+\end{lstlisting}
+：allocator 複製建構子。
+\item (line~378--387)
+\begin{lstlisting}[language=C++]
+  template <class Alloc, class... UTypes>
+  explicit((!std::is_convertible_v<Types, UTypes &&> ||
+            ...)) constexpr tuple(mystd::allocator_arg_t, const Alloc &a,
+                                  tuple<UTypes...> &&other)
+    requires(sizeof...(Types) == sizeof...(UTypes)) &&
+            (std::is_constructible_v<Types, UTypes &&> && ...) &&
+            (!(sizeof...(Types) == 1 &&
+               ((std::is_convertible_v<UTypes, Types> || ...) ||
+                (std::is_constructible_v<Types, UTypes> || ...) ||
+                (std::is_same_v<Types, UTypes> || ...))))
+\end{lstlisting}
+：allocator 移動建構子。
+\item (line~390--403)
+\begin{lstlisting}[language=C++]
+  template <class Alloc, class U1, class U2>
+  explicit(
+      (!std::is_convertible_v<
+           U1, typename _tuple_impl<0, Types...>::template element_type<0>> ||
+       !std::is_convertible_v<
+           U2, typename _tuple_impl<0, Types...>::template element_type<
+                   1>>)) constexpr tuple(mystd::allocator_arg_t, const Alloc &a,
+                                         const std::pair<U1, U2> &p)
+    requires(sizeof...(Types) == 2) &&
+            std::is_constructible_v<
+                typename _tuple_impl<0, Types...>::template element_type<0>,
+                U1> &&
+            std::is_constructible_v<
+                typename _tuple_impl<0, Types...>::template element_type<1>, U2>
+\end{lstlisting}
+：allocator \verb|std::pair| 複製建構子。
+\item (line~406--421)
+\begin{lstlisting}[language=C++]
+  template <class Alloc, class U1, class U2>
+  explicit((
+      !std::is_convertible_v<
+          U1 &&, typename _tuple_impl<0, Types...>::template element_type<0>> ||
+      !std::is_convertible_v<
+          U2 &&, typename _tuple_impl<0, Types...>::template element_type<
+                     1>>)) constexpr tuple(mystd::allocator_arg_t,
+                                           const Alloc &a,
+                                           std::pair<U1, U2> &&p)
+    requires(sizeof...(Types) == 2) &&
+            std::is_constructible_v<
+                typename _tuple_impl<0, Types...>::template element_type<0>,
+                U1 &&> &&
+            std::is_constructible_v<
+                typename _tuple_impl<0, Types...>::template element_type<1>,
+                U2 &&>
+\end{lstlisting}
+：allocator \verb|std::pair| 移動建構子。
+\item (line~425--426)
+\begin{lstlisting}[language=C++]
+  template <class Alloc>
+  tuple(mystd::allocator_arg_t, const Alloc &a, const tuple &other)
+\end{lstlisting}
+：allocator 複製建構子。
+\item (line~429--430)
+\begin{lstlisting}[language=C++]
+  template <class Alloc>
+  tuple(mystd::allocator_arg_t, const Alloc &a, tuple &&other)
+\end{lstlisting}
+：allocator 移動建構子。
+\end{itemize}
+\verb|template <> class tuple<>|：
+\begin{itemize}
+\item \verb|constexpr tuple() noexcept = default;| (line~545)：編譯器生成預設建構子。
+\item \verb|constexpr tuple(const tuple &) noexcept = default;| (line~547)：編譯器生成複製建構子。
+\item \verb|constexpr tuple(tuple &&) noexcept = default;| (line~548)：編譯器生成移動建構子。
+\end{itemize}
+\sssc{include/priority_queue.hpp}
+\begin{itemize}
+\item \verb|priority_queue() : priority_queue(Compare(), Container()) {}| (line~36)：預設建構子。
+\item \verb|explicit priority_queue(const Compare &compare)| (line~38)：指定比較函式。
+\item \verb|priority_queue(const Compare &compare, const Container &cont)| (line~41)：指定比較函式與底層容器。
+\item \verb|priority_queue(const Compare &compare, Container &&cont)| (line~46)：移動底層容器建構子。
+\item \verb|priority_queue(const priority_queue &other)| (line~51)：複製建構子。
+\item \verb|priority_queue(priority_queue &&other) noexcept| (line~53)：移動建構子。
+\item \verb|constexpr ~priority_queue() = default;| (line~159)：編譯器生成解構子。
+\end{itemize}
+\sssc{include/circulate.hpp}
+\begin{itemize}
+\item \verb|circulate() = default;| (line~227)：預設建構子。
+\item \verb|explicit circulate(Container cont, size_type start_ = 0)| (line~229)：帶初始容器建構子。
+\item \verb|circulate(const circulate &other)| (line~237)：複製建構子。
+\item \verb|circulate(circulate &&other) noexcept| (line~239)：移動建構子。
+\end{itemize}
+\sssc{Game.hpp}
+\verb|Game(std::size_t lanes_, std::size_t fragments_, uint32_t mpf, mystd::vector<KeyNoteData> &keynotes)| (line~67--70)：初始化遊戲主要參數與 notes 參考。
+\sssc{Renderer.hpp}
+\verb|Renderer(Game &game_, int screenW_, int screenH_, SDL_Renderer *renderer, TTF_Font *large_font_, TTF_Font *medium_font_, TTF_Font *small_font_)| (line~501--505)：初始化渲染器與字型指標等。
 \ssc{2-B-1-2 指標成員處理}
 \ssc{2-B-1-3 建構⼦、複製建構⼦、解構⼦特殊語法}
 \ssc{2-B-3-1-1 組裝關係}

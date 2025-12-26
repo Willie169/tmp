@@ -10,48 +10,10 @@
 \titletocdoc
 \sct{第一部分：專題整體}
 \sct{第二部分：個人程式設計說明}
-\ssc{我撰寫的部分}
-以下檔案為完全由我撰寫的符合 C++20 標準的 STL 函式庫，在 namespace mystd 之下：
-\bit
-\item \verb|include/algorithm-copy.hpp|
-\item \verb|include/array.hpp|
-\item \verb|include/range-access.hpp|
-\item \verb|include/algorithm-find.hpp|
-\item \verb|include/swap.hpp|
-\item \verb|include/algorithm-heap.hpp|
-\item \verb|include/ignore.hpp|
-\item \verb|include/tuple.hpp|
-\item \verb|include/algorithm-remove.hpp|
-\item \verb|include/priority_queue.hpp|
-\item \verb|include/tuple-using.hpp|
-\item \verb|include/allocator.hpp|
-\item \verb|include/vector.hpp|
-\eit
-非依照 STL 函式庫的自製資料結構與演算法：
-\bit
-\item \verb|include/qsort.hpp|
-\item \verb|include/circulate.hpp|
-\eit
-遊戲鍵盤音符判定與渲染、模組註冊系統、康威生命棋完全由我撰寫，分散在以下檔案：
-\bit
-\item \verb|Mods.hpp|
-\item \verb|mods/GameOfLife.hpp|
-\item \verb|Game.hpp|
-\item \verb|Renderer.hpp|
-\item \verb|generate-notes.hpp|
-\item \verb|KeyNoteData.hpp|
-\item \verb|RhythmQuest.cpp|
-\eit
+
 \ssc{報告架構}
 在本章節中，我首先進行總論。此部分涵蓋要求的 A、B、C、D 四項題目，並進一步細分，闡述我在實作中所運用的 C++ 功能、概念、慣例以及最佳實踐。隨後，我將以模組或檔案群組為單位，依照課程要求，針對 A、B、C、D 四項題目（如適用）逐一進行說明。
 \ssc{總論}
-\sssc{Resource Acquisition Is Initialization (RAII)}
-RAII is a programming idiom in C++ used to manage resource lifetimes automatically. The key idea is:
-\begin{itemize}
-    \item Resources (e.g., memory, file handles, sockets) are acquired in the constructor of a class.
-    \item Resources are released in the destructor, ensuring deterministic cleanup and exception safety.
-\end{itemize}
-RAII is applied throughout my STL implementation in all classes and structures to manage resources safely and efficiently.
 \sssc{Substitution Failure Is Not An Error (SFINAE)}
 SFINAE is a compile-time technique in template programming. If substituting template parameters results in an invalid type or expression, the compiler silently ignores that overload instead of producing an error. This mechanism enables selective template instantiation and overload resolution.
 \sssc{Concepts}
@@ -62,13 +24,6 @@ C++20 introduces \textbf{concepts}, which allow explicit constraints on template
     \item Improved code readability and maintainability.
 \end{itemize}
 In my STL implementation, concepts are heavily used to determine the appropriate overload or \texttt{if constexpr} branch. This technique enables optimizations for trivially copyable types, contiguous iterators, allocator traits-based optimization, etc.
-\sssc{Rule of Three / Five / Zero}
-\begin{itemize}
-    \item \textbf{Rule of Three:} If a class defines a destructor, copy constructor, or copy assignment operator, it likely needs all three.
-    \item \textbf{Rule of Five:} Extends the Rule of Three by including move constructor and move assignment for C++11 and later.
-    \item \textbf{Rule of Zero:} Prefer using RAII and standard containers to avoid manually managing special member functions.
-\end{itemize}
-These rules are applied consistently in all containers of my STL implementation to ensure correct and safe resource management.
 \sssc{Class Template Argument Deduction (CTAD)}
 C++17 introduced \textbf{Class Template Argument Deduction (CTAD)}, allowing the compiler to deduce template parameters from constructor arguments. STL containers provide \textbf{deduction guides} to assist this process, which are also implemented in my library to improve usability.
 \sssc{Exception Safety Guarantees}
