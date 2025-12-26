@@ -1,9 +1,6 @@
-% openout_any=a lualatex --shell-escape report.tex
-
 \documentclass[a4paper,12pt]{article}
 \setcounter{secnumdepth}{5}
 \setcounter{tocdepth}{3}
-\usepackage{plantuml}
 \input{/usr/share/LaTeX-ToolKit/template.tex}
 \renewcommand{\arraystretch}{1.5}
 \begin{document}
@@ -14,8 +11,456 @@
 \sct{專題整體}
 \ssc{1-1-1 專題整體介紹與說明⽂案}
 \ssc{1-1-2 功能設計}
+
 \ssc{1-1-3 美⼯介⾯設計}
+美工介面分工如下：
+\begin{itemize}
+\item 遊戲主選單、音量調整滑桿、選歌頁面、遊戲背景、Mouse notes 與角色動畫由于昀辰設計。
+\item Tap notes、Hold notes、遊戲中的計分與資訊文字、各類特效、設定頁面、康威生命遊戲模組頁面，以及倒數動畫由沈威宇設計。
+\item 結算頁面由林孜謙設計。
+\end{itemize}
+
+以下說明我所設計部分的細節：
+\begin{itemize}
+\item \textbf{Tap notes}：使用 \href{https://gallery.yopriceville.com/Free-Clipart-Pictures/Ribbons-and-Banners-PNG/Decorative_Banner_Transparent_PNG_Picture}{網路圖片}。
+\item \textbf{Hold notes}：使用 \href{https://www.pngall.com/rectangle-frame-png/download/176562/}{網路圖片}。
+\item \textbf{Hold notes 長按變色}：此效果由我設計，程式碼節錄自 \verb|Renderer.hpp| 第 405~406 行：
+\begin{lstlisting}[language=C++]
+float pulse = 0.7f + 0.3f * sin((float)holdPressedTime / 100.0f);
+color = {0, static_cast<Uint8>(150 * pulse), 0, 255};
+\end{lstlisting}
+\item \textbf{遊戲中的計分與資訊文字}：由我設計。
+\item \textbf{各 lane 特效}：基於 \href{https://anubis.techaro.lol/}{Anubis} 吉祥物。
+\item \textbf{中央特效}：基於 \href{https://www.gnu.org/}{GNU} 與 \href{https://gcc.gnu.org/}{GCC} 吉祥物。
+\item \textbf{設定頁面}：由我設計，程式碼節錄自 \verb|BeatRunner.cpp| 第 634~775 行：
+\begin{lstlisting}[language=C++]
+void showSettings(SDL_Renderer *renderer, SDL_Window *window) {
+  bool running = true;
+  SDL_Event e;
+
+  SDL_Color white = {255, 255, 255, 255};
+  SDL_Color grey = {100, 100, 100, 255};
+  SDL_Color blue = {0, 128, 255, 255};
+
+  SDL_Rect lanesMinus = {310, 80, 40, 40};
+  SDL_Rect lanesPlus = {410, 80, 40, 40};
+  SDL_Rect fragmentsMinus = {310, 140, 40, 40};
+  SDL_Rect fragmentsPlus = {410, 140, 40, 40};
+  SDL_Rect modDropdown = {310, 200, 850, 40};
+  SDL_Rect okButton = {SCREEN_WIDTH / 2 - 50, 280, 100, 50};
+
+  std::vector<std::string> modKeys;
+  for (auto &p : getModMap())
+    modKeys.push_back(p.first);
+  int selectedModIndex = 0;
+
+  bool dropdownOpen = false;
+
+  while (running) {
+    while (SDL_PollEvent(&e)) {
+      if (e.type == SDL_QUIT ||
+          (e.type == SDL_KEYDOWN && !e.key.repeat &&
+           (e.key.keysym.mod & KMOD_CTRL) && e.key.keysym.sym == SDLK_w)) {
+        destroyMainMenuTextures();
+        delete chartParser;
+        delete musicManager;
+        SDL_DestroyRenderer(renderer);
+        SDL_DestroyWindow(window);
+        TTF_CloseFont(large_font);
+        TTF_CloseFont(medium_font);
+        TTF_CloseFont(small_font);
+        TTF_Quit();
+        IMG_Quit();
+        SDL_Quit();
+        exit(0);
+      }
+
+      if (e.type == SDL_MOUSEBUTTONDOWN && e.button.button == SDL_BUTTON_LEFT) {
+        int mx = e.button.x, my = e.button.y;
+        if (pointInRect(mx, my, lanesMinus)) {
+          if (LANES > 1)
+            --LANES;
+        } else if (pointInRect(mx, my, lanesPlus)) {
+          if (LANES < 9)
+            ++LANES;
+        } else if (pointInRect(mx, my, fragmentsMinus)) {
+          if (FRAGMENTS > 2)
+            --FRAGMENTS;
+        } else if (pointInRect(mx, my, fragmentsPlus)) {
+          if (FRAGMENTS < 100)
+            ++FRAGMENTS;
+        } else if (pointInRect(mx, my, modDropdown)) {
+          dropdownOpen = !dropdownOpen;
+        } else if (pointInRect(mx, my, okButton)) {
+          running = false;
+        }
+
+        if (dropdownOpen) {
+          for (int i = 0; i < (int)modKeys.size(); ++i) {
+            SDL_Rect itemRect = {modDropdown.x, modDropdown.y + 40 * (i + 1),
+                                 modDropdown.w, 40};
+            if (pointInRect(mx, my, itemRect)) {
+              selectedModIndex = i;
+              MOD = modKeys[i];
+              dropdownOpen = false;
+            }
+          }
+        }
+      }
+    }
+
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    SDL_RenderClear(renderer);
+
+    renderRoundedRect(renderer, lanesMinus, 10, blue);
+    renderRoundedRect(renderer, lanesPlus, 10, blue);
+    renderRoundedRect(renderer, fragmentsMinus, 10, blue);
+    renderRoundedRect(renderer, fragmentsPlus, 10, blue);
+    renderRoundedRect(renderer, modDropdown, 10, grey);
+    renderRoundedRect(renderer, okButton, 15, blue);
+
+    renderText(renderer, medium_font, "LANES:", 50, 100, white, ALIGN_LEFT);
+    renderText(renderer, medium_font, "FRAGMENTS:", 50, 160, white, ALIGN_LEFT);
+    renderText(renderer, medium_font, "MOD:", 50, 220, white, ALIGN_LEFT);
+
+    renderText(renderer, medium_font, std::to_string(LANES), 380, 105, white);
+    renderText(renderer, medium_font, std::to_string(FRAGMENTS), 380, 165,
+               white);
+    renderText(renderer, small_font, MOD, 330, 220, white, ALIGN_LEFT);
+
+    renderText(renderer, medium_font, "-", lanesMinus.x + 20, lanesMinus.y + 20,
+               white);
+    renderText(renderer, medium_font, "+", lanesPlus.x + 20, lanesPlus.y + 20,
+               white);
+    renderText(renderer, medium_font, "-", fragmentsMinus.x + 20,
+               fragmentsMinus.y + 20, white);
+    renderText(renderer, medium_font, "+", fragmentsPlus.x + 20,
+               fragmentsPlus.y + 20, white);
+    renderText(renderer, medium_font, "OK", okButton.x + 49, okButton.y + 27,
+               white);
+
+    if (dropdownOpen) {
+      for (int i = 0; i < (int)modKeys.size(); ++i) {
+        SDL_Rect itemRect = {modDropdown.x, modDropdown.y + 40 * (i + 1),
+                             modDropdown.w, 40};
+        renderText(renderer, small_font, modKeys[i], itemRect.x + 10,
+                   itemRect.y, white, ALIGN_LEFT);
+      }
+    }
+
+    SDL_RenderPresent(renderer);
+  }
+
+  if (chartParser->load(selectedChartPath)) {
+    // std::cout << "[OK] Chart loaded successfully: " << selectedChartPath <<
+    // std::endl;
+    mouseNotesPtr = &chartParser->getMouseNotes();
+    musicManager->loadMusic(chartParser->getMusicFile());
+  } else {
+    std::cerr << "[ERROR] Failed to load chart" << std::endl;
+  }
+
+  exactFragmentMs = 60000.0f / (double)chartParser->getBPM() /
+                    (double)chartParser->getFragmentsPerBeat();
+  MS_PER_FRAGMENT = (uint32_t)exactFragmentMs;
+  if (game)
+    delete game;
+  game = new Game(LANES, FRAGMENTS, MS_PER_FRAGMENT, keyNotes);
+  if (gameRenderer)
+    delete gameRenderer;
+  gameRenderer = new Renderer(*game, SCREEN_WIDTH, SCREEN_HEIGHT, renderer,
+                              large_font, medium_font, small_font);
+
+  SettingsFunc modSettingsFuncLocal = mystd::get<2>(getModMap()[MOD]);
+  if (modSettingsFuncLocal) {
+    modSettingsFuncLocal(renderer, small_font, SCREEN_WIDTH, SCREEN_HEIGHT);
+  }
+}
+\end{lstlisting}
+\item \textbf{康威生命遊戲模組設定頁面}：由我設計，程式碼節錄自 \verb|BeatRunner.cpp| 第 103~253 行：
+\begin{lstlisting}[language=C++]
+void gameOfLifeSettings(SDL_Renderer *renderer, TTF_Font *font, int screenWidth,
+                        int screenHeight) {
+  mystd::array<uint16_t, 2> tempRules = currentRules;
+
+  const int buttonSize = 40;
+  const int buttonSpacing = 5;
+  const int rowSpacing = 60;
+
+  int totalWidth = 9 * buttonSize + 8 * buttonSpacing;
+  int startX = (screenWidth - totalWidth) / 2;
+  int row1Y = screenHeight / 2 - rowSpacing;
+  int row2Y = screenHeight / 2 + rowSpacing;
+
+  const int okButtonWidth = 100;
+  const int okButtonHeight = 50;
+  int okButtonX = (screenWidth - okButtonWidth) / 2;
+  int okButtonY = row2Y + rowSpacing * 2;
+
+  bool settingsRunning = true;
+  bool redrawNeeded = true;
+
+  while (settingsRunning) {
+    SDL_Event event;
+    while (SDL_PollEvent(&event)) {
+      if (event.type == SDL_QUIT) {
+        settingsRunning = false;
+        break;
+      } else if (event.type == SDL_KEYDOWN) {
+        if (event.key.keysym.sym == SDLK_RETURN ||
+            event.key.keysym.sym == SDLK_ESCAPE) {
+          currentRules = tempRules;
+          settingsRunning = false;
+        }
+      } else if (event.type == SDL_MOUSEBUTTONDOWN) {
+        if (event.button.button == SDL_BUTTON_LEFT) {
+          int mouseX = event.button.x;
+          int mouseY = event.button.y;
+
+          for (int i = 0; i < 9; ++i) {
+            int buttonX = startX + i * (buttonSize + buttonSpacing);
+            SDL_Rect buttonRect = {buttonX, row1Y, buttonSize, buttonSize};
+
+            if (mouseX >= buttonRect.x &&
+                mouseX <= buttonRect.x + buttonRect.w &&
+                mouseY >= buttonRect.y &&
+                mouseY <= buttonRect.y + buttonRect.h) {
+              tempRules[0] ^= (1 << i);
+              redrawNeeded = true;
+            }
+          }
+
+          for (int i = 0; i < 9; ++i) {
+            int buttonX = startX + i * (buttonSize + buttonSpacing);
+            SDL_Rect buttonRect = {buttonX, row2Y, buttonSize, buttonSize};
+
+            if (mouseX >= buttonRect.x &&
+                mouseX <= buttonRect.x + buttonRect.w &&
+                mouseY >= buttonRect.y &&
+                mouseY <= buttonRect.y + buttonRect.h) {
+              tempRules[1] ^= (1 << i);
+              redrawNeeded = true;
+            }
+          }
+
+          SDL_Rect okRect = {okButtonX, okButtonY, okButtonWidth,
+                             okButtonHeight};
+          if (mouseX >= okRect.x && mouseX <= okRect.x + okRect.w &&
+              mouseY >= okRect.y && mouseY <= okRect.y + okRect.h) {
+            currentRules = tempRules;
+            settingsRunning = false;
+          }
+        }
+      }
+    }
+
+    if (redrawNeeded) {
+      SDL_SetRenderDrawColor(renderer, 30, 30, 40, 255);
+      SDL_RenderClear(renderer);
+
+      for (int i = 0; i < 9; ++i) {
+        int buttonX = startX + i * (buttonSize + buttonSpacing);
+        SDL_Rect buttonRect = {buttonX, row1Y, buttonSize, buttonSize};
+
+        bool enabled = (tempRules[0] >> i) & 0b1;
+
+        if (enabled) {
+          SDL_SetRenderDrawColor(renderer, 100, 200, 100, 255);
+        } else {
+          SDL_SetRenderDrawColor(renderer, 200, 100, 100, 255);
+        }
+        SDL_RenderFillRect(renderer, &buttonRect);
+
+        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+        SDL_RenderDrawRect(renderer, &buttonRect);
+
+        SDL_Color numColor = {255, 255, 255, 255};
+        renderText(renderer, std::to_string(i), buttonX + buttonSize / 2,
+                   row1Y + buttonSize / 2, font, numColor, ALIGN_CENTER);
+      }
+
+      for (int i = 0; i < 9; ++i) {
+        int buttonX = startX + i * (buttonSize + buttonSpacing);
+        SDL_Rect buttonRect = {buttonX, row2Y, buttonSize, buttonSize};
+
+        bool enabled = (tempRules[1] >> i) & 0b1;
+
+        if (enabled) {
+          SDL_SetRenderDrawColor(renderer, 100, 200, 100, 255);
+        } else {
+          SDL_SetRenderDrawColor(renderer, 200, 100, 100, 255);
+        }
+        SDL_RenderFillRect(renderer, &buttonRect);
+
+        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+        SDL_RenderDrawRect(renderer, &buttonRect);
+        SDL_Color numColor = {255, 255, 255, 255};
+        renderText(renderer, std::to_string(i), buttonX + buttonSize / 2,
+                   row2Y + buttonSize / 2, font, numColor, ALIGN_CENTER);
+      }
+
+      SDL_Rect okRect = {okButtonX, okButtonY, okButtonWidth, okButtonHeight};
+      SDL_SetRenderDrawColor(renderer, 100, 150, 255, 255);
+      SDL_RenderFillRect(renderer, &okRect);
+      SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+      SDL_RenderDrawRect(renderer, &okRect);
+
+      SDL_Color textColor = {255, 255, 255, 255};
+      std::string surviveText = "Survive with neighbors:";
+      std::string reviveText = "Revive with neighbors:";
+
+      int surviveTextX = screenWidth / 2;
+      int surviveTextY = row1Y - 40;
+      renderText(renderer, surviveText, surviveTextX, surviveTextY, font,
+                 textColor, ALIGN_CENTER);
+
+      int reviveTextX = screenWidth / 2;
+      int reviveTextY = row2Y - 40;
+      renderText(renderer, reviveText, reviveTextX, reviveTextY, font,
+                 textColor, ALIGN_CENTER);
+
+      std::string okText = "OK";
+      int okTextX = okButtonX + okButtonWidth / 2;
+      int okTextY = okButtonY + okButtonHeight / 2;
+      renderText(renderer, okText, okTextX, okTextY, font, textColor,
+                 ALIGN_CENTER);
+
+      SDL_RenderPresent(renderer);
+      redrawNeeded = false;
+    }
+  }
+}
+\end{lstlisting}
+\item \textbf{倒數動畫}：GO 頁面的圖片使用 \href{https://go.dev/}{The Go Programming Language} 吉祥物，其餘部分由我設計。
+\end{itemize}
+
 \ssc{1-2-1 程式架構}
+\label{1-2-1}
+
+以下 UML 圖由沈威宇利用 clang-uml 與 PlantUML 輔助完成，每個 class 標註作者。首張圖為 SVG 格式，可放大檢視整體結構；其後共 14 張圖為分割後的 UML 圖，每張圖對應總圖的部分區塊，橫向分為 8 區，縱向分為 2 區，排列順序依左至右、上至下，如：左一上、左一下、左二上、左二下，以此類推。
+
+\begin{center}
+\begin{figure}[H]
+\centering
+\includesvg[width=\textwidth,angle=90]{diagrams/example_class_diagram.svg}
+\caption{完整程式架構 UML 圖（SVG，可放大檢視）}
+\label{fig:svg}
+\end{figure}
+\FloatBarrier
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{diagrams/page_w0_h0.png}
+\label{fig:w0h0}
+\end{figure}
+\FloatBarrier
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{diagrams/page_w0_h1.png}
+\label{fig:w0h1}
+\end{figure}
+\FloatBarrier
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{diagrams/page_w1_h0.png}
+\label{fig:w1h0}
+\end{figure}
+\FloatBarrier
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{diagrams/page_w1_h1.png}
+\label{fig:w1h1}
+\end{figure}
+\FloatBarrier
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{diagrams/page_w2_h0.png}
+\label{fig:w2h0}
+\end{figure}
+\FloatBarrier
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{diagrams/page_w2_h1.png}
+\label{fig:w2h1}
+\end{figure}
+\FloatBarrier
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{diagrams/page_w3_h0.png}
+\label{fig:w3h0}
+\end{figure}
+\FloatBarrier
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{diagrams/page_w3_h1.png}
+\label{fig:w3h1}
+\end{figure}
+\FloatBarrier
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{diagrams/page_w4_h0.png}
+\label{fig:w4h0}
+\end{figure}
+\FloatBarrier
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{diagrams/page_w4_h1.png}
+\label{fig:w4h1}
+\end{figure}
+\FloatBarrier
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{diagrams/page_w5_h0.png}
+\label{fig:w5h0}
+\end{figure}
+\FloatBarrier
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{diagrams/page_w5_h1.png}
+\label{fig:w5h1}
+\end{figure}
+\FloatBarrier
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{diagrams/page_w6_h0.png}
+\label{fig:w6h0}
+\end{figure}
+\FloatBarrier
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{diagrams/page_w6_h1.png}
+\label{fig:w6h1}
+\end{figure}
+\FloatBarrier
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{diagrams/page_w7_h0.png}
+\label{fig:w7h0}
+\end{figure}
+\FloatBarrier
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{diagrams/page_w7_h1.png}
+\label{fig:w7h1}
+\end{figure}
+\FloatBarrier
+\end{center}
+
 \ssc{1-3-1 ⼼得與建議}
 \sct{個人程式設計說明}
 \ssc{2-A-1-1 描述 class 之間的關係}
@@ -35,79 +480,7 @@
 \item \verb|template <std::size_t I, class Head, class... Tail> struct tuple_element<I, mystd::tuple<Head, Tail...>>| inherits from \verb|tuple_element<I - 1, mystd::tuple<Tail...>>|, forming a recursive inheritance structure to map indices to element types. (line~748)
 \end{itemize}
 \ssc{2-A-1-2 畫出 class 之間的關係圖}
-\sssc{include/tuple.hpp}
-Each specialization corresponds to one logical tuple element, where the template parameter \verb|I| denotes the zero-based index of the current element. The inheritance chain terminates at a base specialization with an empty parameter pack. This design decomposes the tuple into a linear sequence of base classes, enabling element access, type computation, and index-based operations to be resolved entirely at compile time without runtime overhead.
-
-Inheritance is used deliberately as a compile-time recursion mechanism. Each instantiation step corresponds to a UML generalization, while the recursion unfolds as a deterministic compile-time sequence. UML sequence diagrams are therefore appropriate to visualize template instantiation order.
-\begin{plantuml}
-@startuml
-
-' Base empty _tuple_impl
-class "_tuple_impl<I>" as TupleImplEmpty {
-  +template <std::size_t J> element_type = void
-  +_tuple_impl()
-  +swap(other)
-}
-
-' Recursive _tuple_impl
-class "_tuple_impl<I, Head, Tail...>" as TupleImpl {
-  +Head head
-  +template <std::size_t J> get()
-  +swap(other)
-}
-
-' tuple class
-class "tuple<Types...>" as Tuple {
-  +_tuple_impl<0, Types...> _impl
-  +get<I>()
-  +swap(other)
-}
-
-' Type traits and helpers (optional)
-class "_is_tuple<T>" as IsTuple {
-  +inherits std::false_type
-}
-class "_is_tuple<mystd::tuple<Ts...>>" as IsTupleSpecialized {
-  +inherits std::true_type
-}
-
-class "_count_of_type<T, Types...>" as CountType
-class "_index_of_type<T, Types...>" as IndexType
-
-' Inheritance / composition
-TupleImpl <|-- TupleImplEmpty
-TupleImplEmpty <|-- TupleImpl
-TupleImpl --> Tuple : composition
-Tuple --> IsTupleSpecialized : uses
-IsTupleSpecialized <|-- IsTuple
-
-@enduml
-\end{plantuml}
-\begin{plantuml}
-@startuml
-actor Compiler
-
-participant "_index_of_type<int, char, double, int, float>" as L0
-participant "_index_of_type<int, double, int, float>" as L1
-participant "_index_of_type<int, int, float>" as L2
-
-Compiler -> L0 : instantiate
-L0 -> L1 : recurse (Head ≠ T)
-L1 -> L2 : recurse (Head == T)
-
-L2 --> L1 : value = 0
-L1 --> L0 : value = 1
-L0 --> Compiler : value = 2
-
-note over Compiler,L2
-  Each arrow represents
-  a template instantiation
-  during compilation
-end note
-
-@enduml
-\end{plantuml}
-
+見 \hyperref[1-2-1]{1-2-1 程式架構—— UML 圖} 中「By 沈威宇」的 classes。
 \ssc{2-A-3-1 public 變數使用與原因}
 \ssc{2-A-3-2 private 變數使用與原因}
 \ssc{2-A-3-4 friend 使用與原因}
