@@ -7,17 +7,18 @@
 \setcounter{SectionLanguage}{1}
 \input{/usr/share/LaTeX-ToolKit/template.tex}
 \renewcommand{\arraystretch}{1.5}
+\definecolor{mygreen}{RGB}{0,100,42}
+\begin{document}
+\title{計算機程式期末報告}
+\author{沈威宇}
+\date{\temtoday}
+\titletocdoc
 \hypersetup{
   colorlinks=true,
   linkcolor=blue,
   urlcolor=blue,
   citecolor=blue
 }
-\begin{document}
-\title{計算機程式期末報告}
-\author{沈威宇}
-\date{\temtoday}
-\titletocdoc
 \sct{專題整體}
 \ssc{1-1-1 專題整體介紹與說明⽂案與 1-1-2 功能設計}
 《Beat Runner》是一款結合下落式音樂遊戲與滑鼠角色控制的創新遊戲。開始介面的部分有三個按鍵 — Settings 按鍵可以調整遊戲的音量大小、Songs 按鍵可以選擇遊玩的歌曲，其中包括適合新手的 Thefatrat 的 Unity，在遊戲中顯示為《Tmp》，以及難度較高的 Sakuzyo 的《Destr0yer》，而按下 Start 則會開始遊戲。
@@ -401,7 +402,7 @@ std::unordered_map<mystd::tuple<int8_t, bool, uint32_t>, SDL_Texture *, NotesCac
 作為 key notes 的紋理快取容器，並透過自訂雜湊結構 \verb|NotesCacheHash| 提供雜湊函式；其餘 \verb|std::unordered_map| 則用於快取其他類型之 \verb|SDL_Texture*|。（\verb|Renderer.hpp| line~55--59)
 \end{itemize}
 \ssc{2-A-1-2 畫出 class 之間的關係圖}
-Class Diagram 均由沈威宇使用 clang-uml 自原始 C++ 程式碼中自動萃取類別結構資訊，再依實際設計意圖進行人工補註與整理，最後透過 PlantUML 生成。因圖片較大，請見 \href{https://github.com/NTUEE-CPL-SDL2/report}{\url{https://github.com/NTUEE-CPL-SDL2/report}}（超連結）。
+Class Diagram 均由沈威宇使用 clang-uml 自原始 C++ 程式碼中自動萃取類別結構資訊，再依實際設計意圖進行人工補註與整理，最後透過 PlantUML 生成。因圖片較大，請見 \href{https://github.com/NTUEE-CPL-SDL2/report}{\textcolor{mygreen}{\textbf{\url{https://github.com/NTUEE-CPL-SDL2/report}}}}（超連結）。
 \ssc{2-A-3-1 public 變數使用與原因}
 \label{2-A-3-1}
 \begin{itemize}
@@ -1876,7 +1877,7 @@ if constexpr (!std::is_trivially_destructible_v<T>) allocator_traits<Allocator>:
 \begin{itemize}
 \item 高效複製元素：
 \begin{lstlisting}[language=C++]
-if constexpr (std::is_trivially_copyable_v<T>) { 
+if constexpr (std::is_trivially_copyable_v<T>) {
   if (std::contiguous_iterator<InputIt>)
     std::memmove(elems, &*first, count * sizeof(T));
   else mystd::copy(first, last, elems);
@@ -2287,15 +2288,71 @@ template <class T> class game_priority_queue : public mystd::priority_queue<T>
 請參見 \hyperref[2-B-1-2]{\textbf{2-B-1-2 指標成員處理}} 中之各 \textbf{描述}。
 \ssc{2-B-3-3 功能巧思}
 程式執⾏效率相關請參見 \hyperref[2-D-1-2]{\textbf{2-D-1-2 程式執⾏效率優化}}；指標相關請參見 \hyperref[2-B-1-2]{\textbf{2-B-1-2 指標成員處理}} 中之各 \textbf{描述}；依照 STL C++20 標準實作的部分及其優化與巧思請參見本報告各章節與程式碼檔案，如 \hyperref[2-B-1-2]{\textbf{2-B-1-2 指標成員處理}} 中之各 \textbf{描述} 與 \hyperref[2-C-1-2]{\textbf{2-C-1-2 Operator Overloading 語法與使用方式描述與範例}} 中之各 \textbf{描述}；以下擇要描述我實作的其他部分之功能巧思。
+\sssc{circulate 容器儲存 lanes}
+在 \verb|Game.hpp| 中，highway 的每一條音符軌道（lane）均為一個固定長度的「時間序列緩衝區」，其底部代表判定線，頂部代表未來即將到來的音符。為了有效管理音符隨時間向下移動的行為，本專題使用自製的 \verb|mystd::circulate| 容器來儲存：（line~50）
+\begin{lstlisting}[language=C++]
+mystd::vector<mystd::circulate<int8_t, mystd::vector<int8_t>>> highway;
+\end{lstlisting)
+每經過一個 \verb|msPerFragment| 的時間，\verb|loadFragment| 會被主迴圈呼叫，此時：
+\ben
+\item 系統會先處理每條 lane 底部的 fragment：底部元素代表「剛通過判定線」的音符，因此可在此統一處理 miss 判定、hold 結束判定與連擊重置等邏輯。這樣的設計使得所有判定都集中於容器的尾端（\verb|back()|），避免在整個結構中搜尋音符位置，降低時間複雜度。
+\item 接著 \verb|highway[lane].rotate(-1)|，將整條 lane 向下推進一格：這個旋轉操作是 circulate 容器的關鍵設計巧思，它不涉及實際資料的搬移，而僅調整內部索引對應關係，即可達到「所有音符向下移動一格」的效果。相較於傳統使用 vector 搭配 erase / insert 或整體位移的作法，這種方式能避免頻繁的記憶體操作，可適應本遊戲毫秒級的更新頻率。
+\item 最後系統會根據旋轉前的狀態，自動在頂部補入新的 fragment：對於 hold note，頂部會繼承上一格的剩餘長度並遞減；對於新到達的音符，則依據譜面資料將對應 lane 的頂部 fragment 設為 tap（負值）或 hold（正值）。
+\een
+此流程使得音符在 highway 中的生命週期呈現為一條自然流動的時間軸，從生成、下落、判定到消失，皆透過固定長度的環狀結構完成。程式碼如下：（line~161--208）
+\begin{lstlisting}[language=C++]
+  // Called every msPerFragment ms
+  void loadFragment(uint32_t nowMs, std::function<void(Game &)> foo = nullptr,
+                    std::function<void(Game &)> bar = nullptr) {
+    // 1. Process bottom fragments (misses + hold sustain end)
+    for (std::size_t lane = 0; lane < lanes; ++lane) {
+      int8_t &bottom = highway[lane].back();
+      if (bottom < 0) { // tap
+        missCount++;
+        laneEffects[lane].content &= CLEAR;
+        laneEffects[lane].content |= MISS;
+        laneEffects[lane].endTime = nowMs + msPerFragment * fragments;
+        resetCombo();
+        bottom = 0;
+      } else if (bottom > 0) { // hold
+        if (lanePressed[lane]) {
+          addHoldScore(nowMs, lane);
+        }
+        bottom = 0;
+      }
+      holdPressedTime[lane] = nowMs;
+    }
+
+    if (foo)
+      foo(*this);
+
+    // 2. Rotate all lanes
+    for (std::size_t lane = 0; lane < lanes; ++lane) {
+      highway[lane].rotate(-1);
+    }
+
+    // 3. Fill new top from previous top (holds - 1)
+    for (std::size_t lane = 0; lane < lanes; ++lane) {
+      highway[lane][0] = (highway[lane][1] > 1) ? highway[lane][1] - 1 : 0;
+    }
+
+    // 4. Load new notes into top
+    while (loadNext < notes.size() &&
+           notes[loadNext].startFragment == nowFragment) {
+      const KeyNoteData &nd = notes[loadNext];
+      if (nd.lane < lanes)
+        highway[nd.lane][0] = nd.holds;
+      loadNext++;
+    }
+    nowFragment++;
+
+    if (bar)
+      bar(*this);
+  }
+\end{lstlisting}
+整體而言，Game::highway 搭配 circulate 的設計，將「時間推進」轉化為「容器旋轉」，成功把原本複雜的音符移動與判定問題，抽象為固定位置的資料處理，在效能上具備顯著優勢，也使判定邏輯更集中與簡單，展現了資料結構選擇與遊戲系統設計間的高度契合。
 \sssc{判定旗標}
 在 \verb|Game.hpp| 中有多種判定旗標（flags），如 \verb|PERFECT|、\verb|GREAT|、\verb|GOOD|、\verb|BAD|、\verb|MISS|、\verb|HOLD_RELEASED| 等。這些旗標之間會使用位元運算（bitwise operations），若改用 \verb|enum| 或 \verb|enum class|，只保證是整數型別，但不能保證位元操作結果，故在某些情況下可能需要額外強制轉型（cast）以進行位元運算，因此我選擇使用 \verb|const uint32_t| 儲存。
-\sssc{模組註冊系統}
-在 \verb|mods/GameOfLife.hpp| 中，模組註冊透過 \verb|namespace { ... }| 匿名 namespace 完成，原因為：
-\begin{itemize}
-  \item 將其中的所有變數、函式或物件限定在本翻譯單元（translation unit）內部。
-  \item 可以在檔案載入時立即執行初始化。
-  \item 避免 \hyperref[siof]{\textbf{Static Initialization Order Fiasco (SIOF)}}，因為初始化延遲到首次使用時才執行。
-\end{itemize}
 \sssc{紋理快取儲存}
 在 \verb|Renderer.hpp| 中，我實作了一套紋理快取機制，用以避免在每一幀重複建立相同的 \verb|SDL_Texture|，以大幅降低 GPU 資源建立成本與 CPU 呼叫開銷，提升整體渲染效能與穩定性。
 
@@ -2348,9 +2405,26 @@ struct NotesCacheHash {
     }
     imageTextureCache.clear();
   }
-\end{lstlisting}  
+\end{lstlisting}
 
 整體而言，此設計在不增加渲染邏輯複雜度的前提下，有效提升效能。
+\sssc{平滑下落}
+平滑下落的核心巧思，在於將原本「以 fragment 為單位的離散位移」，轉換為「連續時間上的線性插值（linear interpolation）位移」，以提升畫面流暢度並避免音符跳格所造成的視覺不連續感。由於遊戲邏輯層仍以固定的 msPerFragment 為時間單位推進音符，因此在渲染階段透過將「音符所在的離散 fragment 位置」加上「fragment 內的連續進度乘上 fragmentHeight」的線性插值，補償 fragment 內的時間進度，以呈現平滑的下落動畫：（\verb|Renderer.hpp| line~572--579）
+\begin{lstlisting}[language=C++]
+        double progress = (double)offsetMs / (double)game.msPerFragment;
+        if (progress > 1.0)
+          progress = 1.0;
+        double smoothY =
+            ((double)fragmentIdx + progress) * (double)fragmentHeight;
+        destRect.y = (int)smoothY;
+        destRect.w = laneWidth;
+        destRect.h = fragmentHeight;
+\end{lstlisting}
+其中 \verb|offsetMs| 是距離上一次呼叫 \verb|loadFragment| 的毫秒數：（\verb|BeatRunner.hpp| line~1327）
+\begin{lstlisting}[language=C++]
+      uint32_t offsetMs = currentTime - lastFragmentTime;
+\end{lstlisting}
+透過此設計，遊戲在邏輯層仍能維持以 fragment 為單位的離散結構與簡潔判定，而在視覺層則能呈現毫秒級平滑移動效果。
 \sssc{誤差修正系統}
 \label{adjust}
 由於理論上的片段（fragment）時間（由 BPM 推導而來的毫秒數）並非整數值，而遊戲中畫面更新與按鍵判定依賴相對於遊戲起始時刻之整數毫秒數，長時間累積後將不可避免地產生時間漂移，與實際音樂節奏漸行漸遠。
@@ -2394,23 +2468,274 @@ void adjustGameStartTime(Uint32 currentTime, Uint32 &gameStartTime,
   lastFragmentTime = currentTime;
 }
 \end{lstlisting}
-
 此函式透過三個區域 static 變數保存跨呼叫狀態：
 \begin{itemize}
 \item \verb|initialized|：確保初始化邏輯僅執行一次。
-\item \verb|lastFragmentTime|：記錄上一次呼叫時的實際時間戳。 
+\item \verb|lastFragmentTime|：記錄上一次呼叫時的實際時間戳。
 \item \verb|accumulatedError|：累積理論時間與實際時間之間的誤差（以浮點數表示）。 \end{itemize}
-
 每次呼叫時計算實際經過時間 \verb|actualDelta|，並將其與理論片段時間 \verb|exactFragmentMs| 比較，差值累加至 \verb|accumulatedError| 中。此作法避免單次誤差即進行修正，而是以平滑方式累積，降低抖動。
 
 當累積誤差的絕對值在 1 毫秒以上時，才會觸發修正：
 \begin{itemize}
-\item 若誤差為正，表示實際進度落後於理論時間，需將 \verb|gameStartTime| 往前調整。 
+\item 若誤差為正，表示實際進度落後於理論時間，需將 \verb|gameStartTime| 往前調整。
 \item 若誤差為負，表示實際進度超前，則將 \verb|gameStartTime| 向後推移。 \end{itemize}
-
 修正量以整數毫秒為單位，並使用 \verb|floor| 取得穩定的修正值，確保時間調整不會來回震盪。修正後，對應的誤差值亦會自 \verb|accumulatedError| 中扣除，以維持數值一致性。
 
 由於長按音符（hold note）亦依賴時間累積判定，其已記錄的 \verb|holdPressedTime| 必須與遊戲時間保持同步。因此在修正 \verb|gameStartTime| 的同時，會一併調整所有已存在的按壓時間，避免出現視覺與判定不同步的情況。
+\sssc{模組系統}
+本專題的模組系統設計旨在呈現遊戲核心邏輯與額外功能之解耦，實現動態擴充與插件式架構。主要設計包括以下幾個方面：
+\textbf{模組函式接口設計}（\verb|Mods.hpp| line~12--13）：
+\begin{lstlisting}[language=C++]
+using ModFunc = void (*)(Game &game);
+using SettingsFunc = void (*)(SDL_Renderer *, TTF_Font *, int, int);
+\end{lstlisting}
+\begin{itemize}
+  \item \textbf{ModFunc}：定義模組的主要行為函式（foo / bar），操作 \verb|Game| 對象，可在 \verb|loadFragment| 中呼叫。
+  \item \textbf{SettingsFunc}：提供模組初始化設定接口，用於模組設定 UI 與邏輯。
+\end{itemize}
+\textbf{動態註冊與查詢}（\verb|Mods.hpp| line~15--25）：
+\begin{lstlisting}[language=C++]
+inline std::map<std::string, mystd::tuple<ModFunc, ModFunc, SettingsFunc>> &
+getModMap() {
+  static std::map<std::string, mystd::tuple<ModFunc, ModFunc, SettingsFunc>>
+      modMap;
+  return modMap;
+}
+
+inline void registerMod(const std::string &name, ModFunc foo, ModFunc bar,
+                        SettingsFunc set) {
+  getModMap()[name] = mystd::make_tuple(foo, bar, set);
+}
+\end{lstlisting}
+\begin{itemize}
+  \item 使用 \verb|registerMod| 將模組名稱與對應函式集合註冊到 \verb|modMap|。
+  \item 運行時可透過名稱查找模組，核心程式無需硬編碼具體模組邏輯。
+\end{itemize}
+\textbf{模組註冊自身}（\verb|mods/GameOfLife.hpp| line~258--282）：
+\begin{lstlisting}[language=C++]
+namespace {
+const bool registered = [] {
+  registerMod("Game of Life (hold notes counted as alive cell, before "
+              "new fragments load)",
+              &gameOfLife::gameOfLifeHoldAlive, nullptr,
+              gameOfLife::gameOfLifeSettings);
+
+  registerMod("Game of Life (hold notes counted as alive cell, after new "
+              "fragments load)",
+              nullptr, &gameOfLife::gameOfLifeHoldAlive,
+              gameOfLife::gameOfLifeSettings);
+
+  registerMod("Game of Life (hold notes counted as dead cell, before new "
+              "fragments load)",
+              &gameOfLife::gameOfLifeHoldDead, nullptr,
+              gameOfLife::gameOfLifeSettings);
+
+  registerMod("Game of Life (hold notes counted as dead cell, after new "
+              "fragments load)",
+              nullptr, &gameOfLife::gameOfLifeHoldDead,
+              gameOfLife::gameOfLifeSettings);
+
+  return true;
+}();
+} // namespace
+\end{lstlisting}
+置於匿名 \verb|namespace { ... }| 的原因：
+\begin{itemize}
+  \item 限定其中變數與函式僅存在於本翻譯單元，避免名稱衝突。
+  \item 在檔案載入時立即執行初始化，無需顯式呼叫。
+  \item 避免 \hyperref[siof]{\textbf{Static Initialization Order Fiasco (SIOF)}}，初始化延遲到首次使用時才執行。
+\end{itemize}
+\textbf{loadFragment 中呼叫模組函式}（\verb|Game.hpp| line~162--163、183--184、206--207）：
+\begin{lstlisting}[language=C++]
+  void loadFragment(uint32_t nowMs, std::function<void(Game &)> foo = nullptr,
+                    std::function<void(Game &)> bar = nullptr) {
+\end{lstlisting}
+\begin{lstlisting}[language=C++]
+    if (foo)
+      foo(*this);
+\end{lstlisting}
+\begin{lstlisting}[language=C++]
+    if (bar)
+      bar(*this);
+\end{lstlisting}
+\begin{itemize}
+  \item 選定模組的 \verb|foo| 與 \verb|bar| 函式注入 \verb|loadFragment|，分別可在音符更新前後執行自定義邏輯。
+\end{itemize}
+\textbf{模組選擇系統 UI}：
+\begin{itemize}
+  \item 動態建立模組下拉選單，列出所有註冊模組。
+  \item 玩家選擇模組後更新 \verb|MOD| 變數，並在每次 \verb|loadFragment| 中使用該模組函式。
+\end{itemize}
+\textbf{模組提供自身獨立設定 UI 與邏輯}（\verb|mods/GameOfLife.hpp| line~103--253）：
+\begin{lstlisting}[language=C++]
+void gameOfLifeSettings(SDL_Renderer *renderer, TTF_Font *font, int screenWidth,
+                        int screenHeight) {
+  mystd::array<uint16_t, 2> tempRules = currentRules;
+
+  const int buttonSize = 40;
+  const int buttonSpacing = 5;
+  const int rowSpacing = 60;
+
+  int totalWidth = 9 * buttonSize + 8 * buttonSpacing;
+  int startX = (screenWidth - totalWidth) / 2;
+  int row1Y = screenHeight / 2 - rowSpacing;
+  int row2Y = screenHeight / 2 + rowSpacing;
+
+  const int okButtonWidth = 100;
+  const int okButtonHeight = 50;
+  int okButtonX = (screenWidth - okButtonWidth) / 2;
+  int okButtonY = row2Y + rowSpacing * 2;
+
+  bool settingsRunning = true;
+  bool redrawNeeded = true;
+
+  while (settingsRunning) {
+    SDL_Event event;
+    while (SDL_PollEvent(&event)) {
+      if (event.type == SDL_QUIT) {
+        settingsRunning = false;
+        break;
+      } else if (event.type == SDL_KEYDOWN) {
+        if (event.key.keysym.sym == SDLK_RETURN ||
+            event.key.keysym.sym == SDLK_ESCAPE) {
+          currentRules = tempRules;
+          settingsRunning = false;
+        }
+      } else if (event.type == SDL_MOUSEBUTTONDOWN) {
+        if (event.button.button == SDL_BUTTON_LEFT) {
+          int mouseX = event.button.x;
+          int mouseY = event.button.y;
+
+          for (int i = 0; i < 9; ++i) {
+            int buttonX = startX + i * (buttonSize + buttonSpacing);
+            SDL_Rect buttonRect = {buttonX, row1Y, buttonSize, buttonSize};
+
+            if (mouseX >= buttonRect.x &&
+                mouseX <= buttonRect.x + buttonRect.w &&
+                mouseY >= buttonRect.y &&
+                mouseY <= buttonRect.y + buttonRect.h) {
+              tempRules[0] ^= (1 << i);
+              redrawNeeded = true;
+            }
+          }
+
+          for (int i = 0; i < 9; ++i) {
+            int buttonX = startX + i * (buttonSize + buttonSpacing);
+            SDL_Rect buttonRect = {buttonX, row2Y, buttonSize, buttonSize};
+
+            if (mouseX >= buttonRect.x &&
+                mouseX <= buttonRect.x + buttonRect.w &&
+                mouseY >= buttonRect.y &&
+                mouseY <= buttonRect.y + buttonRect.h) {
+              tempRules[1] ^= (1 << i);
+              redrawNeeded = true;
+            }
+          }
+
+          SDL_Rect okRect = {okButtonX, okButtonY, okButtonWidth,
+                             okButtonHeight};
+          if (mouseX >= okRect.x && mouseX <= okRect.x + okRect.w &&
+              mouseY >= okRect.y && mouseY <= okRect.y + okRect.h) {
+            currentRules = tempRules;
+            settingsRunning = false;
+          }
+        }
+      }
+    }
+
+    if (redrawNeeded) {
+      SDL_SetRenderDrawColor(renderer, 30, 30, 40, 255);
+      SDL_RenderClear(renderer);
+
+      for (int i = 0; i < 9; ++i) {
+        int buttonX = startX + i * (buttonSize + buttonSpacing);
+        SDL_Rect buttonRect = {buttonX, row1Y, buttonSize, buttonSize};
+
+        bool enabled = (tempRules[0] >> i) & 0b1;
+
+        if (enabled) {
+          SDL_SetRenderDrawColor(renderer, 100, 200, 100, 255);
+        } else {
+          SDL_SetRenderDrawColor(renderer, 200, 100, 100, 255);
+        }
+        SDL_RenderFillRect(renderer, &buttonRect);
+
+        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+        SDL_RenderDrawRect(renderer, &buttonRect);
+
+        SDL_Color numColor = {255, 255, 255, 255};
+        renderText(renderer, std::to_string(i), buttonX + buttonSize / 2,
+                   row1Y + buttonSize / 2, font, numColor, ALIGN_CENTER);
+      }
+
+      for (int i = 0; i < 9; ++i) {
+        int buttonX = startX + i * (buttonSize + buttonSpacing);
+        SDL_Rect buttonRect = {buttonX, row2Y, buttonSize, buttonSize};
+
+        bool enabled = (tempRules[1] >> i) & 0b1;
+
+        if (enabled) {
+          SDL_SetRenderDrawColor(renderer, 100, 200, 100, 255);
+        } else {
+          SDL_SetRenderDrawColor(renderer, 200, 100, 100, 255);
+        }
+        SDL_RenderFillRect(renderer, &buttonRect);
+
+        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+        SDL_RenderDrawRect(renderer, &buttonRect);
+        SDL_Color numColor = {255, 255, 255, 255};
+        renderText(renderer, std::to_string(i), buttonX + buttonSize / 2,
+                   row2Y + buttonSize / 2, font, numColor, ALIGN_CENTER);
+      }
+
+      SDL_Rect okRect = {okButtonX, okButtonY, okButtonWidth, okButtonHeight};
+      SDL_SetRenderDrawColor(renderer, 100, 150, 255, 255);
+      SDL_RenderFillRect(renderer, &okRect);
+      SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+      SDL_RenderDrawRect(renderer, &okRect);
+
+      SDL_Color textColor = {255, 255, 255, 255};
+      std::string surviveText = "Survive with neighbors:";
+      std::string reviveText = "Revive with neighbors:";
+
+      int surviveTextX = screenWidth / 2;
+      int surviveTextY = row1Y - 40;
+      renderText(renderer, surviveText, surviveTextX, surviveTextY, font,
+                 textColor, ALIGN_CENTER);
+
+      int reviveTextX = screenWidth / 2;
+      int reviveTextY = row2Y - 40;
+      renderText(renderer, reviveText, reviveTextX, reviveTextY, font,
+                 textColor, ALIGN_CENTER);
+
+      std::string okText = "OK";
+      int okTextX = okButtonX + okButtonWidth / 2;
+      int okTextY = okButtonY + okButtonHeight / 2;
+      renderText(renderer, okText, okTextX, okTextY, font, textColor,
+                 ALIGN_CENTER);
+
+      SDL_RenderPresent(renderer);
+      redrawNeeded = false;
+    }
+  }
+}
+
+} // namespace gameOfLife
+\end{lstlisting}
+\begin{itemize}
+  \item 使用 \verb|SettingsFunc| 提供獨立視覺化設定介面，玩家可互動調整規則。
+  \item 包含按鈕、文字標籤與 OK 按鈕，允許即時修改模組行為設定。
+  \item 更新操作立即反映在臨時設定 \verb|tempRules| 中，按下 OK 後套用至全域 \verb|currentRules|。
+\end{itemize}
+\textbf{總結}
+\begin{itemize}
+  \item \textbf{高內聚、低耦合}：核心 Game 只負責音符邏輯與時間判定，模組只關心自身效果與規則。
+  \item \textbf{動態插拔}：可在運行時自由選擇模組，新增模組不需修改核心程式。
+  \item \textbf{前後插入自定義行為}：\verb|foo| 與 \verb|bar| 在 fragment 更新前後呼叫，允許模組在不同階段注入邏輯。
+  \item \textbf{集中管理設定}：\verb|SettingsFunc| 統一處理模組設定 UI 與邏輯。
+  \item \textbf{模組提供獨立設定介面}：每個模組可自定義 UI 與邏輯，方便玩家互動調整。
+  \item \textbf{擴充性與維護性}：模組註冊與選擇皆動態進行，易於測試、擴充與維護，形成插件式架構。
+\end{itemize}
 \ssc{2-C-1-1 Operator Overloading 實作與呼叫位置}
 \sssc{allocator operator==}
 \verb|include/allocator.hpp| line~36--40 實作：
@@ -6240,34 +6565,27 @@ Heap 是一種以完全二元樹為邏輯模型、並以連續儲存空間實作
 \[\left\lfloor \frac{i-1}{2} \right\rfloor,\]
 左右子節點索引分別為 $2i+1$ 與 $2i+2$。本實作預設以 \texttt{std::less<>} 建立最大堆（max-heap），並提供接受比較子（\texttt{Compare}）的多載版本，使 heap 的排序準則可完全由使用者自訂。
 
-\paragraph{push\_heap}
-\texttt{push\_heap} 用於在既有 heap 的尾端插入一個新元素後，恢復 heap 性質。實作上，新元素位於最後一個索引，演算法透過「向上調整」（sift-up / bubble-up），反覆與其父節點比較；若新元素依比較子具有更高優先序，則與父節點交換，直到抵達根節點或不再違反 heap 性質為止。其時間複雜度為 $O(\log n)$。
+\bit
+\item\texttt{push\_heap}：用於在既有 heap 的尾端插入一個新元素後，恢復 heap 性質。實作上，新元素位於最後一個索引，演算法透過「向上調整」（sift-up / bubble-up），反覆與其父節點比較；若新元素依比較子具有更高優先序，則與父節點交換，直到抵達根節點或不再違反 heap 性質為止。其時間複雜度為 $O(\log n)$。
+\item\texttt{pop\_heap}：用於移除 heap 的堆頂元素。實作上，先將根節點與尾端元素交換，使原本的最大（或最小）元素被移動至尾端；接著對新的根節點執行向下調整（heapify-down），在左右子節點中選擇優先序較高者進行交換，直到 heap 性質恢復。其時間複雜度為 $O(\log n)$。
+\item\texttt{make\_heap}：用於將任意排列的元素區間轉換為合法 heap。本實作採用自底向上的 heapify 策略，從最後一個非葉節點（索引 $\lfloor n/2 \rfloor - 1$）開始，依序對每個節點進行向下調整。相較於逐一插入並呼叫 \texttt{push\_heap} 的 $O(n\log n)$ 總時間複雜度，此方法的時間複雜度為 $O(n)$，為建構 heap 的最佳解。此特性在 \texttt{priority\_queue} 的建構子中尤為重要，能有效降低由大量初始資料建立優先佇列的成本。
+\item\texttt{sort\_heap}：假設輸入區間已滿足 heap 性質，透過反覆呼叫 \texttt{pop\_heap}，將目前堆頂元素移至區間尾端，並逐步縮小 heap 範圍，最終得到一個依比較子排序完成的序列。其時間複雜度為 $O(n \log n)$，屬於不需額外記憶體的原地排序（in-place sort），但不具穩定性。
+\item\texttt{is\_heap} 用於檢查一個區間是否滿足 heap 性質。實作上，對每一個父節點檢查其與左右子節點之間是否符合比較子所定義的順序關係，最壞情況需檢查所有內部節點，時間複雜度為 $O(n)$。
+\item\texttt{is\_heap\_until} 則在檢查過程中，一旦發現第一個違反 heap 性質的子節點，立即回傳其疊代器位置，否則回傳 \texttt{last}。
+\eit
 
-\paragraph{pop\_heap}
-\texttt{pop\_heap} 用於移除 heap 的堆頂元素。實作上，先將根節點與尾端元素交換，使原本的最大（或最小）元素被移動至尾端；接著對新的根節點執行向下調整（heapify-down），在左右子節點中選擇優先序較高者進行交換，直到 heap 性質恢復。其時間複雜度為 $O(\log n)$。
+\texttt{mystd::priority\_queue} 內部以一個隨機存取容器（預設為 \texttt{mystd::vector}）作為底層儲存結構，並完全透過上述 heap 演算法維護其不變量：
+\bit
+\item 在所有建構子中，當底層容器含有初始元素時，皆呼叫 \texttt{make\_heap} 以確保正確初始化。
+\item \texttt{push} 與 \texttt{emplace} 透過 \texttt{push\_heap} 在插入後恢復 heap 性質。
+\item \texttt{pop} 則以 \texttt{pop\_heap} 搭配容器尾端刪除完成移除操作。
+\item \texttt{top} 則直接回傳根節點，時間複雜度為 $O(1)$。
+\eit
 
-\paragraph{make\_heap}
-\texttt{make\_heap} 用於將任意排列的元素區間轉換為合法 heap。本實作採用自底向上的 heapify 策略，從最後一個非葉節點（索引 $\lfloor n/2 \rfloor - 1$）開始，依序對每個節點進行向下調整。相較於逐一插入並呼叫 \texttt{push\_heap} 的 $O(n\log n)$ 總時間複雜度，此方法的時間複雜度為 $O(n)$，為建構 heap 的最佳解。此特性在 \texttt{priority\_queue} 的建構子中尤為重要，能有效降低由大量初始資料建立優先佇列的成本。
-
-\paragraph{sort\_heap}
-\texttt{sort\_heap} 假設輸入區間已滿足 heap 性質，透過反覆呼叫 \texttt{pop\_heap}，將目前堆頂元素移至區間尾端，並逐步縮小 heap 範圍，最終得到一個依比較子排序完成的序列。其時間複雜度為 $O(n \log n)$，屬於不需額外記憶體的原地排序（in-place sort），但不具穩定性。
-
-\paragraph{is\_heap 與 is\_heap\_until}
-\texttt{is\_heap} 用於檢查一個區間是否滿足 heap 性質。實作上，對每一個父節點檢查其與左右子節點之間是否符合比較子所定義的順序關係，最壞情況需檢查所有內部節點，時間複雜度為 $O(n)$。
-
-\texttt{is\_heap\_until} 則在檢查過程中，一旦發現第一個違反 heap 性質的子節點，立即回傳其疊代器位置，否則回傳 \texttt{last}。
-
-\paragraph{priority\_queue}
-\texttt{mystd::priority\_queue} 內部以一個隨機存取容器（預設為 \texttt{mystd::vector}）作為底層儲存結構，並完全透過上述 heap 演算法維護其不變量。在所有建構子中，當底層容器含有初始元素時，皆呼叫 \texttt{make\_heap} 以確保正確初始化。
-
-\texttt{push} 與 \texttt{emplace} 透過 \texttt{push\_heap} 在插入後恢復 heap 性質；\texttt{pop} 則以 \texttt{pop\_heap} 搭配容器尾端刪除完成移除操作；\texttt{top} 則直接回傳根節點，時間複雜度為 $O(1)$。
-
-\paragraph{設計總結}
-本實作將 heap 的所有核心操作以泛型演算法形式獨立實現，並配合 Concepts 與比較子設計，再由 \texttt{priority\_queue} 組合使用，清楚區分資料結構介面與演算法細節，並確保符合 C++20 標準。
+綜上所述，本實作將 heap 的所有核心操作以泛型演算法形式獨立實現，並配合 Concepts 與比較子設計，再由 \texttt{priority\_queue} 組合使用，清楚區分資料結構介面與演算法細節，並確保符合 C++20 標準。
 \sssc{Quick sort 演算法}
 Quick sort（快速排序）是一種基於「分割（partition）」與「分治（divide and conquer）」策略的比較式排序演算法。我在 \verb|include/qsort.hpp| 的實作中以隨機存取疊代器（\texttt{random\_access\_iterator}）為前提，並透過 Concepts（\texttt{std::sortable}）在編譯期保證元素可比較與可交換，設計目標在於語意清楚、實作精簡，並與 C++ 標準庫風格一致。
 
-\paragraph{核心概念}
 Quick sort 的核心流程可分為三個步驟：
 \begin{enumerate}
   \item 選擇一個樞紐元素（pivot）。
@@ -6277,7 +6595,6 @@ Quick sort 的核心流程可分為三個步驟：
 
 在本實作中，pivot 固定選擇為區間尾端元素（\texttt{*(last - 1)}），以降低實作複雜度並避免額外儲存空間。
 
-\paragraph{Partition（分割）實作方式}
 分割階段使用兩個疊代器：
 \begin{itemize}
   \item \texttt{i}：指向目前「小於 pivot 區間」的尾端。
@@ -6292,7 +6609,6 @@ Quick sort 的核心流程可分為三個步驟：
 當走訪完成後，\texttt{i} 所指的位置即為 pivot 的最終正確位置，透過將 \texttt{*i} 與 pivot 交換，使得：
 \[[\text{first}, i) < \text{pivot}, \quad *i = \text{pivot}, \quad (i, \text{last}) \ge \text{pivot}.\]
 
-\paragraph{遞迴結構}
 完成分割後，演算法遞迴處理：
 \begin{itemize}
   \item 左子區間：\texttt{[first, i)}
@@ -6301,24 +6617,22 @@ Quick sort 的核心流程可分為三個步驟：
 
 遞迴終止條件為區間長度小於等於 1，此時區間已自然有序。
 
-\paragraph{比較子版本}
 第二個多載版本接受使用者自訂的比較子 \texttt{Compare comp}，所有原本以 \texttt{<} 判斷的地方，皆改為 \texttt{comp(a, b)}。此設計與 \texttt{std::sort} 的介面設計保持一致。
 
-\paragraph{時間複雜度}
+\textbf{時間複雜度}：
 \begin{itemize}
   \item 平均時間複雜度：$O(n \log n)$：遞迴深度 $O(\log n)$，每一層分割成本 $O(n)$。
   \item 最壞時間複雜度：$O(n^2)$：當 pivot 選擇不佳（例如固定選尾端），遞迴深度可能退化為 $n$。
 \end{itemize}
 
-\paragraph{演算法特性}
+\textbf{演算法特性}：
 \begin{itemize}
   \item 原地排序（in-place sort）：僅使用遞迴呼叫堆疊，不需額外輔助陣列。
   \item 非穩定排序：相等元素在排序後的相對順序不保證維持。
   \item Pivot 選擇策略簡單：本實作未引入 median-of-three 或隨機化 pivot，故在理論最壞情況下可能退化。
 \end{itemize}
 
-\paragraph{程式碼}
-Line~9--39：
+程式碼如下：（line~9--39）
 \begin{lstlisting}[language=C++]
 template<std::random_access_iterator RandomIt>
 requires std::sortable<RandomIt>
@@ -6416,10 +6730,10 @@ For a constexpr constructor that is neither defaulted nor templated, if no argum
 \eit
 When a function is marked as \texttt{constexpr}, the compiler can evaluate its result during compilation if all arguments are known, producing a constant value in the generated code. This has several efficiency benefits:
 \begin{itemize}
-  \item \textbf{Reduced runtime overhead:} Computations are moved from execution time to compilation, eliminating repeated calculations during program execution.  
-  \item \textbf{Improved inlining opportunities:} Compile-time results can be directly substituted into expressions, reducing function call overhead and enabling further compiler optimizations.  
-  \item \textbf{Enabling compile-time checks:} Conditions such as array bounds, template arguments, or static assertions can be verified at compile time, avoiding runtime errors.  
-  \item \textbf{Optimized memory layout:} Constant expressions can be embedded directly in read-only memory or used to size arrays and other structures efficiently.  
+  \item \textbf{Reduced runtime overhead:} Computations are moved from execution time to compilation, eliminating repeated calculations during program execution.
+  \item \textbf{Improved inlining opportunities:} Compile-time results can be directly substituted into expressions, reducing function call overhead and enabling further compiler optimizations.
+  \item \textbf{Enabling compile-time checks:} Conditions such as array bounds, template arguments, or static assertions can be verified at compile time, avoiding runtime errors.
+  \item \textbf{Optimized memory layout:} Constant expressions can be embedded directly in read-only memory or used to size arrays and other structures efficiently.
 \end{itemize}
 Many examples are shown in \textbf{2-B-1-2 指標成員處理} 的 \hyperref[vector-list]{\textbf{include/vector.hpp}}.
 \sssc{Compile-time polymorphism-related optimization}
