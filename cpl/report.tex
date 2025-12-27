@@ -463,7 +463,7 @@ public:
 \item \verb|Renderer| 使用\verb|std::unordered_map<mystd::tuple<int8_t, bool, uint32_t>, SDL_Texture *, NotesCacheHash>|作為 key notes 的貼圖快取容器，並透過自訂雜湊結構 \verb|NotesCacheHash| 提供雜湊函式；其餘 \verb|std::unordered_map| 則用於快取其他類型之 \verb|SDL_Texture*|。（\verb|Renderer.hpp| line~55--59)
 \end{itemize}
 \ssc{2-A-1-2 畫出 class 之間的關係圖}
-本章節以 PlantUML Class Diagram 呈現各個 class 之間的關係。圖表均由沈威宇使用 clang-uml 自原始 C++ 程式碼中自動萃取類別結構資訊，再依實際設計意圖進行人工補註與整理，最後透過 PlantUML 生成。相關 PlantUML 原始碼請參見 \hyperref[plantuml]{Appendix II: PlantUML Code}。
+本章節以 PlantUML Class Diagram 呈現各個 class 之間的關係。圖表均由沈威宇使用 clang-uml 自原始 C++ 程式碼中自動萃取類別結構資訊，再依實際設計意圖進行人工補註與整理，最後透過 PlantUML 生成。相關 PlantUML 原始碼請參見 \hyperref[plantuml]{\textbf{Appendix I: PlantUML Code}}。
 
 下列符號為本文件中使用之自訂圖例，用以輔助說明 C++ 類別成員之可見度、成員型態，以及類別之間的關係。該等符號不屬於 PlantUML 官方標準語法，僅作為結構理解與閱讀輔助之用。
 
@@ -743,13 +743,21 @@ protected:
 \verb|operator==| 與 \verb|operator<=>|，用以支援 tuple 間的等價與三向比較。（line~519、537、555、559）  此設計使比較運算可透過 ADL 正確解析，同時避免將內部實作細節（如遞迴結構）暴露。
 \end{itemize}
 \ssc{2-A-3-5 class composition}
+\sssc{Resource Acquisition Is Initialization (RAII)}
+\label{RAII}
+RAII is a programming idiom in C++ used to manage resource lifetimes automatically. The key idea is:
+\begin{itemize}
+    \item Resources (e.g., memory, file handles, sockets) are acquired in the constructor of a class.
+    \item Resources are released in the destructor, ensuring deterministic cleanup and exception safety.
+\end{itemize}
+\sssc{專題使用}
 本專題中，多數 class 採用 \textbf{composition（組合）} 方式建立內部關係，其核心目標包括：
 \begin{itemize}
 \item 將資料與功能封裝於物件內部，避免 global state 干擾。
-\item 透過明確的成員關係管理所有權與生命週期。
+\item 透過明確的成員關係管理所有權與生命週期，達成 \hyperref[raii]{\textbf{Resource Acquisition Is Initialization (RAII)}}。
 \item 與 C++20 標準及 STL 慣例保持一致。
 \end{itemize}
-具體實例請參見 \hyperref[2-A-3-1]{2-A-3-1 public 變數使用與原因}、\hyperref[2-A-3-2]{2-A-3-2 private 變數使用與原因}、\hyperref[2-A-3-3]{2-A-3-3 protected 變數使用與原因} 與 \hyperref[2-B-3-1-1]{2-B-3-1-1 指出組裝關係}。
+具體實例請參見 \hyperref[2-A-3-1]{\textbf{2-A-3-1 public 變數使用與原因}}、\hyperref[2-A-3-2]{\textbf{2-A-3-2 private 變數使用與原因}}、\hyperref[2-A-3-3]{\textbf{2-A-3-3 protected 變數使用與原因}} 與 \hyperref[2-B-3-1-1]{\textbf{2-B-3-1-1 指出組裝關係}}。
 \ssc{2-B-1-1 建構子、複製建構子、解構子}
 \sssc{include/vector.hpp}
 \begin{itemize}
@@ -1107,9 +1115,18 @@ protected:
   \item 在不暴露底層指標的前提下，提供 STL 風格的介面。
   \end{itemize}
 \end{itemize}
+\sssc{Exception Safety Guarantees}
+\label{exception}
+STL containers follow strict \textbf{exception safety guarantees} during operations such as insertion, deletion, or reallocation:
+\begin{itemize}
+    \item \textbf{No-throw guarantee:} The operation never throws an exception.
+    \item \textbf{Strong guarantee:} If an exception occurs, the container's state remains unchanged.
+    \item \textbf{Basic guarantee:} Some changes may occur, but the container remains in a valid state.
+\end{itemize}
+In my implementation, I use \texttt{try-catch} blocks and proper deallocation to handle exceptions, prefer no-throwing branches when possible, and provide explicit \texttt{noexcept} specifications.
 \sssc{include/vector.hpp}
 \textbf{指出}：
-
+\label{vector-list}
 Line~51--932：
 \begin{lstlisting}[language=C++]
   constexpr void deallocate() {
@@ -2046,13 +2063,13 @@ operator<=>(const mystd::vector<T, Allocator> &lhs,
 }
 \end{lstlisting}
 \textbf{描述}：
-
+\label{vector-describe}
 \textbf{主要概念}：
 \begin{itemize}
-\item 採用 RAII（請參見 \hyperref[RAII]{Resource Acquisition Is Initialization (RAII)}）管理資源。
+\item 採用 RAII（請參見 \hyperref[raii]{\textbf{Resource Acquisition Is Initialization (RAII)}}）管理資源。
 \item 對 trivially copyable 元素、連續記憶體（contiguous iterator）情境使用 \verb|memcpy|、\verb|memmove| 或 \verb|fill_n| 提升效率。
 \item 元素搬移時優先使用 move construct，若不可行則 fallback 至 copy construct。
-\item 對非 trivially copyable 元素，使用 \verb|construct| 與 \verb|destroy| 搭配 try-catch，確保 exception safety，若出現例外，會 destroy 已建立的元素並 deallocate。（請參見 \hyperref[exception]{Exception Safety Guarantees}）
+\item 對非 trivially copyable 元素，使用 \verb|construct| 與 \verb|destroy| 搭配 try-catch，確保 exception safety，若出現例外，會 destroy 已建立的元素並 deallocate。（請參見 \hyperref[exception]{\textbf{Exception Safety Guarantees}}）
 \item 根據 allocator 屬性決定是否可以直接交換內部指標，以避免不必要的元素搬移。
 \end{itemize}
 \textbf{記憶體管理}：
@@ -2269,7 +2286,7 @@ public:
 \item 為 \verb|circulate| 容器提供標準的隨機存取迭代器（iterator）介面，透過內部索引 \verb|idx| 結合指向容器的指標 \verb|circ|，實現簡單且常數時間的循環訪問。
 \item \verb|_circulate_iterator| 與 \verb|_circulate_const_iterator| 均提供完整的 STL 風格操作，其設計類似於 \verb|std::deque| 與緊湊型 \verb|std::vector<bool>| 的 iterator 實作。
 \item 透過 friend 比較運算子允許 \verb|_circulate_iterator| 與 \verb|_circulate_const_iterator| 之間的混合比較。
-\item 詳細描述與範例請參見 \hyperref[circulate-iterator-operators]{\_circulate\_iterator and \_circulate\_const\_iterator operators}。
+\item 詳細描述與範例請參見 \hyperref[circulate-iterator-operators]{\textbf{\_circulate\_iterator and \_circulate\_const\_iterator operators}}。
 \end{itemize}
 \sssc{BeatRunner.cpp}
 下僅列出我實作之部分。
@@ -2304,9 +2321,14 @@ Line~1413--1414：
 \item 此做法屬於手動記憶體管理（manual memory management），更大型專案中建議改用 \verb|std::shared_ptr| 或 \verb|std::unique_ptr| 以自動管理生命週期並避免記憶體洩漏。
 \end{itemize}
 \ssc{2-B-1-3 建構⼦、複製建構⼦、解構⼦特殊語法}
+\sssc{Rule of Three / Five / Zero}
+\label{rule}
 \begin{itemize}
-\item 概念請參見\hyperref[idioms]{Appendix I: C++ Idioms}。
-\item 
+    \item \textbf{Rule of Three:} If a class defines a destructor, copy constructor, or copy assignment operator, it likely needs all three.
+    \item \textbf{Rule of Five:} Extends the Rule of Three by including move constructor and move assignment for C++11 and later.
+    \item \textbf{Rule of Zero:} Prefer using RAII and standard containers to avoid manually managing special member functions.
+\end{itemize}
+These rules are applied consistently in all containers of my STL implementation to ensure correct and safe resource management.
 待
 \ssc{2-B-3-1-1 指出組裝關係}
 \label{2-B-3-1-1}
@@ -2336,7 +2358,7 @@ Line~1413--1414：
 \item \verb|game_priority_queue<Effect> centerEffects;|（\verb|Game.hpp| line~65）：\verb|game_priority_queue<Effect>| 繼承自 \verb|mystd::priority_queue<Effect>|。
 \end{itemize}
 \ssc{2-B-3-2 指標的操作之巧思}
-請參見 \hyperref[2-B-1-2]{2-B-1-2 指標成員處理} 中之各 \textbf{描述}。
+請參見 \hyperref[2-B-1-2]{\textbf{2-B-1-2 指標成員處理}} 中之各 \textbf{描述}。
 \ssc{2-B-3-3 功能巧思}
 待
 \ssc{2-C-1-1 Operator Overloading 實作與呼叫位置}
@@ -2661,7 +2683,7 @@ operator<=>(const mystd::array<T, N> &lhs, const mystd::array<T, N> &rhs) {
     return *this;
   }
 \end{lstlisting}
-\verb|circulate| 函式對以上的呼叫請參見 \hyperref[circulate-equal]{circulate =}。
+\verb|circulate| 函式對以上的呼叫請參見 \hyperref[circulate-equal]{\textbf{circulate =}}。
 \sssc{vector operator[]}
 \verb|include/vector.hpp| line~502--505 實作：
 \begin{lstlisting}[language=C++]
@@ -2739,7 +2761,7 @@ operator<=>(const mystd::array<T, N> &lhs, const mystd::array<T, N> &rhs) {
 \begin{lstlisting}[language=C++]
     lanePressed[lane] = false;
 \end{lstlisting}
-\verb|circulate| 函式對以上的呼叫請參見 \hyperref[circulate-square]{circulate []}。
+\verb|circulate| 函式對以上的呼叫請參見 \hyperref[circulate-square]{\textbf{circulate []}}。
 \sssc{vector operator== 與 operator<=>}
 \verb|include/vector.hpp| line~968--982 實作：
 \begin{lstlisting}[language=C++]
@@ -3358,6 +3380,7 @@ std::unordered_map<mystd::tuple<int8_t,bool,uint32_t>, SDL_Texture*, NotesCacheH
 \end{lstlisting}
 \end{itemize}
 \ssc{2-C-1-3 Operator Overloading 演算法設計、2-C-1-4 Operator Overloading 有無的差異、2-C-1-5 Operator Overloading 巧思}
+\sssc{總論}
 本專題於多個核心元件中實作必要且具語意的 operator overloading。各 operator 之實作細節、語法限制與實際使用範例，已於前述章節中分別說明；以下僅就整體設計理念與實務層面的效益進行總結性說明。
 
 透過適當且具節制的 operator overloading，可達成下列目標：
@@ -3366,14 +3389,20 @@ std::unordered_map<mystd::tuple<int8_t,bool,uint32_t>, SDL_Texture*, NotesCacheH
 \item 與 STL 及現代 C++ idioms 保持一致，使自製容器或型別能自然地套用既有演算法（如 \verb|mystd::qsort|、\verb|std::sort|、\verb|std::ranges|）。
 \item 提升程式碼的可讀性與表意性，避免以顯式函式呼叫取代本質上屬於「運算」或「比較」的語意行為。
 \item 減少呼叫端的樣板程式碼（boilerplate），使使用者端程式碼更貼近問題本身的抽象層次。
-\item 滿足 Structured Bindings 與 ADL（Argument-Dependent Lookup）等語言機制對介面的需求，相關說明請參見 \hyperref[bindings]{Structured Bindings} 與 \hyperref[adl]{Argument-Dependent Lookup (ADL)}。
-\item 配合物件生命週期與資源管理需求，遵循 \hyperref[rule]{Rule of Three / Five / Zero}，確保型別在複製、移動與指派語意上的一致性與安全性。
+\item 滿足 Structured Bindings 與 ADL（Argument-Dependent Lookup）等語言機制對介面的需求，相關說明請參見 \hyperref[bindings]{\textbf{Structured Bindings}} 與 \hyperref[adl]{\textbf{Argument-Dependent Lookup (ADL)}}。
+\item 配合物件生命週期與資源管理需求，遵循 \hyperref[rule]{\textbf{Rule of Three / Five / Zero}}，確保型別在複製、移動與指派語意上的一致性與安全性。
 \end{itemize}
 
 相對地，若缺乏必要的運算子支援，呼叫端往往需以輔助函式或顯式介面取代，導致程式碼冗長、語意分散，且不利於與標準函式庫及泛型演算法整合。
 
-至於資料結構與演算法層面的設計與巧思，將與其他元件一併闡述，請參見 \hyperref[2-D-1-1]{2-D-1-1 演算法設計} 與 \hyperref[2-D-1-2]{2-D-1-2 程式執行效率優化}。
-\ssc{2-C-2-1 static member 宣告、2-C-2-2 static member 程式碼位置}
+至於資料結構與演算法層面的設計與巧思，將與其他元件一併闡述，請參見 \hyperref[2-D-1-1]{\textbf{2-D-1-1 演算法設計}} 與 \hyperref[2-D-1-2]{\textbf{2-D-1-2 程式執行效率優化}}。
+\sssc{Argument-Dependent Lookup (ADL)}
+\label{adl}
+ADL, also known as \textbf{Koenig lookup}, allows the compiler to search for functions not only in the current scope but also in the namespaces of the function argument types. This enables intuitive and unqualified function calls.
+\sssc{Structured Bindings}
+\label{bindings}
+Structured bindings, introduced in C++17, allow unpacking of tuples, pairs, arrays, or user-defined types into individual variables. In my STL implementation, \verb|include/tuple-using.hpp| provides \verb|std::tuple_size| and \verb|std::tuple_element| support for \verb|mystd::array| and \verb|mystd::tuple|.
+\ssc{2-C-2-1 static member 宣告、2-C-3-2 static member 程式碼位置}
 \sssc{include/allocator.hpp}
 Line~198--299：
 \begin{lstlisting}[language=C++]
@@ -3560,12 +3589,27 @@ getModMap() {
 }
 \end{lstlisting}
 \ssc{2-C-2-3 static member 用途}
+\sssc{Static Initialization Order Fiasco (SIOF)}
+\label{siof}
+In C++, the initialization order of non-local static objects is governed by the following rules:
+\begin{itemize}
+\item \textbf{Within a single translation unit:} Non-local static objects are initialized in the order of their definitions within that translation unit.
+\item \textbf{Across different translation units:} The initialization order of non-local static objects defined in different translation units is unspecified.
+\end{itemize}
+As a result, if a static object in one translation unit depends on another static object defined in a different translation unit during its initialization, there is no guarantee that the depended-on object has already been initialized. Accessing such an object before its initialization leads to undefined behavior.
+
+To mitigate or avoid SIOF, the following design strategies are generally recommended:
+\begin{itemize}
+\item Prefer \verb|constexpr| or \verb|inline| variables where possible, as their initialization is guaranteed at compile time or follows well-defined rules.
+\item Use function-local static objects, whose initialization is guaranteed to occur upon first use and is thread-safe since C++11.
+\item Avoid cross-translation-unit dependencies between non-local static objects, especially during their initialization phase.
+\end{itemize}
 \sssc{型別層級（type-level）的工具函式}  
 在 \verb|include/allocator.hpp| 中，\verb|allocator_traits| 將所有操作（\verb|allocate|、\verb|deallocate|、\verb|construct|、\verb|destroy|、\verb|max_size| 等）設計為 static member function。此設計符合 C++20 標準，其核心意義包括：
 \begin{itemize}
   \item 行為取決於 \verb|Alloc| 型別本身，而非 traits 物件實例。
   \item 避免建立不必要的 traits 實體，降低語意與實作負擔。
-  \item 可在編譯期透過 SFINAE 或 \verb|if constexpr| 檢測 allocator 是否提供特定介面。請參見 \hyperref[sfinae]{Substitution Failure Is Not An Error (SFINAE)} 與 \hyperref[constexpr]{constexpr function}。
+  \item 可在編譯期透過 SFINAE 或 \verb|if constexpr| 檢測 allocator 是否提供特定介面。請參見 \hyperref[sfinae]{\textbf{Substitution Failure Is Not An Error (SFINAE)}} 與 \hyperref[constexpr]{\textbf{constexpr function}}。
 \end{itemize}
 \sssc{與物件成員無關的純工具函式}  
 例如 \verb|include/tuple.hpp| 中的 \verb|tuple_equal_impl| 與 \verb|tuple_three_way_impl|，以及 \verb|Renderer.hpp| 中的 \verb|drawTextBackground|，這些函式與物件實例無關，作為純粹的型別工具函式使用。
@@ -3582,7 +3626,7 @@ getModMap() {
 在 \verb|Mods.hpp| 中，\verb|getModMap| 回傳一個區域 static 變數：
 \begin{itemize}
   \item 保證模組註冊表僅建立一次。
-  \item 避免 \hyperref[siof]{Static Initialization Order Fiasco (SIOF)}，因為初始化延遲到首次使用時才執行。
+  \item 避免 \hyperref[siof]{\textbf{Static Initialization Order Fiasco (SIOF)}}，因為初始化延遲到首次使用時才執行。
   \item 提供全域存取點。
 \end{itemize}
 \ssc{2-C-2-4 static member 有無的差異}
@@ -3984,11 +4028,12 @@ const uint32_t SCORE = 2u;
 \item 支援編譯期錯誤檢查，降低 runtime 錯誤風險。
 \item 常數封裝值的不可變性使程式設計更安全、語意更明確。
 \end{itemize}
-\ssc{2-C-4-1 polymorphism 宣告、2-C-4-2 polymorphism 成員}
-本專題並未使用 runtime polymorphism，而是廣泛採用 compile-time polymorphism，以降低執行時的額外開銷，且所有實作均在我撰寫的部分完成。在實作上，我大量使用了 template，並提供 \hyperref[ctad]{Class Template Argument Deduction (CTAD)} 以簡化使用。此外，於 \verb|include/tuple.hpp| 中運用 \hyperref[recursion]{Template Compile-Time Recursion} 與 \hyperref[ebo]{Empty Base Optimization (EBO)}，實現泛型且高效的操作。
+\ssc{2-C-4-1 polymorphism 宣告}
+本專題未使用 runtime polymorphism，而是廣泛採用 compile-time polymorphism，以降低執行時的額外開銷，其所有實作均在我撰寫的部分完成。
 
-由於 \verb|include/| 資料夾下多數類別與函式均採用 compile-time polymorphism，以下內容主要列出各類別與函式的 compile-time polymorphism 成員宣告（signature），對 \texttt{if constexpr}、CTAD 或 SFINAE 等編譯期分派機制多予省略，相關設計細節請參見 \hyperref[2-D-1-1]{2-D-1-1 演算法設計} 與 \hyperref[2-D-1-2]{2-D-1-2 程式執行效率優化}，以及 \hyperref[constexpr]{constexpr function}、
-\hyperref[concepts]{Concepts}、\hyperref[ctad]{Class Template Argument Deduction (CTAD)} 與 \hyperref[sfinae]{Substitution Failure Is Not An Error (SFINAE)}。
+在實作上，我大量使用了 template，並提供 \hyperref[ctad]{\textbf{Class Template Argument Deduction (CTAD)}} 以簡化使用，此外也於 \verb|include/tuple.hpp| 中運用 \hyperref[recursion]{\textbf{Template Compile-Time Recursion}} 與 \hyperref[ebo]{\textbf{Empty Base Optimization (EBO)}}，實現泛型且高效的操作。
+
+由於 \verb|include/| 資料夾下多數類別與函式均採用 compile-time polymorphism，以下內容主要列出各類別與函式的 compile-time polymorphism 成員宣告（signature），對 \texttt{if constexpr}、CTAD 或 SFINAE 等編譯期分派機制多予省略，相關設計理念與核心概念將於 \hyperref[2-C-4-3]{\textbf{2-C-4-3 polymorphism 相關的 class 或 function 間的對應關係}} 中說明。
 \sssc{include/algorithm-copy.hpp}
 Line~7--9：
 \begin{lstlisting}[language=C++]
@@ -4130,6 +4175,7 @@ constexpr bool operator==(const allocator<T1> &lhs,
                           const allocator<T2> &rhs) noexcept;
 \end{lstlisting}
 Line~42--316：
+\label{allocator-list}
 \begin{lstlisting}[language=C++]
 template <typename Alloc, typename T, typename = void>
 struct __rebind_helper {};
@@ -4631,160 +4677,1122 @@ template <class T, class Container = mystd::vector<T>,
            std::predicate<Compare, const T &, const T &>
 class priority_queue
 \end{lstlisting}
-Line~7--9：
+Line~56--61：
 \begin{lstlisting}[language=C++]
-
+  template <std::input_iterator InputIt>
+    requires requires(InputIt first, InputIt last) {
+      { Container(first, last) };
+    }
+  priority_queue(InputIt first, InputIt last,
+                 const Compare &compare = Compare());
 \end{lstlisting}
-Line~7--9：
+Line~66--71：
 \begin{lstlisting}[language=C++]
-
+  template <std::input_iterator InputIt>
+    requires requires(InputIt first, InputIt last) {
+      { std::declval<Container &>().insert(first, last) };
+    }
+  priority_queue(InputIt first, InputIt last, const Compare &compare,
+                 const Container &cont);
 \end{lstlisting}
-Line~7--9：
+Line~77--82：
 \begin{lstlisting}[language=C++]
-
+  template <std::input_iterator InputIt>
+    requires requires(InputIt first, InputIt last) {
+      { std::declval<Container &>().insert(first, last) };
+    }
+  priority_queue(InputIt first, InputIt last, const Compare &compare,
+                 Container &&cont);
 \end{lstlisting}
-Line~7--9：
+Line~88--89：
 \begin{lstlisting}[language=C++]
-
+  template <class Alloc>
+  explicit priority_queue(const Alloc &alloc);
 \end{lstlisting}
-Line~7--9：
+Line~91--92：
 \begin{lstlisting}[language=C++]
-
+  template <class Alloc>
+  priority_queue(const Compare &compare, const Alloc &alloc);
 \end{lstlisting}
-Line~7--9：
+Line~95--97：
 \begin{lstlisting}[language=C++]
-
+  template <class Alloc>
+  priority_queue(const Compare &compare, const Container &cont,
+                 const Alloc &alloc);
 \end{lstlisting}
-Line~7--9：
+Line~102--103：
 \begin{lstlisting}[language=C++]
-
+  template <class Alloc>
+  priority_queue(const Compare &compare, Container &&cont, const Alloc &alloc);
 \end{lstlisting}
-Line~7--9：
+Line~108--109：
 \begin{lstlisting}[language=C++]
-
+  template <class Alloc>
+  priority_queue(const priority_queue &other, const Alloc &alloc);
 \end{lstlisting}
-Line~7--9：
+Line~112--113：
 \begin{lstlisting}[language=C++]
-
+  template <class Alloc>
+  priority_queue(priority_queue &&other, const Alloc &alloc);
 \end{lstlisting}
-Line~7--9：
+Line~116--120：
 \begin{lstlisting}[language=C++]
-
+  template <std::input_iterator InputIt, class Alloc>
+    requires requires(InputIt first, InputIt last) {
+      { std::declval<Container &>().insert(first, last) };
+    }
+  priority_queue(InputIt first, InputIt last, const Alloc &alloc);
 \end{lstlisting}
-Line~7--9：
+Line~126--131：
 \begin{lstlisting}[language=C++]
-
+  template <std::input_iterator InputIt, class Alloc>
+    requires requires(InputIt first, InputIt last) {
+      { std::declval<Container &>().insert(first, last) };
+    }
+  priority_queue(InputIt first, InputIt last, const Compare &compare,
+                 const Alloc &alloc);
 \end{lstlisting}
-Line~7--9：
+Line~137--142：
 \begin{lstlisting}[language=C++]
-
+  template <std::input_iterator InputIt, class Alloc>
+    requires requires(InputIt first, InputIt last) {
+      { std::declval<Container &>().insert(first, last) };
+    }
+  priority_queue(InputIt first, InputIt last, const Compare &compare,
+                 const Container &cont, const Alloc &alloc);
 \end{lstlisting}
-Line~7--9：
+Line~148--153：
 \begin{lstlisting}[language=C++]
-
+  template <std::input_iterator InputIt, class Alloc>
+    requires requires(InputIt first, InputIt last) {
+      { std::declval<Container &>().insert(first, last) };
+    }
+  priority_queue(InputIt first, InputIt last, const Compare &compare,
+                 Container &&cont, const Alloc &alloc);
 \end{lstlisting}
-Line~7--9：
+Line~193：
 \begin{lstlisting}[language=C++]
-
+  template <class... Args> reference emplace(Args &&...args);
 \end{lstlisting}
-Line~7--9：
+Line~244--247：
 \begin{lstlisting}[language=C++]
-
+template <class T, class Container, class Compare, class Alloc>
+  requires std::predicate<Compare, const T &, const T &>
+struct uses_allocator<mystd::priority_queue<T, Compare, Container>, Alloc>
+    : std::uses_allocator<Container, Alloc> {};
 \end{lstlisting}
-Line~7--9：
+Line~249--253：
 \begin{lstlisting}[language=C++]
-
+template <class T, class Container, class Compare>
+  requires std::predicate<Compare, const T &, const T &>
+constexpr void swap(mystd::priority_queue<T, Container, Compare> &lhs,
+                    mystd::priority_queue<T, Container, Compare>
+                        &rhs) noexcept(noexcept(lhs.swap(rhs)));
 \end{lstlisting}
-Line~7--9：
+\sssc{include/qsort.hpp}
+Line~9--11：
 \begin{lstlisting}[language=C++]
-
+template<std::random_access_iterator RandomIt>
+requires std::sortable<RandomIt>
+constexpr void qsort(RandomIt first, RandomIt last);
 \end{lstlisting}
-
-
-
-
-
-
-
-
-
-\sssc{include/algorithm.hpp}
-Line~7--9：
+Line~25--27：
 \begin{lstlisting}[language=C++]
-
+template<std::random_access_iterator RandomIt, class Compare>
+requires std::sortable<RandomIt, Compare>
+constexpr void qsort(RandomIt first, RandomIt last, Compare comp);
 \end{lstlisting}
+\sssc{include/range-access.hpp}
+Line~10--142：
+\begin{lstlisting}[language=C++]
+template <class C> constexpr auto begin(const C &c) -> decltype(c.begin()) {
+  return c.begin();
+}
 
+template <class C> constexpr auto begin(C &c) -> decltype(c.begin()) {
+  return c.begin();
+}
 
+template <class T, std::size_t N> constexpr T *begin(T (&array)[N]) noexcept {
+  return array;
+}
+
+template <class C>
+constexpr auto cbegin(const C &c) noexcept(noexcept(mystd::begin(c)))
+    -> decltype(mystd::begin(c)) {
+  return c.begin();
+}
+
+template <class C> constexpr auto end(const C &c) -> decltype(c.end()) {
+  return c.end();
+}
+
+template <class C> constexpr auto end(C &c) -> decltype(c.end()) {
+  return c.end();
+}
+
+template <class T, std::size_t N> constexpr T *end(T (&array)[N]) noexcept {
+  return array + N;
+}
+
+template <class C>
+constexpr auto cend(const C &c) noexcept(noexcept(mystd::end(c)))
+    -> decltype(mystd::end(c)) {
+  return c.end();
+}
+
+template <class C> constexpr auto rbegin(C &c) -> decltype(c.rbegin()) {
+  return c.rbegin();
+}
+
+template <class C> constexpr auto rbegin(const C &c) -> decltype(c.rbegin()) {
+  return c.rbegin();
+}
+
+template <class T, std::size_t N>
+constexpr std::reverse_iterator<T *> rbegin(T (&array)[N]) {
+  return std::reverse_iterator<T *>(array + N);
+}
+
+template <class T>
+constexpr std::reverse_iterator<const T *> rbegin(std::initializer_list<T> il) {
+  return std::reverse_iterator<const T *>(il.end());
+}
+
+template <class C>
+constexpr auto crbegin(const C &c) -> decltype(mystd::rbegin(c)) {
+  return c.rbegin();
+}
+
+template <class C> constexpr auto rend(C &c) -> decltype(c.rend()) {
+  return c.rend();
+}
+
+template <class C> constexpr auto rend(const C &c) -> decltype(c.rend()) {
+  return c.rend();
+}
+
+template <class T, std::size_t N>
+constexpr std::reverse_iterator<T *> rend(T (&array)[N]) {
+  return std::reverse_iterator<T *>(array);
+}
+
+template <class T>
+constexpr std::reverse_iterator<const T *> rend(std::initializer_list<T> il) {
+  return std::reverse_iterator<const T *>(il.begin());
+}
+
+template <class C>
+constexpr auto crend(const C &c) -> decltype(mystd::rend(c)) {
+  return c.rend();
+}
+
+template <class C> constexpr auto size(const C &c) -> decltype(c.size()) {
+  return c.size();
+}
+
+template <class C>
+constexpr auto ssize(const C &c)
+    -> std::common_type_t<std::ptrdiff_t,
+                          std::make_signed_t<decltype(c.size())>> {
+  return static_cast<std::common_type_t<
+      std::ptrdiff_t, std::make_signed_t<decltype(c.size())>>>(c.size());
+}
+
+template <class T, std::size_t N>
+constexpr std::size_t size(const T (&array)[N]) noexcept {
+  return N;
+}
+
+template <class T, std::ptrdiff_t N>
+constexpr std::ptrdiff_t ssize(const T (&array)[N]) noexcept {
+  return N;
+}
+
+template <class C> constexpr auto empty(const C &c) -> decltype(c.empty()) {
+  return c.empty();
+}
+
+template <class T, std::size_t N>
+constexpr bool empty(const T (&array)[N]) noexcept {
+  return false;
+}
+
+template <class E> constexpr bool empty(std::initializer_list<E> il) noexcept {
+  return il.size() == 0;
+}
+
+template <class C> constexpr auto data(C &c) -> decltype(c.data()) {
+  return c.data();
+}
+
+template <class C> constexpr auto data(const C &c) -> decltype(c.data()) {
+  return c.data();
+}
+
+template <class T, std::size_t N> constexpr T *data(T (&array)[N]) noexcept {
+  return array;
+}
+
+template <class E>
+constexpr const E *data(std::initializer_list<E> il) noexcept {
+  return il.begin();
+}
+\end{lstlisting}
+\sssc{include/swap.hpp}
+Line~9--13：
+\begin{lstlisting}[language=C++]
+template <class T>
+  requires(std::is_move_constructible_v<T> && std::is_move_assignable_v<T>)
+constexpr void swap(T &a,
+                    T &b) noexcept(std::is_nothrow_move_constructible_v<T> &&
+                                   std::is_nothrow_move_assignable_v<T>);
+\end{lstlisting}
+Line~19--22：
+\begin{lstlisting}[language=C++]
+template <class T, std::size_t N>
+  requires std::is_swappable_v<T>
+constexpr void swap(T (&a)[N],
+                    T (&b)[N]) noexcept(noexcept(mystd::swap(a[0], b[0])));
+\end{lstlisting}
+\sssc{include/tuple.hpp}
+\label{tuple-list}
+Line~12--751：
+\begin{lstlisting}[language=C++]
+namespace mystd {
+
+template <class First, class... Rest> struct _first_type {
+  using type = First;
+};
+
+template <class... Ts> using _first_type_t = typename _first_type<Ts...>::type;
+
+template <typename T> struct _is_tuple : std::false_type {};
+
+template <typename T> inline constexpr bool _is_tuple_v = _is_tuple<T>::value;
+
+template <std::size_t I, class... Types> struct _tuple_impl;
+
+template <std::size_t I> struct _tuple_impl<I> {
+  template <std::size_t J> using element_type = void;
+
+  constexpr _tuple_impl() {}
+  constexpr _tuple_impl(const _tuple_impl &) noexcept {}
+  constexpr _tuple_impl(_tuple_impl &&) noexcept {}
+
+  template <class Alloc>
+  constexpr _tuple_impl(mystd::allocator_arg_t, const Alloc &) noexcept {}
+
+  template <class Alloc>
+  constexpr _tuple_impl(mystd::allocator_arg_t, const Alloc &,
+                        const _tuple_impl &) noexcept {}
+
+  template <class Alloc>
+  constexpr _tuple_impl(mystd::allocator_arg_t, const Alloc &,
+                        _tuple_impl &&) noexcept {}
+
+  constexpr _tuple_impl &operator=(const _tuple_impl &) noexcept {
+    return *this;
+  }
+
+  constexpr _tuple_impl &operator=(_tuple_impl &&) noexcept { return *this; }
+
+  void swap(_tuple_impl &other) {}
+};
+
+template <std::size_t I, class Head, class... Tail>
+struct _tuple_impl<I, Head, Tail...> : public _tuple_impl<I + 1, Tail...> {
+  using base = _tuple_impl<I + 1, Tail...>;
+  Head head;
+
+  template <std::size_t J>
+  using element_type =
+      std::conditional_t<J == I, Head, typename base::template element_type<J>>;
+
+  constexpr _tuple_impl()
+    requires(std::is_default_constructible_v<Head> &&
+             (std::is_default_constructible_v<Tail> && ...))
+      : base(), head() {}
+
+  explicit((!std::is_convertible_v<const Head &, Head> ||
+            (!std::is_convertible_v<const Tail &, Tail> ||
+             ...))) constexpr _tuple_impl(const Head &arg, const Tail &...args)
+    requires std::is_constructible_v<Head, const Head &> &&
+                 (std::is_constructible_v<Tail, const Tail &> && ...)
+      : base(args...), head(arg) {}
+
+  template <class UHead, class... UTail>
+  explicit((!std::is_convertible_v<UHead, Head> ||
+            (!std::is_convertible_v<UTail, Tail> ||
+             ...))) constexpr _tuple_impl(UHead &&arg, UTail &&...args)
+    requires(sizeof...(Tail) == sizeof...(UTail)) &&
+                std::is_constructible_v<Head, UHead> &&
+                (std::is_constructible_v<Tail, UTail> && ...)
+      : base(std::forward<UTail>(args)...), head(std::forward<UHead>(arg)) {}
+
+  template <typename Alloc>
+  constexpr _tuple_impl(mystd::allocator_arg_t, const Alloc &alloc)
+    requires std::is_default_constructible_v<Head> &&
+                 (std::is_default_constructible_v<Tail> && ...)
+      : base(mystd::allocator_arg, alloc), head() {}
+
+  template <typename Alloc>
+  constexpr _tuple_impl(mystd::allocator_arg_t, const Alloc &alloc,
+                        const Head &arg, const Tail &...args)
+    requires std::is_constructible_v<Head, const Head &> &&
+                 (std::is_constructible_v<Tail, const Tail &> && ...)
+      : base(mystd::allocator_arg, alloc, args...), head(arg) {}
+
+  template <typename Alloc, class UHead, class... UTail>
+  constexpr _tuple_impl(mystd::allocator_arg_t, const Alloc &alloc, UHead &&arg,
+                        UTail &&...args)
+    requires(sizeof...(Tail) == sizeof...(UTail)) &&
+                std::is_constructible_v<Head, UHead> &&
+                (std::is_constructible_v<Tail, UTail> && ...)
+      : base(mystd::allocator_arg, alloc, std::forward<UTail>(args)...),
+        head(std::forward<UHead>(arg)) {}
+
+  constexpr _tuple_impl(const _tuple_impl &other)
+    requires(std::is_copy_constructible_v<Head> &&
+             std::is_copy_constructible_v<base>)
+      : base(static_cast<const base &>(other)), head(other.head) {}
+
+  constexpr _tuple_impl(_tuple_impl &&other)
+    requires(std::is_move_constructible_v<Head> &&
+             std::is_move_constructible_v<base>)
+      : base(std::move(static_cast<base &>(other))),
+        head(std::move(other.head)) {}
+
+  template <class Alloc>
+  constexpr _tuple_impl(mystd::allocator_arg_t, const Alloc &alloc,
+                        const _tuple_impl &other)
+    requires(std::is_copy_constructible_v<Head> &&
+             std::is_copy_constructible_v<base>)
+      : base(mystd::allocator_arg, alloc, static_cast<const base &>(other)),
+        head(other.head) {}
+
+  template <class Alloc>
+  constexpr _tuple_impl(mystd::allocator_arg_t, const Alloc &alloc,
+                        _tuple_impl &&other)
+    requires(std::is_move_constructible_v<Head> &&
+             std::is_move_constructible_v<base>)
+      : base(mystd::allocator_arg, alloc,
+             std::move(static_cast<base &>(other))),
+        head(std::move(other.head)) {}
+
+  template <class Alloc, class... UTypes>
+  constexpr _tuple_impl(mystd::allocator_arg_t, const Alloc &alloc,
+                        const _tuple_impl<I, UTypes...> &other)
+    requires(sizeof...(Tail) + 1 == sizeof...(UTypes)) &&
+                std::is_constructible_v<Head,
+                                        const typename std::remove_cvref_t<
+                                            _first_type_t<UTypes...>> &> &&
+                std::is_constructible_v<
+                    base, const typename _tuple_impl<I, UTypes...>::base &>
+      : base(mystd::allocator_arg, alloc,
+             static_cast<const typename _tuple_impl<I, UTypes...>::base &>(
+                 other)),
+        head(other.head) {}
+
+  template <class Alloc, class... UTypes>
+  constexpr _tuple_impl(mystd::allocator_arg_t, const Alloc &alloc,
+                        _tuple_impl<I, UTypes...> &&other)
+    requires(sizeof...(Tail) + 1 == sizeof...(UTypes)) &&
+                std::is_constructible_v<
+                    Head, std::remove_cvref_t<_first_type_t<UTypes...>>> &&
+                std::is_constructible_v<
+                    base, typename _tuple_impl<I, UTypes...>::base>
+      : base(mystd::allocator_arg, alloc,
+             std::move(static_cast<typename _tuple_impl<I, UTypes...>::base &>(
+                 other))),
+        head(std::move(other.head)) {}
+
+  constexpr _tuple_impl &operator=(const _tuple_impl &other)
+    requires std::is_copy_assignable_v<Head> && std::is_copy_assignable_v<base>
+  {
+    head = other.head;
+    base::operator=(other);
+    return *this;
+  }
+
+  constexpr _tuple_impl &operator=(_tuple_impl &&other) noexcept(
+      std::is_nothrow_move_assignable_v<Head> &&
+      std::is_nothrow_move_assignable_v<base>)
+    requires(std::is_move_assignable_v<Head> && std::is_move_assignable_v<base>)
+  {
+    head = std::move(other.head);
+    base::operator=(std::move(other));
+    return *this;
+  }
+
+  template <class UHead, class... UTail>
+  constexpr _tuple_impl &operator=(const _tuple_impl<I, UHead, UTail...> &other)
+    requires(sizeof...(Tail) == sizeof...(UTail)) &&
+            std::is_assignable_v<Head &, const UHead &> &&
+            std::is_assignable_v<base &, const _tuple_impl<I + 1, UTail...> &>
+  {
+    head = other.head;
+    base::operator=(static_cast<const _tuple_impl<I + 1, UTail...> &>(other));
+    return *this;
+  }
+
+  template <class UHead, class... UTail>
+  constexpr _tuple_impl &
+  operator=(_tuple_impl<I, UHead, UTail...> &&other) noexcept(
+      std::is_nothrow_assignable_v<Head &, UHead &&> &&
+      std::is_nothrow_assignable_v<base &, _tuple_impl<I + 1, UTail...> &&>)
+    requires(sizeof...(Tail) == sizeof...(UTail)) &&
+            std::is_assignable_v<Head &, UHead &&> &&
+            std::is_assignable_v<base &, _tuple_impl<I + 1, UTail...> &&>
+  {
+    head = std::move(other.head);
+    base::operator=(
+        static_cast<_tuple_impl<I + 1, UTail...> &&>(std::move(other)));
+    return *this;
+  }
+
+  constexpr void swap(_tuple_impl &other) noexcept(
+      std::is_nothrow_swappable_v<Head> &&
+      noexcept(std::declval<base &>().swap(std::declval<base &>()))) {
+    mystd::swap(head, other.head);
+    static_cast<base &>(*this).swap(static_cast<base &>(other));
+  }
+
+  template <std::size_t J>
+  constexpr decltype(auto) get() &
+    requires(J >= I && J <= I + sizeof...(Tail))
+  {
+    if constexpr (I == J) {
+      return (head);
+    } else {
+      return static_cast<base &>(*this).template get<J>();
+    }
+  }
+
+  template <std::size_t J>
+  constexpr decltype(auto) get() const &
+    requires(J >= I && J <= I + sizeof...(Tail))
+  {
+    if constexpr (I == J) {
+      return (head);
+    } else {
+      return static_cast<const base &>(*this).template get<J>();
+    }
+  }
+
+  template <std::size_t J>
+  constexpr decltype(auto) get() &&
+    requires(J >= I && J <= I + sizeof...(Tail))
+  {
+    if constexpr (I == J) {
+      return std::move(head);
+    } else {
+      return static_cast<base &&>(*this).template get<J>();
+    }
+  }
+
+  template <std::size_t J>
+  constexpr decltype(auto) get() const &&
+    requires(J >= I && J <= I + sizeof...(Tail))
+  {
+    if constexpr (I == J) {
+      return std::move(head);
+    } else {
+      return static_cast<const base &&>(*this).template get<J>();
+    }
+  }
+};
+
+template <class... Types> class tuple {
+public:
+  _tuple_impl<0, Types...> _impl;
+
+  constexpr tuple()
+    requires(std::is_default_constructible_v<Types> && ...)
+      : _impl() {}
+
+  explicit((!std::is_convertible_v<const Types &, Types> ||
+            ...)) constexpr tuple(const Types &...args)
+    requires(sizeof...(Types) >= 1) &&
+            (std::is_copy_constructible_v<Types> && ...)
+      : _impl(args...) {}
+
+  template <class... UTypes>
+  explicit((!std::is_convertible_v<UTypes, Types> ||
+            ...)) constexpr tuple(UTypes &&...args)
+    requires(sizeof...(Types) >= 1) &&
+            (sizeof...(Types) == sizeof...(UTypes)) &&
+            (std::is_constructible_v<Types, UTypes> && ...) &&
+            (sizeof...(Types) > 1 ||
+             !mystd::_is_tuple_v<
+                 std::remove_cvref_t<_first_type_t<UTypes...>>>) &&
+            (sizeof...(Types) > 3 ||
+             !std::is_same_v<std::remove_cvref_t<_first_type_t<UTypes...>>,
+                             mystd::allocator_arg_t> ||
+             std::is_same_v<_first_type_t<Types...>, mystd::allocator_arg_t>)
+      : _impl(std::forward<UTypes>(args)...) {}
+
+  template <class... UTypes>
+  explicit((!std::is_convertible_v<Types, const UTypes &> ||
+            ...)) constexpr tuple(const tuple<UTypes...> &other)
+    requires(sizeof...(Types) == sizeof...(UTypes)) &&
+            (std::is_constructible_v<Types, const UTypes &> && ...) &&
+            (!(sizeof...(Types) == 1 &&
+               ((std::is_convertible_v<UTypes, Types> || ...) ||
+                (std::is_constructible_v<Types, UTypes> || ...) ||
+                (std::is_same_v<Types, UTypes> || ...))))
+      : _impl(other._impl) {}
+
+  template <class... UTypes>
+  explicit((!std::is_convertible_v<Types, UTypes &&> ||
+            ...)) constexpr tuple(tuple<UTypes...> &&other)
+    requires(sizeof...(Types) == sizeof...(UTypes)) &&
+            (std::is_constructible_v<Types, UTypes &&> && ...) &&
+            (!(sizeof...(Types) == 1 &&
+               ((std::is_convertible_v<UTypes, Types> || ...) ||
+                (std::is_constructible_v<Types, UTypes> || ...) ||
+                (std::is_same_v<Types, UTypes> || ...))))
+      : _impl(std::move(other._impl)) {}
+
+  template <class U1, class U2>
+  explicit(
+      (!std::is_convertible_v<
+           U1, typename _tuple_impl<0, Types...>::template element_type<0>> ||
+       !std::is_convertible_v<
+           U2, typename _tuple_impl<0, Types...>::template element_type<
+                   1>>)) constexpr tuple(const std::pair<U1, U2> &p)
+    requires(sizeof...(Types) == 2) &&
+            std::is_constructible_v<
+                typename _tuple_impl<0, Types...>::template element_type<0>,
+                U1> &&
+            std::is_constructible_v<
+                typename _tuple_impl<0, Types...>::template element_type<1>, U2>
+      : _impl(p.first, p.second) {}
+
+  template <class U1, class U2>
+  explicit((
+      !std::is_convertible_v<
+          U1 &&, typename _tuple_impl<0, Types...>::template element_type<0>> ||
+      !std::is_convertible_v<
+          U2 &&, typename _tuple_impl<0, Types...>::template element_type<
+                     1>>)) constexpr tuple(std::pair<U1, U2> &&p)
+    requires(sizeof...(Types) == 2) &&
+            std::is_constructible_v<
+                typename _tuple_impl<0, Types...>::template element_type<0>,
+                U1 &&> &&
+            std::is_constructible_v<
+                typename _tuple_impl<0, Types...>::template element_type<1>,
+                U2 &&>
+      : _impl(std::move(p.first), std::move(p.second)) {}
+
+  tuple(const tuple &other) : _impl(other._impl) {}
+
+  tuple(tuple &&other) : _impl(std::move(other._impl)) {}
+
+  template <class Alloc>
+  constexpr tuple(mystd::allocator_arg_t, const Alloc &a)
+    requires(std::is_default_constructible_v<Types> && ...)
+      : _impl(mystd::allocator_arg, a) {}
+
+  template <class Alloc>
+  explicit((!std::is_convertible_v<const Types &, Types> ||
+            ...)) constexpr tuple(mystd::allocator_arg_t, const Alloc &a,
+                                  const Types &...args)
+    requires(sizeof...(Types) >= 1) &&
+            (std::is_copy_constructible_v<Types> && ...)
+      : _impl(mystd::allocator_arg, a, args...) {}
+
+  template <class Alloc, class... UTypes>
+  explicit((!std::is_convertible_v<UTypes, Types> ||
+            ...)) constexpr tuple(mystd::allocator_arg_t, const Alloc &a,
+                                  UTypes &&...args)
+    requires(sizeof...(Types) >= 1) &&
+            (sizeof...(Types) == sizeof...(UTypes)) &&
+            (std::is_constructible_v<Types, UTypes> && ...) &&
+            (sizeof...(Types) > 1 ||
+             !mystd::_is_tuple_v<std::remove_cvref_t<_first_type_t<UTypes...>>>)
+      : _impl(mystd::allocator_arg, a, std::forward<UTypes>(args)...) {}
+
+  template <class Alloc, class... UTypes>
+  explicit((!std::is_convertible_v<Types, const UTypes &> ||
+            ...)) constexpr tuple(mystd::allocator_arg_t, const Alloc &a,
+                                  const tuple<UTypes...> &other)
+    requires(sizeof...(Types) == sizeof...(UTypes)) &&
+            (std::is_constructible_v<Types, const UTypes &> && ...) &&
+            (!(sizeof...(Types) == 1 &&
+               ((std::is_convertible_v<UTypes, Types> || ...) ||
+                (std::is_constructible_v<Types, UTypes> || ...) ||
+                (std::is_same_v<Types, UTypes> || ...))))
+      : _impl(mystd::allocator_arg, a, other._impl) {}
+
+  template <class Alloc, class... UTypes>
+  explicit((!std::is_convertible_v<Types, UTypes &&> ||
+            ...)) constexpr tuple(mystd::allocator_arg_t, const Alloc &a,
+                                  tuple<UTypes...> &&other)
+    requires(sizeof...(Types) == sizeof...(UTypes)) &&
+            (std::is_constructible_v<Types, UTypes &&> && ...) &&
+            (!(sizeof...(Types) == 1 &&
+               ((std::is_convertible_v<UTypes, Types> || ...) ||
+                (std::is_constructible_v<Types, UTypes> || ...) ||
+                (std::is_same_v<Types, UTypes> || ...))))
+      : _impl(mystd::allocator_arg, a, std::move(other._impl)) {}
+
+  template <class Alloc, class U1, class U2>
+  explicit(
+      (!std::is_convertible_v<
+           U1, typename _tuple_impl<0, Types...>::template element_type<0>> ||
+       !std::is_convertible_v<
+           U2, typename _tuple_impl<0, Types...>::template element_type<
+                   1>>)) constexpr tuple(mystd::allocator_arg_t, const Alloc &a,
+                                         const std::pair<U1, U2> &p)
+    requires(sizeof...(Types) == 2) &&
+            std::is_constructible_v<
+                typename _tuple_impl<0, Types...>::template element_type<0>,
+                U1> &&
+            std::is_constructible_v<
+                typename _tuple_impl<0, Types...>::template element_type<1>, U2>
+      : _impl(mystd::allocator_arg, a, p.first, p.second) {}
+
+  template <class Alloc, class U1, class U2>
+  explicit((
+      !std::is_convertible_v<
+          U1 &&, typename _tuple_impl<0, Types...>::template element_type<0>> ||
+      !std::is_convertible_v<
+          U2 &&, typename _tuple_impl<0, Types...>::template element_type<
+                     1>>)) constexpr tuple(mystd::allocator_arg_t,
+                                           const Alloc &a,
+                                           std::pair<U1, U2> &&p)
+    requires(sizeof...(Types) == 2) &&
+            std::is_constructible_v<
+                typename _tuple_impl<0, Types...>::template element_type<0>,
+                U1 &&> &&
+            std::is_constructible_v<
+                typename _tuple_impl<0, Types...>::template element_type<1>,
+                U2 &&>
+      : _impl(mystd::allocator_arg, a, std::move(p.first),
+              std::move(p.second)) {}
+
+  template <class Alloc>
+  tuple(mystd::allocator_arg_t, const Alloc &a, const tuple &other)
+      : _impl(mystd::allocator_arg, a, other._impl) {}
+
+  template <class Alloc>
+  tuple(mystd::allocator_arg_t, const Alloc &a, tuple &&other)
+      : _impl(mystd::allocator_arg, a, std::move(other._impl)) {}
+
+  constexpr tuple &operator=(const tuple &other)
+    requires(std::is_copy_assignable_v<Types> && ...)
+  {
+    _impl = other._impl;
+    return *this;
+  }
+
+  constexpr tuple &operator=(tuple &&other) noexcept(
+      (std::is_nothrow_move_assignable_v<Types> && ...))
+    requires(std::is_move_assignable_v<Types> && ...)
+  {
+    _impl = std::move(other._impl);
+    return *this;
+  }
+
+  template <class... UTypes>
+  constexpr tuple &operator=(const tuple<UTypes...> &other)
+    requires(sizeof...(Types) == sizeof...(UTypes)) &&
+            (std::is_assignable_v<Types &, const UTypes &> && ...)
+  {
+    _impl = other._impl;
+    return *this;
+  }
+
+  template <class... UTypes>
+  constexpr tuple &operator=(tuple<UTypes...> &&other)
+    requires(sizeof...(Types) == sizeof...(UTypes)) &&
+            (std::is_assignable_v<Types &, UTypes &&> && ...)
+  {
+    _impl = std::move(other._impl);
+    return *this;
+  }
+
+  template <std::size_t J> constexpr decltype(auto) get() & noexcept {
+    return _impl.template get<J>();
+  }
+
+  template <std::size_t J> constexpr decltype(auto) get() && noexcept {
+    return std::move(_impl).template get<J>();
+  }
+
+  template <std::size_t J> constexpr decltype(auto) get() const & noexcept {
+    return _impl.template get<J>();
+  }
+
+  template <std::size_t J> constexpr decltype(auto) get() const && noexcept {
+    return std::move(_impl).template get<J>();
+  }
+
+  template <class E1, class E2>
+  constexpr tuple &operator=(const std::pair<E1, E2> &p)
+    requires(sizeof...(Types) == 2) &&
+            std::is_assignable_v<decltype(this -> get<0>()), const E1 &> &&
+            std::is_assignable_v<decltype(this->get<1>()), const E2 &>
+  {
+    this->get<0>() = p.first;
+    this->get<1>() = p.second;
+    return *this;
+  }
+
+  template <class E1, class E2>
+  constexpr tuple &operator=(std::pair<E1, E2> &&p) noexcept(
+      std::is_nothrow_assignable_v<decltype(this->get<0>()), E1 &&> &&
+      std::is_nothrow_assignable_v<decltype(this->get<1>()), E2 &&>)
+    requires(sizeof...(Types) == 2) &&
+            std::is_assignable_v<decltype(this -> get<0>()), E1 &&> &&
+            std::is_assignable_v<decltype(this->get<1>()), E2 &&>
+  {
+    this->get<0>() = std::move(p.first);
+    this->get<1>() = std::move(p.second);
+    return *this;
+  }
+
+  constexpr void swap(tuple &other) noexcept(
+      noexcept((std::is_nothrow_swappable_v<Types> && ...))) {
+    _impl.swap(other._impl);
+  }
+
+private:
+  template <std::size_t... I>
+  static constexpr bool tuple_equal_impl(const tuple &a, const tuple &b,
+                                         std::index_sequence<I...>) {
+    return ((a.get<I>() == b.get<I>()) && ...);
+  }
+
+public:
+  friend constexpr bool operator==(const tuple &a, const tuple &b) {
+    return tuple_equal_impl(a, b, std::make_index_sequence<sizeof...(Types)>{});
+  }
+
+private:
+  template <std::size_t... I>
+  static constexpr auto tuple_three_way_impl(const tuple &a, const tuple &b,
+                                             std::index_sequence<I...>)
+      -> std::common_comparison_category_t<decltype(a.get<I>() <=>
+                                                    b.get<I>())...> {
+    using result_t = std::common_comparison_category_t<decltype(a.get<I>() <=>
+                                                                b.get<I>())...>;
+    result_t result = result_t::equal;
+    ((result = (result != 0 ? result : (a.get<I>() <=> b.get<I>()))), ...);
+    return result;
+  }
+
+public:
+  friend constexpr auto operator<=>(const tuple &a, const tuple &b) {
+    return tuple_three_way_impl(a, b,
+                                std::make_index_sequence<sizeof...(Types)>{});
+  }
+};
+
+template <> class tuple<> {
+public:
+  constexpr tuple() noexcept = default;
+
+  constexpr tuple(const tuple &) noexcept = default;
+  constexpr tuple(tuple &&) noexcept = default;
+
+  constexpr tuple &operator=(const tuple &) noexcept = default;
+  constexpr tuple &operator=(tuple &&) noexcept = default;
+
+  constexpr void swap(tuple &) noexcept {}
+
+  friend constexpr bool operator==(const tuple &, const tuple &) noexcept {
+    return true;
+  }
+
+  friend constexpr auto operator<=>(const tuple &, const tuple &) noexcept {
+    return std::strong_ordering::equal;
+  }
+};
+
+template <class... UTypes> tuple(UTypes...) -> tuple<UTypes...>;
+
+template <class T1, class T2> tuple(std::pair<T1, T2>) -> tuple<T1, T2>;
+
+template <class Alloc, class... UTypes>
+tuple(std::allocator_arg_t, Alloc, UTypes...) -> tuple<UTypes...>;
+
+template <class Alloc, class T1, class T2>
+tuple(std::allocator_arg_t, Alloc, std::pair<T1, T2>) -> tuple<T1, T2>;
+
+template <class Alloc, class... UTypes>
+tuple(std::allocator_arg_t, Alloc, tuple<UTypes...>) -> tuple<UTypes...>;
+
+template <typename... Ts>
+struct _is_tuple<mystd::tuple<Ts...>> : std::true_type {};
+
+template <std::size_t I, class... Types>
+constexpr decltype(auto) get(tuple<Types...> &t) noexcept {
+  return t.template get<I>();
+}
+
+template <std::size_t I, class... Types>
+constexpr decltype(auto) get(tuple<Types...> &&t) noexcept {
+  return std::move(t).template get<I>();
+}
+
+template <std::size_t I, class... Types>
+constexpr decltype(auto) get(const tuple<Types...> &t) noexcept {
+  return t.template get<I>();
+}
+
+template <std::size_t I, class... Types>
+constexpr decltype(auto) get(const tuple<Types...> &&t) noexcept {
+  return std::move(t).template get<I>();
+}
+
+template <class T, class... Types> struct _count_of_type;
+
+template <class T>
+struct _count_of_type<T> : std::integral_constant<std::size_t, 0> {};
+
+template <class T, class Head, class... Tail>
+struct _count_of_type<T, Head, Tail...>
+    : std::integral_constant<std::size_t,
+                             (std::is_same_v<T, Head> ? 1 : 0) +
+                                 _count_of_type<T, Tail...>::value> {};
+
+template <class T, class... Types>
+inline constexpr std::size_t _count_of_type_v =
+    _count_of_type<T, Types...>::value;
+
+template <class T, class... Types> struct _index_of_type;
+
+template <class T, class... Tail>
+struct _index_of_type<T, T, Tail...> : std::integral_constant<std::size_t, 0> {
+};
+
+template <class T, class Head, class... Tail>
+struct _index_of_type<T, Head, Tail...>
+    : std::integral_constant<std::size_t,
+                             1 + _index_of_type<T, Tail...>::value> {};
+
+template <class T> struct _index_of_type<T> {};
+
+template <class T, class... Types>
+inline constexpr std::size_t _index_of_type_v =
+    _index_of_type<T, Types...>::value;
+
+template <class T, class... Types>
+constexpr decltype(auto) get(mystd::tuple<Types...> &t) noexcept
+  requires(_count_of_type_v<T, Types...> == 1)
+{
+  return get<_index_of_type_v<T, Types...>>(t);
+}
+
+template <class T, class... Types>
+constexpr decltype(auto) get(mystd::tuple<Types...> &&t) noexcept
+  requires(_count_of_type_v<T, Types...> == 1)
+{
+  return get<_index_of_type_v<T, Types...>>(std::move(t));
+}
+
+template <class T, class... Types>
+constexpr decltype(auto) get(const mystd::tuple<Types...> &t) noexcept
+  requires(_count_of_type_v<T, Types...> == 1)
+{
+  return get<_index_of_type_v<T, Types...>>(t);
+}
+
+template <class T, class... Types>
+constexpr decltype(auto) get(const mystd::tuple<Types...> &&t) noexcept
+  requires(_count_of_type_v<T, Types...> == 1)
+{
+  return get<_index_of_type_v<T, Types...>>(std::move(t));
+}
+
+template <class... Types> constexpr auto make_tuple(Types &&...args) {
+  return mystd::tuple<typename std::decay<Types>::type...>(
+      std::forward<Types>(args)...);
+}
+
+template <class... Types>
+constexpr mystd::tuple<Types &...> tie(Types &...args) noexcept {
+  return mystd::tuple<Types &...>(args...);
+}
+
+template <class... Types>
+constexpr tuple<Types &&...> forward_as_tuple(Types &&...args) noexcept {
+  return tuple<Types &&...>(std::forward<Types>(args)...);
+}
+
+template <class... Tuples> struct _tuple_cat_type;
+
+template <> struct _tuple_cat_type<> {
+  using type = mystd::tuple<>;
+};
+
+template <class... Ts> struct _tuple_cat_type<mystd::tuple<Ts...>> {
+  using type = mystd::tuple<Ts...>;
+};
+
+template <class... Ts1, class... Ts2, class... Rest>
+struct _tuple_cat_type<mystd::tuple<Ts1...>, mystd::tuple<Ts2...>, Rest...> {
+  using type =
+      typename _tuple_cat_type<mystd::tuple<Ts1..., Ts2...>, Rest...>::type;
+};
+
+template <class... Tuples>
+using _tuple_cat_type_t = typename _tuple_cat_type<Tuples...>::type;
+
+template <class T1, class T2, std::size_t... I1, std::size_t... I2>
+constexpr auto _tuple_cat_two_impl(T1 &&t1, T2 &&t2, std::index_sequence<I1...>,
+                                   std::index_sequence<I2...>) {
+  return mystd::tuple{mystd::get<I1>(std::forward<T1>(t1))...,
+                      mystd::get<I2>(std::forward<T2>(t2))...};
+}
+
+template <class T1, class T2> constexpr auto _tuple_cat_two(T1 &&t1, T2 &&t2) {
+  return _tuple_cat_two_impl(
+      std::forward<T1>(t1), std::forward<T2>(t2),
+      std::make_index_sequence<
+          std::tuple_size<std::remove_cvref_t<T1>>::value>{},
+      std::make_index_sequence<
+          std::tuple_size<std::remove_cvref_t<T2>>::value>{});
+}
+
+template <class T> constexpr auto _tuple_cat_impl(T &&t) {
+  return std::forward<T>(t);
+}
+
+template <class T1, class T2, class... Rest>
+constexpr auto _tuple_cat_impl(T1 &&t1, T2 &&t2, Rest &&...rest) {
+  auto first = _tuple_cat_two(std::forward<T1>(t1), std::forward<T2>(t2));
+  return _tuple_cat_impl(std::move(first), std::forward<Rest>(rest)...);
+}
+
+template <class... Tuples> constexpr auto tuple_cat(Tuples &&...tpls) {
+  return _tuple_cat_impl(std::forward<Tuples>(tpls)...);
+}
+
+template <class... Types>
+constexpr void
+swap(mystd::tuple<Types...> &lhs,
+     mystd::tuple<Types...> &rhs) noexcept(noexcept(lhs.swap(rhs))) {
+  lhs.swap(rhs);
+}
+
+template <class... Types, class Alloc>
+struct uses_allocator<std::tuple<Types...>, Alloc> : std::true_type {};
+
+} // namespace mystd
+
+namespace std {
+
+template <class... Types>
+struct tuple_size<mystd::tuple<Types...>>
+    : std::integral_constant<std::size_t, sizeof...(Types)> {};
+
+template <class Head, class... Tail>
+struct tuple_element<0, mystd::tuple<Head, Tail...>> {
+  using type = Head;
+};
+
+template <std::size_t I, class Head, class... Tail>
+struct tuple_element<I, mystd::tuple<Head, Tail...>>
+    : tuple_element<I - 1, mystd::tuple<Tail...>> {};
+
+} // namespace std
+\end{lstlisting}
+\sssc{include/vector.hpp}
+已於 \textbf{2-B-1-2 指標成員處理} 的 \hyperref[vector-list]{\textbf{include/vector.hpp}} 列出。
+\ssc{2-C-4-2 polymorphism 成員}
+承上，本專題未使用 runtime polymorphism，而是廣泛使用 compile-time polymorphism。在 \texttt{mystd} 部分，compile-time polymorphism 的函式成員已於前一章節列出；於本節僅列出 compile-time polymorphism 的成員變數及 mystd 以外的 compile-time polymorphism 成員。
+\sssc{include/allocator.hpp}
+已於前一章節的 \hyperref[allocator-list]{\textbf{include/allocator.hpp}} 列出。
+\sssc{include/circulate.hpp}
+Line~24--25：
+\begin{lstlisting}[language=C++]
+  circulate *circ;
+  difference_type idx;
+\end{lstlisting}
+Line~101--102：
+\begin{lstlisting}[language=C++]
+  const circulate *circ;
+  difference_type idx;
+\end{lstlisting}
+Line~205：
+\begin{lstlisting}[language=C++]
+  Container c;
+\end{lstlisting}
+\sssc{include/priority_queue.hpp}
+Line~32--33：
+\begin{lstlisting}[language=C++]
+  Container c = Container();
+  Compare comp = Compare();
+\end{lstlisting}
+\sssc{include/tuple.hpp}
+Line~56：
+\begin{lstlisting}[language=C++]
+  Head head;
+\end{lstlisting}
+Line~258：
+\begin{lstlisting}[language=C++]
+  _tuple_impl<0, Types...> _impl;
+\end{lstlisting}
+\sssc{include/vector.hpp}
+Line~46--47：
+\begin{lstlisting}[language=C++]
+  [[no_unique_address]] Allocator alloc;
+  T *elems;
+\end{lstlisting}
+\sssc{Game.hpp}
+Line~44：
+\begin{lstlisting}[language=C++]
+  mystd::vector<KeyNoteData> &notes; // sorted by startFragment
+\end{lstlisting}
+Line~50：
+\begin{lstlisting}[language=C++]
+  mystd::vector<mystd::circulate<int8_t, mystd::vector<int8_t>>> highway;
+\end{lstlisting}
+Line~53：
+\begin{lstlisting}[language=C++]
+  mystd::vector<bool> lanePressed;
+\end{lstlisting}
+Line~56：
+\begin{lstlisting}[language=C++]
+  mystd::vector<uint32_t> holdPressedTime;
+\end{lstlisting}
+Line~64--65：
+\begin{lstlisting}[language=C++]
+  mystd::vector<Effect> laneEffects;
+  game_priority_queue<Effect> centerEffects = game_priority_queue<Effect>();
+\end{lstlisting}
+\sssc{Renderer.hpp}
+Line~55--59：
+\begin{lstlisting}[language=C++]
+  std::unordered_map<mystd::tuple<int8_t, bool, uint32_t>, SDL_Texture *,
+                     NotesCacheHash>
+      notesTextureCache;
+  std::unordered_map<std::string, SDL_Texture *> textTextureCache;
+  std::unordered_map<std::string, SDL_Texture *> imageTextureCache;
+\end{lstlisting}
+\sssc{mods/GameOfLife.hpp}
+Line~14：
+\begin{lstlisting}[language=C++]
+static mystd::array<uint16_t, 2> currentRules = {0b111111111, 0};
+\end{lstlisting}
+\sssc{Mods.hpp}
+Line~15--20：
+\begin{lstlisting}[language=C++]
+inline std::map<std::string, mystd::tuple<ModFunc, ModFunc, SettingsFunc>> &
+getModMap() {
+  static std::map<std::string, mystd::tuple<ModFunc, ModFunc, SettingsFunc>>
+      modMap;
+  return modMap;
+}
+\end{lstlisting}
 \ssc{2-C-4-3 polymorphism 相關的 class 或 function 間的對應關係}
-承上，敘述 compile-time polymorphism 而非 runtime polymorphism。
-\ssc{2-D-1-1 演算法設計}
-\label{2-D-1-1}
-\ssc{2-D-1-2 程式執⾏效率優化}
-\label{2-D-1-2}
-```
-\sssc{constexpr function}
-\label{constexpr}
-\sssc{decltype}
-\label{decltype}
-\sssc{Ref-Qualified Member Functions}
-\label{ref-qualified}
-\sssc{std::declval template}
-\label{declval}
-\sssc{no\_unique\_address attribute}
-\label{no-unique}
-\sssc{Empty Base Optimization (EBO)}
-\label{ebo}
-\sssc{Structured Bindings}
-\label{bindings}
-\sssc{Argument-Dependent Lookup (ADL)}
-\label{adl}
-\sssc{Class Template Argument Deduction (CTAD)}
-\label{ctad}
-\sssc{Concepts}
-\lable{concepts}
-\sssc{Substitution Failure Is Not An Error (SFINAE)}
-\label{sfinae}
-\sssc{Exception Safety Guarantees}
-\label{exception}
-\sssc{Resource Acquisition Is Initialization (RAII)}
-\label{RAII}
-\sssc{Rule of Three / Five / Zero}
-\label{rule}
-\sssc{Template Compile-Time Recursion}
-\label{recursion}
-```
-\ssc{2-D-1-3 程式碼管理版本控制}
-\ssc{2-D-2-1 美⼯細節}
-請參見 \hyperref[1-3-1]{1-3-1 美⼯介⾯設計}。
-\ssc{2-D-2-2 音樂細節}
-本專題之音樂非自行創作，又本人不負責音樂處理，故略。
-\ssc{Appendix I: C++ Idioms}
-\label{idioms}
-本附錄集中列出本專題使用的 C++ idioms，供其他章節索引使用。
-\sssc{Rule of Three / Five / Zero}
-\label{rule}
-\begin{itemize}
-    \item \textbf{Rule of Three:} If a class defines a destructor, copy constructor, or copy assignment operator, it likely needs all three.
-    \item \textbf{Rule of Five:} Extends the Rule of Three by including move constructor and move assignment for C++11 and later.
-    \item \textbf{Rule of Zero:} Prefer using RAII and standard containers to avoid manually managing special member functions.
-\end{itemize}
-These rules are applied consistently in all containers of my STL implementation to ensure correct and safe resource management.
-\sssc{Resource Acquisition Is Initialization (RAII)}
-\label{RAII}
-RAII is a programming idiom in C++ used to manage resource lifetimes automatically. The key idea is:
-\begin{itemize}
-    \item Resources (e.g., memory, file handles, sockets) are acquired in the constructor of a class.
-    \item Resources are released in the destructor, ensuring deterministic cleanup and exception safety.
-\end{itemize}
-\sssc{Exception Safety Guarantees}
-\label{exception}
-STL containers follow strict \textbf{exception safety guarantees} during operations such as insertion, deletion, or reallocation:
-\begin{itemize}
-    \item \textbf{No-throw guarantee:} The operation never throws an exception.
-    \item \textbf{Strong guarantee:} If an exception occurs, the container's state remains unchanged.
-    \item \textbf{Basic guarantee:} Some changes may occur, but the container remains in a valid state.
-\end{itemize}
-In my implementation, I use \texttt{try-catch} blocks and proper deallocation to handle exceptions, prefer no-throwing branches when possible, and provide explicit \texttt{noexcept} specifications.
+\label{2-C-4-3}
+承上，本專題未使用 runtime polymorphism，而是廣泛使用 compile-time polymorphism。
+
+具體個案的對應關係可參考前兩章所列之內容中 template arguments 等處得知，下文將針對其各類型說明設計理念與核心概念。
 \sssc{Substitution Failure Is Not An Error (SFINAE)}
 \label{sfinae}
 SFINAE is a compile-time technique in template programming. If substituting template parameters results in an invalid type or expression, the compiler silently ignores that overload instead of producing an error. This mechanism enables selective template instantiation and overload resolution.
@@ -4797,21 +5805,113 @@ C++20 introduces \textbf{concepts}, which allow explicit constraints on template
     \item Improved code readability and maintainability.
 \end{itemize}
 In my STL implementation, concepts are heavily used to determine the appropriate overload or \texttt{if constexpr} branch. This technique enables optimizations for trivially copyable types, contiguous iterators, allocator traits-based optimization, etc.
+
+One example is demonstrated in \textbf{2-B-1-2 指標成員處理} 中的 \hyperref[vector-list]{\textbf{include/vector.hpp}} and described in its \hyperref[vector-describe]{\textbf{敘述}}.
+
+Another example in \verb|include/algorithm-copy.hpp| is described as follows. The file provides three basic data transfer algorithms: \verb|copy|, \verb|copy_if|, and \verb|copy_backward|, mimicking the interface design of C++20 \verb|<algorithm>|. The copy function family demonstrates the polymorphism programming techniques, particularly conceptual parameter constraints and conditional optimization strategies.
+
+I utilize concepts for constraints, such as \verb|std::input_iterator|, \verb|std::weakly_incrementable|, \verb|std::bidirectional_iterator|, and \verb|std::indirectly_writable| in the definition, and
+\verb|std::contiguous_iterator| and \verb|std::is_trivially_copyable_v| for specialized acceleration.
+
+In \verb|copy| algorithms, I use \verb|std::memcpy| when possible and element-wise assignment only when necessary, as demonstrated below (line~7--32)
+\begin{lstlisting}[language=C++]
+template <std::input_iterator InputIt, std::weakly_incrementable OutputIt>
+  requires std::indirectly_writable<OutputIt, std::iter_value_t<InputIt>>
+constexpr OutputIt copy(InputIt first, InputIt last, OutputIt d_first) {
+  if constexpr (std::contiguous_iterator<InputIt> &&
+                std::contiguous_iterator<OutputIt> &&
+                std::is_trivially_copyable_v<
+                    typename std::iterator_traits<InputIt>::value_type> &&
+                std::is_same_v<
+                    typename std::iterator_traits<InputIt>::value_type,
+                    typename std::iterator_traits<OutputIt>::value_type>) {
+    if (first == last)
+      return d_first;
+    const auto *src = std::to_address(first);
+    const auto *src_end = std::to_address(last);
+    auto *dest = std::to_address(d_first);
+    const std::size_t count = (src_end - src) * sizeof(*src);
+    std::memcpy(dest, src, count);
+    return d_first + (last - first);
+  }
+  while (first != last) {
+    *d_first = *first;
+    ++first;
+    ++d_first;
+  }
+  return d_first;
+}
+\end{lstlisting}
+
+Similarly, in \verb|copy_backward| algorithm, \verb|std::memmove| is used when possible, as demonstrated below (line~49--73)
+\begin{lstlisting}[language=C++]
+template <std::bidirectional_iterator BidirIt1,
+          std::bidirectional_iterator BidirIt2>
+constexpr BidirIt2 copy_backward(BidirIt1 first, BidirIt1 last,
+                                 BidirIt2 d_last) {
+  using ValueType1 = typename std::iterator_traits<BidirIt1>::value_type;
+  using ValueType2 = typename std::iterator_traits<BidirIt2>::value_type;
+  if constexpr (std::contiguous_iterator<BidirIt1> &&
+                std::contiguous_iterator<BidirIt2> &&
+                std::is_trivially_copyable_v<ValueType1> &&
+                std::is_same_v<ValueType1, ValueType2>) {
+    auto n = last - first;
+    if (n > 0) {
+      std::memmove(std::addressof(*d_last) - n, std::addressof(*first),
+                   n * sizeof(ValueType1));
+    }
+    return d_last - n;
+  } else {
+    while (first != last) {
+      --last;
+      --d_last;
+      *d_last = *last;
+    }
+    return d_last;
+  }
+}
+\end{lstlisting}
 \sssc{Class Template Argument Deduction (CTAD)}
 \label{ctad}
 C++17 introduced \textbf{Class Template Argument Deduction (CTAD)}, allowing the compiler to deduce template parameters from constructor arguments. STL containers provide \textbf{deduction guides} to assist this process, which are also implemented in my library to improve usability.
-\sssc{Argument-Dependent Lookup (ADL)}
-\label{adl}
-ADL, also known as \textbf{Koenig lookup}, allows the compiler to search for functions not only in the current scope but also in the namespaces of the function argument types. This enables intuitive and unqualified function calls.
-\sssc{Structured Bindings}
-\label{bindings}
-Structured bindings, introduced in C++17, allow unpacking of tuples, pairs, arrays, or user-defined types into individual variables. In my STL implementation, \verb|include/tuple-using.hpp| provides \verb|std::tuple_size| and \verb|std::tuple_element| support for \verb|mystd::array| and \verb|mystd::tuple|.
+
+Take \verb|mystd::priority_queue| for example, the CTADs are as follows: (\verb|include/priority_queue.hpp| line~212--242)
+\begin{lstlisting}[language=C++]
+template <class Comp, class Container>
+priority_queue(Comp, Container)
+    -> priority_queue<typename Container::value_type, Container, Comp>;
+
+template <
+    std::input_iterator InputIt,
+    class Comp = std::less<typename std::iterator_traits<InputIt>::value_type>,
+    class Container =
+        mystd::vector<typename std::iterator_traits<InputIt>::value_type>>
+priority_queue(InputIt, InputIt, Comp = Comp(), Container = Container())
+    -> priority_queue<typename std::iterator_traits<InputIt>::value_type,
+                      Container, Comp>;
+
+template <class Comp, class Container, class Alloc>
+priority_queue(Comp, Container, Alloc)
+    -> priority_queue<typename Container::value_type, Container, Comp>;
+
+template <std::input_iterator InputIt, class Alloc>
+priority_queue(InputIt, InputIt, Alloc) -> priority_queue<
+    typename std::iterator_traits<InputIt>::value_type,
+    mystd::vector<typename std::iterator_traits<InputIt>::value_type>,
+    std::less<typename std::iterator_traits<InputIt>::value_type>>;
+
+template <std::input_iterator InputIt, class Comp, class Alloc>
+priority_queue(InputIt, InputIt, Comp, Alloc) -> priority_queue<
+    typename std::iterator_traits<InputIt>::value_type,
+    mystd::vector<typename std::iterator_traits<InputIt>::value_type>, Comp>;
+
+template <std::input_iterator InputIt, class Comp, class Container, class Alloc>
+priority_queue(InputIt, InputIt, Comp, Container, Alloc)
+    -> priority_queue<typename Container::value_type, Container, Comp>;
+\end{lstlisting}
 \sssc{Empty Base Optimization (EBO)}
 \label{ebo}
 In C++, an empty class normally has size 1 to ensure unique addresses. EBO is a compiler optimization that allows empty base classes to occupy no additional storage when used as a base. In my implementation, EBO is applied in \verb|_tuple_impl|, the internal recursive inheritance mechanism for \verb|mystd::tuple|.
-\sssc{no\_unique\_address attribute}
-\label{no-unique}
-Introduced in C++20, \texttt{[[no\_unique\_address]]} attribute allows empty member objects to be optimized similarly to empty bases, reducing storage overhead. It is used for allocator members in my STL containers.
 \sssc{Template Compile-Time Recursion}
 \label{recursion}
 Templates can perform computation at compile time using recursion:
@@ -4838,10 +5938,6 @@ struct S {
 };
 \end{lstlisting}
 This mechanism is widely used in the member functions overloads in STL to control move semantics.
-\sssc{Named Return Value Optimization (NRVO)}
-Named Return Value Optimization (NRVO) is a compiler optimization that eliminates unnecessary copy or move constructions when returning a local object from a function.
-
-If a function returns a named local variable matching the function's return type directly without parenthesis, the compiler is allowed to construct the object directly in the caller's storage, bypassing temporary objects.
 \sssc{decltype}
 \label{decltype}
 \texttt{decltype} is a compile-time operator that deduces the declared type of an expression without performing the expression's evaluation. Unlike \verb|auto|, which uses assignment-like deduction rules, \texttt{decltype} preserves the exact type, including references and cv-qualifiers.
@@ -4858,6 +5954,14 @@ expression category.
 \verb|decltype(auto)| preserves the exact type of the initializer.
 
 \texttt{decltype} is crucial in producing type traits or meta-functions in template metaprogramming in many templates in my implementation, and \verb|decltype(auto)| is also used together with perfect forwarding and template overloads in my implementation.
+\sssc{Curiously Recurring Template Pattern (CRTP)}
+The Curiously Recurring Template Pattern (CRTP) is a C++ idiom in which a class Derived inherits from a class template Base that takes Derived itself as a template parameter.
+
+CRTP allows classes to achieve polymorphic behavior at compile time, combining interface abstraction, code reuse, and high performance. It is particularly suitable when runtime overhead of virtual functions is undesirable or when the set of derived classes is fixed at compile time.
+\ssc{2-D-1-1 演算法設計}
+\label{2-D-1-1}
+\ssc{2-D-1-2 程式執⾏效率優化}
+\label{2-D-1-2}
 \sssc{constexpr function}
 \label{constexpr}
 The constexpr specifier is introduced in C++11, and declares that it is possible to evaluate the value of the entities at compile time. Such entities can then be used where only compile time constant expressions are allowed (provided that appropriate function arguments are given).
@@ -4902,27 +6006,26 @@ Since C++20, many functions in STL is constexpr, notably many of the constructor
 \item The class does not have any virtual base class. 
 \eit
 \eit
-\sssc{Static Initialization Order Fiasco (SIOF)}
-\label{siof}
-In C++, the initialization order of non-local static objects is governed by the following rules:
-\begin{itemize}
-\item \textbf{Within a single translation unit:} Non-local static objects are initialized in the order of their definitions within that translation unit.
-\item \textbf{Across different translation units:} The initialization order of non-local static objects defined in different translation units is unspecified.
-\end{itemize}
-As a result, if a static object in one translation unit depends on another static object defined in a different translation unit during its initialization, there is no guarantee that the depended-on object has already been initialized. Accessing such an object before its initialization leads to undefined behavior.
+\sssc{Named Return Value Optimization (NRVO)}
+Named Return Value Optimization (NRVO) is a compiler optimization that eliminates unnecessary copy or move constructions when returning a local object from a function.
 
-To mitigate or avoid SIOF, the following design strategies are generally recommended:
-\begin{itemize}
-\item Prefer \verb|constexpr| or \verb|inline| variables where possible, as their initialization is guaranteed at compile time or follows well-defined rules.
-\item Use function-local static objects, whose initialization is guaranteed to occur upon first use and is thread-safe since C++11.
-\item Avoid cross-translation-unit dependencies between non-local static objects, especially during their initialization phase.
-\end{itemize}
-\sssc{Curiously Recurring Template Pattern (CRTP)}
-The Curiously Recurring Template Pattern (CRTP) is a C++ idiom in which a class Derived inherits from a class template Base that takes Derived itself as a template parameter.
+If a function returns a named local variable matching the function's return type directly without parenthesis, the compiler is allowed to construct the object directly in the caller's storage, bypassing temporary objects.
+\sssc{no\_unique\_address attribute}
+\label{no-unique}
+Introduced in C++20, \texttt{[[no\_unique\_address]]} attribute allows empty member objects to be optimized similarly to empty bases, reducing storage overhead. It is used for allocator members in my STL containers.
+\ssc{2-D-1-3 程式碼管理版本控制}
+\ssc{2-D-2-1 美⼯細節}
+請參見 \hyperref[1-3-1]{\textbf{1-3-1 美⼯介⾯設計}}。
+\ssc{2-D-2-2 音樂細節}
+本專題之音樂非自行創作，又本人不負責音樂處理，故略。
 
-CRTP allows classes to achieve polymorphic behavior at compile time, combining interface abstraction, code reuse, and high performance. It is particularly suitable when runtime overhead of virtual functions is undesirable or when the set of derived classes is fixed at compile time.
-\ssc{Appendix II: PlantUML Code}
-\ssc{Appendix III: LaTeX Code}
+
+
+
+
+
+\ssc{Appendix I: PlantUML Code}
+\ssc{Appendix II: LaTeX Code}
 \end{document}
 
 
@@ -4933,5 +6036,10 @@ CRTP allows classes to achieve polymorphic behavior at compile time, combining i
 \begin{itemize}
   \item 將其中的所有變數、函式或物件限定在本翻譯單元（translation unit）內部。
   \item 可以在檔案載入時立即執行初始化。
-  \item 避免 \hyperref[siof]{Static Initialization Order Fiasco (SIOF)}，因為初始化延遲到首次使用時才執行。
+  \item 避免 \hyperref[siof]{\textbf{Static Initialization Order Fiasco (SIOF)}}，因為初始化延遲到首次使用時才執行。
 \end{itemize}
+I originally struggled on implementating \verb|operator<=>| for \verb|_tuple_impl|, the internal recursive inheritance implementation for tuple, since different element may return different type for auto deduct to fail and deducing type recursively with conditional_t will face initialization of undefined template parameters even though it will not be chose. Even though it succeeded to compile in g++, that is not complying with standard and not compiled in clang. Latter, I add element_type internal type alias in \verb|_tuple_impl| that calculate based on index and recursively define the alias. And use it and get in tuple directly to deduce type at the initialization iteratively instead of recursively, which succeeded.
+
+
+
+Appendix: 工具
