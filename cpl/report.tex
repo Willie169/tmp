@@ -1,10 +1,20 @@
 \documentclass[a4paper,12pt]{article}
 \setcounter{secnumdepth}{5}
 \setcounter{tocdepth}{3}
+\newcounter{ZhRenew}
+\setcounter{ZhRenew}{1}
+\newcounter{SectionLanguage}
+\setcounter{SectionLanguage}{1}
 \input{/usr/share/LaTeX-ToolKit/template.tex}
 \renewcommand{\arraystretch}{1.5}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue,
+  urlcolor=blue,
+  citecolor=blue
+}
 \begin{document}
-\title{計算機程式期末專題期末報告}
+\title{計算機程式期末報告}
 \author{沈威宇}
 \date{\temtoday}
 \titletocdoc
@@ -14,7 +24,7 @@
 
 開始遊戲之後，首先會進入遊戲難度的調整，包含 Lanes 軌道數的調整、Fragments 可見列數的調整、以及 Mods 遊戲模組的調整。Lanes 可以調整遊戲的軌道數，但由於我們的譜面並非隨機生成而是連結外部、我們自己寫的 .txt 檔案，時間關係並沒有寫 Lanes = 4 以外的譜面。Fragments 部分則可以調整可見列數，數值越大，可以越早看見 Notes 的出現，但音符更窄故可能較難判斷與判定線的距離。Mods 可以選擇不同模式的康威生命遊戲（Conway's Game of Life）模組，遊戲中將會在 TapNote 上執行相應的康威生命遊戲，但目前結算時的準確度不會根據之調整分母。選擇完畢後會倒數 3 秒，以供玩家準備。
 
-遊戲中的下落式的音符可分為兩種，第一種是由鍵盤操作的 Key note，又細分為紅色的 Tap note 與綠色的 Hold note。Tap note 玩家必須在正確的節奏點按下對應的按鍵，Hold note 玩家則須在期間內持續按住對應的按鍵以持續得分。以軌道數 Lanes = 4 為例，對應的按鍵即為 A、S、D、F ，若軌道數目更多則依序對應 G、H 等右方的鍵盤按鍵。Tap note 根據玩家按下對應按鍵的時機，評分判定分為五個等級—— Perfect、Great、Good、Bad、Miss，分別能獲得 100\%、75\%、50\%、25\%、0\% 的分數，滿分為 1000 分。持續避免 Bad 或 Miss 可以累積 Combo 數。
+遊戲中的下落式的音符可分為兩種，第一種是由鍵盤操作的 Key note，又細分為紅色的 Tap note 與綠色的 Hold note。Tap note 玩家必須在正確的節奏點按下對應的按鍵，Hold note 玩家則須在期間內持續按住對應的按鍵以持續得分。以軌道數 Lanes = 4 為例，對應的按鍵即為 A、S、D、F ，若軌道數目更多則依序對應 G、H 等右方的鍵盤按鍵。Tap note 根據玩家按下對應按鍵的時機，評分判定分為五個等級—— Perfect、Great、Good、Bad 與 Miss，分別能獲得 100\%、75\%、50\%、25\%、0\% 的分數，滿分為 1000 分。持續避免 Bad 或 Miss 可以累積 Combo 數。
 
 第二種是是由滑鼠操縱角色碰觸的 Mouse note，分為紅色與綠色兩種，碰觸綠色音符可以持續獲得分數，最多 400 分。相反地，紅色的音符則會造成等量的扣分。滑鼠左右操作可以使角色在白色線上移動，讓玩家得以控制角色在觸碰綠色音符的同時避開紅色音符。遊戲過程中，鍵盤的操作與滑鼠的移動必須同時進行，考驗玩家的左右手協調與反應力。
 
@@ -23,7 +33,7 @@
 美工介面設計分工如下：
 \begin{itemize}
 \item 遊戲主選單、音量調整滑桿、選歌頁面、遊戲背景、Mouse notes，以及角色動畫由于昀辰設計。
-\item Tap notes、Hold notes、遊戲中的計分與資訊文字、各類特效、設定頁面、倒數動畫，以及康威生命遊戲模組設定頁面由沈威宇設計，將於 \hyperref[2-D-2-1]{\texbf{2-D-2-1 美⼯細節}
+\item Tap notes、Hold notes、遊戲中的計分與資訊文字、各類特效、設定頁面、倒數動畫，以及康威生命遊戲模組設定頁面由沈威宇設計，將於 \hyperref[2-D-2-1]{\textbf{2-D-2-1 美⼯細節}
 \label{2-D-2-1}} 詳述。
 \item 結算頁面由林孜謙設計。
 \end{itemize}
@@ -78,7 +88,7 @@ G1, R2, G3
   \item \textbf{MusicManager（音樂管理器）} \\
   功能：管理背景音樂與音效播放
   \begin{itemize}
-    \item 載入並播放音樂（使用 SDL_mixer）
+    \item 載入並播放音樂（使用 SDL\_mixer）
     \item 控制音量（音樂與音效分開控制）
     \item 提供暫停、繼續、停止功能
     \item 偵測音樂播放狀態
@@ -106,23 +116,23 @@ enum class GameState {
 \end{lstlisting}
 狀態流程：
 \begin{itemize}
-  \item MAIN_MENU → SETTINGS
+  \item MAIN\_MENU → SETTINGS
   \item SETTINGS → COUNTDOWN
   \item COUNTDOWN → GAME
   \item GAME → PAUSE or RESULT
   \item PAUSE → GAME or SETTINGS
-  \item RESULT → SETTINGS or MAIN_MENU
+  \item RESULT → SETTINGS or MAIN\_MENU
 \end{itemize}
 \textbf{主要流程}
 \begin{enumerate}
   \item \textbf{初始化階段}
   \begin{itemize}
-    \item 初始化 SDL、SDL_ttf、SDL_image、SDL_mixer
+    \item 初始化 SDL、SDL\_ttf、SDL\_image、SDL\_mixer
     \item 載入字型與主選單紋理
     \item 建立視窗與渲染器
     \item 設定初始音量
   \end{itemize}
-  \item \textbf{主選單（MAIN_MENU）}
+  \item \textbf{主選單（MAIN\_MENU）}
   \begin{itemize}
     \item 顯示 Logo 與按鈕（Start/Songs/Settings）
     \item 處理音量滑桿拖曳
@@ -184,7 +194,9 @@ enum class GameState {
 \textbf{關鍵機制}
 \begin{itemize}
   \item 誤差修正系統：
-  \verb|adjustGameStartTime(currentTime, gameStartTime, exactFragmentMs, holdPressedTime)|
+\begin{lstlisting}[language=C++]
+adjustGameStartTime(currentTime, gameStartTime, exactFragmentMs, holdPressedTime)
+\end{lstlisting}
   \begin{itemize}
     \item 累積 \verb|actualDelta - exactFragmentMs| 的誤差
     \item 當誤差 ≥ 1ms 時調整 \verb|gameStartTime|
@@ -197,7 +209,9 @@ enum class GameState {
     \item 太早按：允許提前 0.4 個 fragment 判定
   \end{itemize}
   \item 資料流向：
-  \verb|ChartParser → keyNotes → Game.notes → Game.loadFragment() → Game.highway → Renderer.render() → 螢幕|
+\begin{lstlisting}
+ChartParser → keyNotes → Game.notes → Game.loadFragment() → Game.highway → Renderer.render() → 螢幕
+\end{lstlisting}
 \end{itemize}
 \textbf{模組依賴關係}
 \begin{verbatim}
@@ -228,10 +242,10 @@ BeatRunner.cpp
 \item \textbf{增加測試與自動化流程：}建議針對 Game 判定系統、音符片段呈現、時間誤差修正、Renderer 渲染結果與特效顯示建立單元測試與整合測試。自動化測試可提前發現邏輯錯誤、時間同步偏差及邊界條件，減少開發過程中的錯誤與重工。可使用 C++ 測試框架（如 Google Test、Catch2）搭配 CI/CD 流程，自動執行測試與生成報告，確保每次提交都維持穩定性。
 \item \textbf{優化版本控制策略：}目前已使用 Git 分支管理，但可引入更嚴格的分支命名規範、標籤策略與合併流程（如 Git Flow 或 trunk-based development），以進一步提升多人協作效率。明確追蹤功能開發與版本，有助於快速定位問題與回溯歷史，也能降低 merge conflict 發生頻率，尤其在多人同時開發遊戲核心邏輯或特效模組時更為重要。
 \item \textbf{使用者體驗改進：}可加入更多即時視覺與聲音反饋，例如 combo 效果動畫、錯誤按鍵提示、滑鼠角色碰撞提示等，使玩家更直觀理解操作結果，提升沉浸感與操作滿意度。同時優化 UI 互動邏輯與選單流程，讓新手玩家快速上手並減少操作迷失，增強整體遊戲體驗。
-\item \textbf{提供 Documentation 與 Comment：} 建議在程式碼中添加完整的 comment，清楚描述各區塊功能與邏輯流程，並提供全面的遊戲程式設計與使用說明文件（documentation），明確記錄類別責任、方法用途、資料流向、物件所有權管理、遊戲操作方法等細節。對於複雜邏輯或模組間關係，可提供使用範例、class diagram、state diagram 或流程圖等，方便使用者與新開發者快速理解系統，並提升程式碼可維護性與專案可擴展性。
+\item \textbf{提供 Documentation 與 Comment：}建議在程式碼中添加完整的 comment，清楚描述各區塊功能與邏輯流程，並提供全面的遊戲程式設計與使用說明文件（documentation），明確記錄類別責任、方法用途、資料流向、物件所有權管理、遊戲操作方法等細節。對於複雜邏輯或模組間關係，可提供使用範例、class diagram、state diagram 或流程圖等，方便使用者與新開發者快速理解系統，並提升程式碼可維護性與專案可擴展性。
 \end{itemize}
 \sct{個人程式設計說明}
-\ssc{本人（沈威宇）撰寫的部分}
+\ssc{沈威宇撰寫的部分}
 符合 C++20 標準，並實作於 \texttt{namespace mystd} 之下的仿 STL 函式庫：
 \begin{itemize}
 \item \verb|include/algorithm-copy.hpp|：\verb|copy|、\verb|copy_if|、\verb|copy_backward|。
@@ -279,23 +293,55 @@ Tap notes 與 Hold notes 之判定、計分與渲染、遊戲資訊計算、各�
 \sssc{include/tuple.hpp}
 \begin{itemize}
 \item \verb|template <typename T> struct _is_tuple| inherits from \verb|std::false_type|, serving as a primary type trait to determine whether a given type is a tuple. (line~20)
-\item \verb|template <std::size_t I, class Head, class... Tail> struct _tuple_impl<I, Head, Tail...>| publicly inherits from \verb|_tuple_impl<I + 1, Tail...>|, forming a recursive inheritance structure that represents each tuple element at a distinct level. (line~54)
-\item \verb|template <std::size_t I, class Head, class... Tail> struct _tuple_impl<I, Head, Tail...>| contains a data member \verb|Head head;|, demonstrating class composition where each level stores exactly one tuple element. (line~56)
+\item
+\begin{lstlisting}[language=C++]
+template <std::size_t I, class Head, class... Tail> struct _tuple_impl<I, Head, Tail...>
+\end{lstlisting}
+publicly inherits from \verb|_tuple_impl<I + 1, Tail...>|, forming a recursive inheritance structure that represents each tuple element at a distinct level. (line~54)
+\item
+\begin{lstlisting}[language=C++]
+template <std::size_t I, class Head, class... Tail> struct _tuple_impl<I, Head, Tail...>
+\end{lstlisting}
+contains a data member \verb|Head head;|, demonstrating class composition where each level stores exactly one tuple element. (line~56)
 \item \verb|template <class... Types> class tuple| composes an internal implementation object \verb|_tuple_impl<0, Types...> _impl|, separating the public interface from the recursive storage implementation. (line~258)
 \item \verb|template <typename... Ts> struct _is_tuple<mystd::tuple<Ts...>>| inherits from \verb|std::true_type|, providing a specialization that marks \verb|mystd::tuple| as a valid tuple type at compile time. (line~578)
 \item \verb|template <class T> struct _count_of_type<T>| inherits from \verb|std::integral_constant<std::size_t, 0>|, defining the recursion base case for counting occurrences of a type within a parameter pack. (line~603)
-\item \verb|template <class T, class Head, class... Tail> struct _count_of_type<T, Head, Tail...>| inherits from \verb|std::integral_constant<std::size_t, (std::is_same_v<T, Head> ? 1 : 0) + _count_of_type<T, Tail...>::value>|, implementing a recursive compile-time algorithm via inheritance. (line~606)
+\item
+\begin{lstlisting}[language=C++]
+template <class T, class Head, class... Tail> struct _count_of_type<T, Head, Tail...>
+\end{lstlisting}
+inherits from
+\begin{lstlisting}[language=C++]
+std::integral_constant<std::size_t, (std::is_same_v<T, Head> ? 1 : 0) + _count_of_type<T, Tail...>::value>
+\end{lstlisting}
+, implementing a recursive compile-time algorithm via inheritance. (line~606)
 \item \verb|template <class T, class... Tail> struct _index_of_type<T, T, Tail...>| inherits from \verb|std::integral_constant<std::size_t, 0>|, representing the base case for determining the index of a type within the tuple. (line~618)
-\item \verb|template <class T, class Head, class... Tail> struct _index_of_type<T, Head, Tail...>| inherits from \verb|std::integral_constant<std::size_t, 1 + _index_of_type<T, Tail...>::value>|, forming a recursive inheritance chain to compute the type index at compile time. (line~622)
-\item \verb|template <class... Types, class Alloc> struct uses_allocator<std::tuple<Types...>, Alloc>| inherits from \verb|std::true_type|, indicating that \verb|mystd::tuple| participates in allocator-aware construction semantics. (line~732)
+\item
+\begin{lstlisting}[language=C++]
+template <class T, class Head, class... Tail> struct _index_of_type<T, Head, Tail...>
+\end{lstlisting}
+inherits from
+\begin{lstlisting}[language=C++]
+std::integral_constant<std::size_t, 1 + _index_of_type<T, Tail...>::value>
+\end{lstlisting}
+, forming a recursive inheritance chain to compute the type index at compile time. (line~622)
+\item
+\begin{lstlisting}[language=C++]
+template <class... Types, class Alloc> struct uses_allocator<std::tuple<Types...>, Alloc>
+\end{lstlisting}
+inherits from \verb|std::true_type|, indicating that \verb|mystd::tuple| participates in allocator-aware construction semantics. (line~732)
 \item \verb|template <class... Types> struct tuple_size<mystd::tuple<Types...>>| inherits from \verb|std::integral_constant<std::size_t, sizeof...(Types)>|, integrating \verb|mystd::tuple| with the standard tuple interface. (line~739)
-\item \verb|template <std::size_t I, class Head, class... Tail> struct tuple_element<I, mystd::tuple<Head, Tail...>>| inherits from \verb|tuple_element<I - 1, mystd::tuple<Tail...>>|, forming a recursive inheritance structure to map indices to element types. (line~748)
+\item
+\begin{lstlisting}[language=C++]
+template <std::size_t I, class Head, class... Tail> struct tuple_element<I, mystd::tuple<Head, Tail...>>
+\end{lstlisting}
+inherits from \verb|tuple_element<I - 1, mystd::tuple<Tail...>>|, forming a recursive inheritance structure to map indices to element types. (line~748)
 \end{itemize}
 \sssc{其他 mystd}
 因數量甚多，僅列舉以下數例。
 \begin{itemize}
 \item \verb|mystd::circulate| 與 \verb|mystd::priority_queue| 皆為 container adapter，其預設底層容器均為 \verb|mystd::vector|。（\verb|include/circulate.hpp| line~191；\verb|include/priority_queue.hpp| line~18）
-\item \verb|mystd::circulate| 透過 iterator proxy classes \verb|_circulate_iterator|（\verb|include/circulate.hpp| line~15）與 \verb|_circulate_const_iterator|（\verb|include/circulate.hpp| line~92）實作循環式走訪語意，使 iterator 能在不改變原容器的情況下重複遍歷元素。
+\item \verb|mystd::circulate| 透過 iterator proxy classes \verb|_circulate_iterator| 與 \verb|_circulate_const_iterator| 實作循環式走訪語意，使 iterator 能在不改變原容器的情況下重複遍歷元素。（\verb|include/circulate.hpp| line~15、line~92）
 \item \verb|include/allocator.hpp| 中透過大量輔助 \verb|struct| 實作 \verb|allocator_traits| 所需之型別別名與推導機制，下列程式碼節錄示範其中一個 \verb|rebind| 輔助結構之實作方式。（line~42--55）
 \begin{lstlisting}[language=C++]
 template <typename Alloc, typename T, typename = void>
@@ -330,7 +376,7 @@ struct ignore_t {
 inline constexpr ignore_t ignore{};
 \end{lstlisting}
 \end{itemize}
-\sssc{mystd 以外（僅列沈威宇實作部分）}
+\sssc{mystd 以外（僅列沈威宇撰寫部分）}
 \begin{itemize}
 \item \verb|game_priority_queue<T>| 公開繼承自 \verb|mystd::priority_queue<T>|，並將其受保護成員 \verb|c|（底層 container）提升為 public 成員。(\verb|Game.hpp| line~17--20)
 \begin{lstlisting}[language=C++]
@@ -342,195 +388,30 @@ public:
 \item \verb|game_priority_queue<Effect> centerEffects| 為 \verb|game_priority_queue| 之 template specialization，其儲存型別固定為 \verb|Effect|，用於遊戲中特效之優先序管理。此架構除滿足現行需求外，亦預留未來功能擴充之彈性。(\verb|Game.hpp| line~65)
 \item \verb|Game| 具有成員 \verb|mystd::vector<KeyNoteData> &notes|，其為對全域變數之參考，此設計係後期為配合 \verb|ChartParser| 之整合與資料共享需求而進行之調整。(\verb|Game.hpp| line~44)
 \item \verb|Game| 透過成員 \verb|laneEffects| 聚合多個 \verb|Effect|，並透過 \verb|centerEffects| 聚合一個 \verb|game_priority_queue<Effect>|，以支援集中式特效排程與依優先序處理之設計。(\verb|Game.hpp| line~64--65)
-\item \verb|Game| 具有成員物件 \verb|mystd::vector<mystd::circulate<int8_t, mystd::vector<int8_t>>> highway|，儲存 highway 上的 tap notes and hold notes。(\verb|Game.hpp| line~50)
+\item \verb|Game| 具有成員物件
+\begin{lstlisting}[language=C++]
+mystd::vector<mystd::circulate<int8_t, mystd::vector<int8_t>>> highway
+\end{lstlisting}
+，儲存 highway 上的 tap notes and hold notes。(\verb|Game.hpp| line~50)
 \item \verb|Renderer| 具有成員物件 \verb|Game &game|，持有遊戲邏輯之參考，以便於渲染階段即時存取遊戲狀態。由於兩者均在後期整合改為手動記憶體管理，故未使用 \verb|shared_ptr|，若未來專案擴展或應使用之並避免手動記憶體管理。（\verb|Renderer.hpp| line~54)
-\item \verb|Renderer| 使用\verb|std::unordered_map<mystd::tuple<int8_t, bool, uint32_t>, SDL_Texture *, NotesCacheHash>|作為 key notes 的貼圖快取容器，並透過自訂雜湊結構 \verb|NotesCacheHash| 提供雜湊函式；其餘 \verb|std::unordered_map| 則用於快取其他類型之 \verb|SDL_Texture*|。（\verb|Renderer.hpp| line~55--59)
+\item \verb|Renderer| 使用
+\begin{lstlisting}[language=C++]
+std::unordered_map<mystd::tuple<int8_t, bool, uint32_t>, SDL_Texture *, NotesCacheHash>
+\end{lstlisting}
+作為 key notes 的紋理快取容器，並透過自訂雜湊結構 \verb|NotesCacheHash| 提供雜湊函式；其餘 \verb|std::unordered_map| 則用於快取其他類型之 \verb|SDL_Texture*|。（\verb|Renderer.hpp| line~55--59)
 \end{itemize}
 \ssc{2-A-1-2 畫出 class 之間的關係圖}
-本章節以 PlantUML Class Diagram 呈現各個 class 之間的關係。圖表均由沈威宇使用 clang-uml 自原始 C++ 程式碼中自動萃取類別結構資訊，再依實際設計意圖進行人工補註與整理，最後透過 PlantUML 生成。相關 PlantUML 原始碼請參見 \hyperref[plantuml]{\textbf{Appendix I: PlantUML Code}}。
-
-下列符號為本文件中使用之自訂圖例，用以輔助說明 C++ 類別成員之可見度、成員型態，以及類別之間的關係。該等符號不屬於 PlantUML 官方標準語法，僅作為結構理解與閱讀輔助之用。
-
-class 成員符號：
-\begin{itemize}
-\item 實心方形：private method
-\item 空心方形：private field
-\item 實心菱形：protected method
-\item 空心菱形：protected field
-\item 實心圓形：public method
-\item 空心圓形：public field
-\end{itemize}
-class 連結箭頭：
-\begin{itemize}
-\item 實線空心三角箭頭：derive from（inheritance）
-\item 虛線空心三角箭頭：be realized with（interface realization）
-\item 實線開口箭頭：composite（composition）
-\item 虛線開口箭頭：depend on（dependency）
-\item 實線空心菱形箭頭：aggregate in（aggregation）
-\item 實線 $\otimes$ 形箭頭：be aliased by（type alias via \texttt{using}）
-\end{itemize}
-\sssc{完整程式架構 class diagram}
-所有 class 皆標註其作者。首張圖為 SVG 格式，可放大檢視整體架構；其後共 16 張圖為分割後之 class diagram，每張對應 SVG 之一部分區塊。分割方式為橫向 8 區、縱向 2 區，排列順序依左至右、上至下，例如：左一上、左一下、左二上、左二下，以此類推。
-\begin{center}
-\begin{figure}[H]
-\centering
-\includesvg[width=\textwidth,angle=90]{diagrams/full.svg}
-\caption{完整程式架構 class diagram（SVG，可放大檢視）}
-\end{figure}
-\FloatBarrier
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{diagrams/page_w0_h0.png}
-\end{figure}
-\FloatBarrier
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{diagrams/page_w0_h1.png}
-\end{figure}
-\FloatBarrier
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{diagrams/page_w1_h0.png}
-\end{figure}
-\FloatBarrier
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{diagrams/page_w1_h1.png}
-\end{figure}
-\FloatBarrier
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{diagrams/page_w2_h0.png}
-\end{figure}
-\FloatBarrier
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{diagrams/page_w2_h1.png}
-\end{figure}
-\FloatBarrier
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{diagrams/page_w3_h0.png}
-\end{figure}
-\FloatBarrier
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{diagrams/page_w3_h1.png}
-\end{figure}
-\FloatBarrier
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{diagrams/page_w4_h0.png}
-\end{figure}
-\FloatBarrier
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{diagrams/page_w4_h1.png}
-\end{figure}
-\FloatBarrier
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{diagrams/page_w5_h0.png}
-\end{figure}
-\FloatBarrier
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{diagrams/page_w5_h1.png}
-\end{figure}
-\FloatBarrier
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{diagrams/page_w6_h0.png}
-\end{figure}
-\FloatBarrier
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{diagrams/page_w6_h1.png}
-\end{figure}
-\FloatBarrier
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{diagrams/page_w7_h0.png}
-\end{figure}
-\FloatBarrier
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{diagrams/page_w7_h1.png}
-\end{figure}
-\FloatBarrier
-\end{center}
-\sssc{不含 mystd class diagram}
-所有 class 皆標註其作者。首張圖為 SVG 格式，可放大檢視整體結構；其後兩張圖為分割後之左半與右半 class diagram。
-\begin{center}
-\begin{figure}[H]
-\centering
-\includesvg[width=\textwidth,angle=90]{diagrams/exclude.svg}
-\caption{不含 mystd class diagram（SVG，可放大檢視）}
-\end{figure}
-\FloatBarrier
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{diagrams/ex_page_w0_h0.png}
-\end{figure}
-\FloatBarrier
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{diagrams/ex_page_w1_h0.png}
-\end{figure}
-\FloatBarrier
-\end{center}
-\sssc{mystd class diagram}
-本節所示之 class diagram 中，所有 class 均由沈威宇實作，故不標註作者。首張圖為 mystd（不含 array）之 SVG class diagram，第二張圖為 array 之 SVG class diagram，皆可放大檢視整體結構。其後共 6 張圖為 mystd（不含 array）之分割後 class diagram，排列順序由左至右。
-\begin{center}
-\begin{figure}[H]
-\centering
-\includesvg[width=\tmytwidth,angle=90]{diagrams/mystd.svg}
-\caption{mystd（不含 array）class diagram（SVG，可放大檢視）}
-\end{figure}
-\FloatBarrier
-\begin{figure}[H]
-\centering
-\includesvg[width=\tmytwidth,angle=90]{diagrams/arra.svg}
-\caption{array class diagram（SVG，可放大檢視）}
-\end{figure}
-\FloatBarrier
-\begin{figure}[H]
-\centering
-\includegraphics[width=\tmytwidth]{diagrams/my_page_w0_h0.png}
-\end{figure}
-\FloatBarrier
-\begin{figure}[H]
-\centering
-\includegraphics[width=\tmytwidth]{diagrams/my_page_w1_h0.png}
-\end{figure}
-\FloatBarrier
-\begin{figure}[H]
-\centering
-\includegraphics[width=\tmytwidth]{diagrams/my_page_w2_h0.png}
-\end{figure}
-\FloatBarrier
-\begin{figure}[H]
-\centering
-\includegraphics[width=\tmytwidth]{diagrams/my_page_w3_h0.png}
-\end{figure}
-\FloatBarrier
-\begin{figure}[H]
-\centering
-\includegraphics[width=\tmytwidth]{diagrams/my_page_w4_h0.png}
-\end{figure}
-\FloatBarrier
-\begin{figure}[H]
-\centering
-\includegraphics[width=\tmytwidth]{diagrams/my_page_w5_h0.png}
-\end{figure}
-\FloatBarrier
-\end{center}
+Class Diagram 均由沈威宇使用 clang-uml 自原始 C++ 程式碼中自動萃取類別結構資訊，再依實際設計意圖進行人工補註與整理，最後透過 PlantUML 生成。因圖片較大，請見 \href{https://github.com/NTUEE-CPL-SDL2/report}{\url{https://github.com/NTUEE-CPL-SDL2/report}}（超連結）。
 \ssc{2-A-3-1 public 變數使用與原因}
 \label{2-A-3-1}
 \begin{itemize}
 \item \verb|mystd::array| 中之 \verb|T elems[N == 0 ? 1 : N];| 必須宣告為 \verb|public|，以符合 C++ 標準對 aggregate initialization 之規範；一個 class 若要成為 aggregate，其所有非靜態資料成員皆須為 \verb|public|。（\verb|include/array.hpp| line~33）
 \item \verb|_tuple_impl<I, Head, Tail...>| 中之成員 \verb|Head head;| 宣告為 \verb|public|，以利實作階段進行遞迴存取與修改。由於該型別屬於 implementation detail，並不直接對使用者暴露，因此不影響介面封裝性。
-\item \verb|template <class... Types> class tuple| 中之 \verb|_tuple_impl<0, Types...> _impl| 宣告為 \verb|public|，以支援 \verb|template <std::size_t I, class... Types> constexpr decltype(auto) get| 等介面函式的實作。該等函式的原理請參見 \hyperref[recursion]{\textbf{Template Compile-Time Recursion}}。
+\item \verb|template <class... Types> class tuple| 中之 \verb|_tuple_impl<0, Types...> _impl| 宣告為 \verb|public|，以支援
+\begin{lstlisting}[language=C++]
+template <std::size_t I, class... Types> constexpr decltype(auto) get
+\end{lstlisting}
+等介面函式的實作。該等函式的原理請參見 \hyperref[recursion]{\textbf{Template Compile-Time Recursion}}。
 \item \verb|game_priority_queue<T>| 將
 \verb|mystd::priority_queue<T>|
 中之受保護成員 \verb|c|（底層 container）提升為 \verb|public|，以供遍歷使用。  若為規模更大的專案，提供 public const reference 以避免資料被任意修改，將是更佳的設計方案。（\verb|Game.hpp| line~17--20）
@@ -576,7 +457,11 @@ protected:
 \begin{itemize}
 \item \verb|include/circulate.hpp| 中之 \verb|_circulate_iterator| 與 \verb|_circulate_const_iterator| 大量使用 \verb|friend| 宣告以實作非成員形式之 iterator 運算子，包括：\verb|operator+|、\verb|operator==|、\verb|operator!=| 與 \verb|operator<=>|。  此設計可確保運算子滿足對稱性（symmetry），並避免將僅供運算子使用的內部狀態暴露為 public 成員。（line~72--82、152--162、171--181）
 \item \verb|include/circulate.hpp| 中之 \verb|_circulate_iterator| 與 \verb|_circulate_const_iterator| 彼此宣告為 \verb|friend|，以支援 mutable 與 const iterator 間的比較與排序關係。  此作法符合 STL iterator 的設計慣例，並避免在介面層提供不必要的 getter 函式，確保型別安全與最小可見性。
-\item \verb|circulate| 容器本身宣告 \verb|friend bool operator==(const circulate \&lhs, const circulate \&rhs)| 以允許直接比較兩個 \verb|circulate| 物件之內部狀態。  由於此等比較運算屬於容器語意的一部分，將其實作為非成員 friend 函式可維持與標準容器一致的使用方式。（line~333）
+\item \verb|circulate| 容器本身宣告
+\begin{lstlisting}[language=C++]
+friend bool operator==(const circulate &lhs, const circulate &rhs)
+\end{lstlisting}
+以允許直接比較兩個 \verb|circulate| 物件之內部狀態。  由於此等比較運算屬於容器語意的一部分，將其實作為非成員 friend 函式可維持與標準容器一致的使用方式。（line~333）
 \item \verb|include/tuple.hpp| 中，
 \verb|tuple| 類別使用 \verb|friend| 宣告實作
 \verb|operator==| 與 \verb|operator<=>|，用以支援 tuple 間的等價與三向比較。（line~519、537、555、559）  此設計使比較運算可透過 ADL 正確解析，同時避免將內部實作細節（如遞迴結構）暴露。
@@ -604,12 +489,24 @@ RAII is a programming idiom in C++ used to manage resource lifetimes automatical
 \item \verb|constexpr vector() noexcept(noexcept(Allocator()))| (line~95)：預設建構子，建立空 vector。
 \item \verb|explicit constexpr vector(const Allocator &alloc_) noexcept| (line~97)：使用指定 allocator 初始化 vector。
 \item \verb|explicit vector(std::size_t count, const Allocator &alloc_ = Allocator())| (line~100)：建立指定大小的 vector，元素未初始化。
-\item \verb|constexpr vector(std::size_t count, const T &value, const Allocator &alloc_ = Allocator())| (line~121--122)：建立指定大小的 vector，所有元素初始化為 value。
-\item \verb|constexpr vector(InputIt first, InputIt last, const Allocator &alloc_ = Allocator())| (line~147--148)：由迭代器範圍初始化 vector。
+\item
+\begin{lstlisting}[language=C++]
+constexpr vector(std::size_t count, const T &value, const Allocator &alloc_ = Allocator())
+\end{lstlisting}
+(line~121--122)：建立指定大小的 vector，所有元素初始化為 value。
+\item
+\begin{lstlisting}[language=C++]
+constexpr vector(InputIt first, InputIt last, const Allocator &alloc_ = Allocator())
+\end{lstlisting}
+(line~147--148)：由迭代器範圍初始化 vector。
 \item \verb|constexpr vector(const vector &other)| (line~181)：複製建構子，深複製其他 vector。
 \item \verb|constexpr vector(vector &&other) noexcept| (line~205)：移動建構子，將資源從 other 移入本物件。
 \item \verb|constexpr vector(const vector &other, const Allocator &alloc_)| (line~266)：複製建構子並指定 allocator。
-\item \verb|vector(std::initializer_list<T> ilist, const Allocator &alloc_ = Allocator())| (line~288)：初始化列表建構子。
+\item
+\begin{lstlisting}[language=C++]
+vector(std::initializer_list<T> ilist, const Allocator &alloc_ = Allocator())
+\end{lstlisting}
+(line~288)：初始化列表建構子。
 \item \verb|constexpr ~vector()| (line~309)：解構子，釋放所管理的資源。
 \end{itemize}
 \sssc{include/tuple.hpp}
@@ -618,11 +515,26 @@ RAII is a programming idiom in C++ used to manage resource lifetimes automatical
 \item \verb|constexpr _tuple_impl()| (line~29)：預設建構子，建立空的 \_tuple\_impl。
 \item \verb|constexpr _tuple_impl(const _tuple_impl &) noexcept| (line~30)：複製建構子，複製另一個空 \_tuple\_impl。
 \item \verb|constexpr _tuple_impl(_tuple_impl &&) noexcept| (line~31)：移動建構子，移動另一個空 \_tuple\_impl。
-\item \verb|template <class Alloc> constexpr _tuple_impl(mystd::allocator_arg_t, const Alloc &)| (line~33--34)：allocator 預設建構子。
-\item \verb|template <class Alloc> constexpr _tuple_impl(mystd::allocator_arg_t, const Alloc &, const _tuple_impl &)| (line~36--38)：allocator 複製建構子。
-\item \verb|template <class Alloc> constexpr _tuple_impl(mystd::allocator_arg_t, const Alloc &, _tuple_impl &&)| (line~40--42)：allocator 移動建構子。
+\item
+\begin{lstlisting}[language=C++]
+template <class Alloc> constexpr _tuple_impl(mystd::allocator_arg_t, const Alloc &)
+\end{lstlisting}
+(line~33--34)：allocator 預設建構子。
+\item
+\begin{lstlisting}[language=C++]
+template <class Alloc> constexpr _tuple_impl(mystd::allocator_arg_t, const Alloc &, const _tuple_impl &)
+\end{lstlisting}
+(line~36--38)：allocator 複製建構子。
+\item
+\begin{lstlisting}[language=C++]
+template <class Alloc> constexpr _tuple_impl(mystd::allocator_arg_t, const Alloc &, _tuple_impl &&)
+\end{lstlisting}
+(line~40--42)：allocator 移動建構子。
 \end{itemize}
-\verb|template <std::size_t I, class Head, class... Tail> struct _tuple_impl<I, Head, Tail...>|：
+\begin{lstlisting}[language=C++]
+template <std::size_t I, class Head, class... Tail> struct _tuple_impl<I, Head, Tail...>
+\end{lstlisting}
+：
 \begin{itemize}
 \item (line~62--64)
 \begin{lstlisting}[language=C++]
@@ -921,7 +833,7 @@ RAII is a programming idiom in C++ used to manage resource lifetimes automatical
 \item \verb|constexpr tuple(const tuple &) noexcept = default;| (line~547)：編譯器生成複製建構子。
 \item \verb|constexpr tuple(tuple &&) noexcept = default;| (line~548)：編譯器生成移動建構子。
 \end{itemize}
-\sssc{include/priority_queue.hpp}
+\sssc{include/priority\_queue.hpp}
 \begin{itemize}
 \item \verb|priority_queue() : priority_queue(Compare(), Container()) {}| (line~36)：預設建構子。
 \item \verb|explicit priority_queue(const Compare &compare)| (line~38)：指定比較函式。
@@ -939,9 +851,15 @@ RAII is a programming idiom in C++ used to manage resource lifetimes automatical
 \item \verb|circulate(circulate &&other) noexcept| (line~239)：移動建構子。
 \end{itemize}
 \sssc{Game.hpp}
-\verb|Game(std::size_t lanes_, std::size_t fragments_, uint32_t mpf, mystd::vector<KeyNoteData> &keynotes)| (line~67--70)：初始化遊戲主要參數與 notes 參考。
+\begin{lstlisting}[language=C++]
+Game(std::size_t lanes_, std::size_t fragments_, uint32_t mpf, mystd::vector<KeyNoteData> &keynotes)
+\end{lstlisting}
+(line~67--70)：初始化遊戲主要參數與 notes 參考。
 \sssc{Renderer.hpp}
-\verb|Renderer(Game &game_, int screenW_, int screenH_, SDL_Renderer *renderer, TTF_Font *large_font_, TTF_Font *medium_font_, TTF_Font *small_font_)| (line~501--505)：初始化渲染器與字型指標等。
+\begin{lstlisting}[language=C++]
+Renderer(Game &game_, int screenW_, int screenH_, SDL_Renderer *renderer, TTF_Font *large_font_, TTF_Font *medium_font_, TTF_Font *small_font_)
+\end{lstlisting}
+(line~501--505)：初始化渲染器與字型指標等。
 \ssc{2-B-1-2 指標成員處理}
 \label{2-B-1-2}
 \sssc{iterator 成員處理一併說明}
@@ -2211,9 +2129,7 @@ public:
 \item 透過 friend 比較運算子允許 \verb|_circulate_iterator| 與 \verb|_circulate_const_iterator| 之間的混合比較。
 \item 詳細描述與範例請參見 \hyperref[circulate-iterator-operators]{\textbf{\_circulate\_iterator and \_circulate\_const\_iterator operators}}。
 \end{itemize}
-\sssc{BeatRunner.cpp}
-下僅列出我實作之部分。
-
+\sssc{BeatRunner.cpp（僅列沈威宇撰寫部分）}
 \textbf{指出}：
 
 Line~154--155：
@@ -2279,31 +2195,92 @@ This consistency reduces cognitive load when switching between container types.
 These rules are applied consistently in my STL implementation to ensure correct and safe resource management, which are demonstrated in \hyperref[2-B-1-1]{\textbf{2-B-1-1 建構子、複製建構子、解構子}}.
 \sssc{include/vector.hpp 的 compile-time branching with if constexpr 優化}
 已於 \textbf{2-B-1-2 指標成員處理} 的 \hyperref[vector-list]{\textbf{include/vector.hpp}} 列出，並於 \hyperref[vector-describe]{\textbf{描述}} 中描述。
-\ssc{2-B-3-1-1 指出組裝關係}
+\ssc{2-B-3-1-1 指出組裝關係（僅列沈威宇撰寫部分）}
 \label{2-B-3-1-1}
-下僅列出我實作之部分。
 \begin{itemize}
 \item \verb|_tuple_impl<0, Types...> _impl;|（\verb|include/tuple.hpp| line~258）：\verb|_tuple_impl<0, Types...>| 組裝於 \verb|template <class... Types> class tuple| 中。
 \item \verb|[[no_unique_address]] Allocator alloc;|（\verb|include/vector.hpp| line~46）：\verb|Allocator| 組裝於 \verb|template <class T, class Allocator> class vector| 中。
 \item \verb|Container c|（\verb|include/priority_queue.hpp| line~32）：\verb|Container| 組裝於 \verb|template <class T, class Container, class Compare> class priority_queue| 中。
 \item \verb|Compare comp|（\verb|include/priority_queue.hpp| line~32）：\verb|Compare| 組裝於 \verb|template <class T, class Container, class Compare> class priority_queue| 中。
 \item \verb|Container c;|（\verb|include/circulate.hpp| line 205）：\verb|Container| 組裝於 \verb|template <class T, class Container> class circulate| 中。
-\item \verb|static std::map<std::string, mystd::tuple<ModFunc, ModFunc, SettingsFunc>> modMap;|（\verb|Mods.hpp| line~17--18）：\verb|std::string| 與 \verb|mystd::tuple<ModFunc, ModFunc, SettingsFunc>| 組裝於 \verb|std::map| 中。
-\item \verb|mystd::vector<mystd::circulate<int8_t, mystd::vector<int8_t>>> highway;|（\verb|Game.hpp| line~50）：\verb|mystd::vector<int8_t>| 組裝於 \verb|mystd::circulate<int8_t, mystd::vector<int8_t>>| 中；\verb|mystd::circulate<int8_t, mystd::vector<int8_t>>| 組裝於 \verb|mystd::vector<mystd::circulate<int8_t, mystd::vector<int8_t>>>| 中；\verb|mystd::vector<mystd::circulate<int8_t, mystd::vector<int8_t>>>| 組裝於 \verb|Game| 中。
+\item
+\begin{lstlisting}[language=C++]
+static std::map<std::string, mystd::tuple<ModFunc, ModFunc, SettingsFunc>> modMap;
+\end{lstlisting}
+（\verb|Mods.hpp| line~17--18）：\verb|std::string| 與
+\begin{lstlisting}[language=C++]
+mystd::tuple<ModFunc, ModFunc, SettingsFunc>
+\end{lstlisting}
+組裝於 \verb|std::map| 中。
+\item \verb|mystd::vector<mystd::circulate<int8_t, mystd::vector<int8_t>>> highway;|（\verb|Game.hpp| line~50）：
+\bit
+\item \verb|mystd::vector<int8_t>| 組裝於 \verb|mystd::circulate| 中；
+\item \verb|mystd::circulate<int8_t, mystd::vector<int8_t>>| 組裝於 \verb|mystd::vector| 中；
+\item \verb|mystd::vector<mystd::circulate<int8_t, mystd::vector<int8_t>>>| 組裝於 \verb|Game| 中。
+\eit
 \item \verb|mystd::vector<bool> lanePressed;|（\verb|Game.hpp| line~53）：\verb|mystd::vector<bool>| 組裝於 \verb|Game| 中。
 \item \verb|mystd::vector<uint32_t> holdPressedTime;|（\verb|Game.hpp| line~56）：\verb|mystd::vector<uint32_t>| 組裝於 \verb|Game| 中。
 \item \verb|mystd::vector<Effect> laneEffects;|（\verb|Game.hpp| line~64）：\verb|mystd::vector<Effect>| 組裝於 \verb|Game| 中。
-\item \verb|game_priority_queue<Effect> centerEffects;|（\verb|Game.hpp| line~65）：\verb|mystd::vector<Effect>| 與 \verb|std::less<Effect>| 組裝於 \verb|mystd::priority_queue<Effect>| 中；\verb|game_priority_queue<Effect>| 組裝於 \verb|Game| 中。
-\item \verb|std::unordered_map<mystd::tuple<int8_t, bool, uint32_t>, SDL_Texture *, NotesCacheHash> notesTextureCache;|（\verb|Renderer.hpp| line~55--57）：\verb|mystd::_tuple_impl<0, int8_t, bool, uint32_t>| 組裝於 \verb|mystd::tuple<int8_t, bool, uint32_t>| 中；\verb|mystd::tuple<int8_t, bool, uint32_t>| 與 \verb|NotesCacheHash| 組裝於 \verb|std::unordered_map<mystd::tuple<int8_t, bool, uint32_t>, SDL_Texture *, NotesCacheHash>| 中；\verb|std::unordered_map<mystd::tuple<int8_t, bool, uint32_t>, SDL_Texture *, NotesCacheHash>| 組裝於 \verb|Renderer| 中。
-\item \verb|std::unordered_map<std::string, SDL_Texture *> textTextureCache;|（\verb|Renderer.hpp| line~58）：\verb|std::string| 組裝於 \verb|std::unordered_map<std::string, SDL_Texture *>| 中；\verb|std::unordered_map<std::string, SDL_Texture *>| 組裝於 \verb|Renderer| 中。
-\item \verb|std::unordered_map<std::string, SDL_Texture *> imageTextureCache;|（\verb|Renderer.hpp| line~59）：\verb|std::string| 組裝於 \verb|std::unordered_map<std::string, SDL_Texture *>| 中；\verb|std::unordered_map<std::string, SDL_Texture *>| 組裝於 \verb|Renderer| 中。
+\item \verb|game_priority_queue<Effect> centerEffects;|（\verb|Game.hpp| line~65）：
+\bit
+\item \verb|mystd::vector<Effect>| 與 \verb|std::less<Effect>| 組裝於 \verb|mystd::priority_queue| 中；
+\item \verb|game_priority_queue<Effect>| 組裝於 \verb|Game| 中。
+\eit
+\item
+\begin{lstlisting}[language=C++]
+std::unordered_map<mystd::tuple<int8_t, bool, uint32_t>, SDL_Texture *, NotesCacheHash> notesTextureCache;
+\end{lstlisting}
+（\verb|Renderer.hpp| line~55--57）：
+\bit
+\item \verb|mystd::_tuple_impl<0, int8_t, bool, uint32_t>| 組裝於 \verb|mystd::tuple| 中；
+\item \verb|mystd::tuple<int8_t, bool, uint32_t>| 與 \verb|NotesCacheHash| 組裝於 \verb|std::unordered_map| 中；
+\item
+\begin{lstlisting}[language=C++]
+std::unordered_map<mystd::tuple<int8_t, bool, uint32_t>, SDL_Texture *, NotesCacheHash>
+\end{lstlisting}
+組裝於 \verb|Renderer| 中。
+\eit
+\item \verb|std::unordered_map<std::string, SDL_Texture *> textTextureCache;|（\verb|Renderer.hpp| line~58）：
+\bit
+\item \verb|std::string| 組裝於 \verb|std::unordered_map| 中；
+\item \verb|std::unordered_map<std::string, SDL_Texture *>| 組裝於 \verb|Renderer| 中。
+\eit
+\item \verb|std::unordered_map<std::string, SDL_Texture *> imageTextureCache;|（\verb|Renderer.hpp| line~59）：
+\bit
+\item \verb|std::string| 組裝於 \verb|std::unordered_map| 中；
+\item \verb|std::unordered_map<std::string, SDL_Texture *>| 組裝於 \verb|Renderer| 中。
+\eit
 \end{itemize}
-\ssc{2-B-3-1-2 指出繼承關係}
-下僅列出我實作之部分中的 class 繼承。
+\ssc{2-B-3-1-2 指出繼承關係（僅列沈威宇撰寫部分）}
 \begin{itemize}
-\item \verb|template <std::size_t I, class Head, class... Tail> struct _tuple_impl<I, Head, Tail...> : public _tuple_impl<I + 1, Tail...>|（\verb|include/tuple.hpp| line~53--54）：\verb|template <std::size_t I, class Head, class... Tail> struct _tuple_impl<I, Head, Tail...>| 公開繼承自 \verb|_tuple_impl<I + 1, Tail...>|。
-\item \verb|static std::map<std::string, mystd::tuple<ModFunc, ModFunc, SettingsFunc>> modMap;|（\verb|Mods.hpp| line~17--18）：\verb|mystd::_tuple_impl<0, ModFunc, ModFunc, SettingsFunc>| 繼承自 \verb|mystd::_tuple_impl<1, ModFunc, SettingsFunc>|；\verb|mystd::_tuple_impl<1, ModFunc, SettingsFunc>| 繼承自 \verb|mystd::_tuple_impl<2, SettingsFunc>|；\verb|mystd::_tuple_impl<2, SettingsFunc>| 繼承自 \verb|mystd::_tuple_impl<3>|。
-\item \verb|template <class T> class game_priority_queue : public mystd::priority_queue<T>|（\verb|Game.hpp| line~17）：\verb|template <class T> class game_priority_queue| 公開繼承自 \verb|mystd::priority_queue<T>|。
+\item
+\begin{lstlisting}[language=C++]
+template <std::size_t I, class Head, class... Tail> struct _tuple_impl<I, Head, Tail...> : public _tuple_impl<I + 1, Tail...>
+\end{lstlisting}
+（\verb|include/tuple.hpp| line~53--54）：
+\begin{lstlisting}[language=C++]
+template <std::size_t I, class Head, class... Tail> struct _tuple_impl<I, Head, Tail...>
+\end{lstlisting}
+公開繼承自 \verb|_tuple_impl<I + 1, Tail...>|。
+\item
+\begin{lstlisting}[language=C++]
+static std::map<std::string, mystd::tuple<ModFunc, ModFunc, SettingsFunc>> modMap;
+\end{lstlisting}
+（\verb|Mods.hpp| line~17--18）：
+\bit
+\item \verb|mystd::_tuple_impl<0, ModFunc, ModFunc, SettingsFunc>| 繼承自 \verb|mystd::_tuple_impl<1, ModFunc, SettingsFunc>|；
+\item \verb|mystd::_tuple_impl<1, ModFunc, SettingsFunc>| 繼承自
+\begin{lstlisting}[language=C++]
+mystd::_tuple_impl<2, SettingsFunc>
+\end{lstlisting}
+；
+\item \verb|mystd::_tuple_impl<2, SettingsFunc>| 繼承自 \verb|mystd::_tuple_impl<3>|。
+\eit
+\item
+\begin{lstlisting}[language=C++]
+template <class T> class game_priority_queue : public mystd::priority_queue<T>
+\end{lstlisting}
+（\verb|Game.hpp| line~17）：\verb|template <class T> class game_priority_queue| 公開繼承自 \verb|mystd::priority_queue<T>|。
 \item \verb|game_priority_queue<Effect> centerEffects;|（\verb|Game.hpp| line~65）：\verb|game_priority_queue<Effect>| 繼承自 \verb|mystd::priority_queue<Effect>|。
 \end{itemize}
 \ssc{2-B-3-2 指標操作之巧思}
@@ -3767,8 +3744,7 @@ To mitigate or avoid SIOF, the following design strategies are generally recomme
 \item 與 STL 的設計風格保持一致。
 \item 提升程式碼可讀性與可維護性。
 \end{itemize}
-\ssc{2-C-3-1 const member 宣告、2-C-3-2 const member 程式碼位置}
-下僅列出我實作之部分。
+\ssc{2-C-3-1 const member 宣告、2-C-3-2 const member 程式碼位置（僅列沈威宇撰寫部分）}
 \sssc{include/allocator.hpp}
 Line~409--432：
 \begin{lstlisting}[language=C++]
@@ -5845,7 +5821,7 @@ Line~205：
 \begin{lstlisting}[language=C++]
   Container c;
 \end{lstlisting}
-\sssc{include/priority_queue.hpp}
+\sssc{include/priority\_queue.hpp}
 Line~32--33：
 \begin{lstlisting}[language=C++]
   Container c = Container();
@@ -5921,7 +5897,7 @@ getModMap() {
 \label{sfinae}
 SFINAE is a compile-time technique in template programming. If substituting template parameters results in an invalid type or expression, the compiler silently ignores that overload instead of producing an error. This mechanism enables selective template instantiation and overload resolution.
 \sssc{Concepts}
-\lable{concepts}
+\label{concepts}
 C++20 introduces \textbf{concepts}, which allow explicit constraints on template parameters in a readable and expressive way. Concepts replace some uses of SFINAE with clearer syntax. Key benefits include:
 \begin{itemize}
     \item Clear compile-time diagnostics.
@@ -5999,7 +5975,8 @@ constexpr BidirIt2 copy_backward(BidirIt1 first, BidirIt1 last,
 \label{ctad}
 C++17 introduced \textbf{Class Template Argument Deduction (CTAD)}, allowing the compiler to deduce template parameters from constructor arguments. STL containers provide \textbf{deduction guides} to assist this process, which are also implemented in my library to improve usability.
 
-Take \verb|mystd::priority_queue| for example, the CTADs are as follows: (\verb|include/priority_queue.hpp| line~212--242)
+Take \verb|mystd::priority_queue| for example, the CTADs are as follows:\\
+(\verb|include/priority_queue.hpp| line~212--242)
 \begin{lstlisting}[language=C++]
 template <class Comp, class Container>
 priority_queue(Comp, Container)
@@ -6082,9 +6059,9 @@ Given an expression \verb|e|, the type deduced by \texttt{decltype(e)} depends o
 expression category.
 \begin{itemize}
     \item If \verb|e| is a unparenthesized id-expression naming a variable, then \texttt{decltype(e)} yields the declared type of the variable. Note that a parenthesized one is a lvalue expression.
-    \item If \verb|e| is an \emph{lvalue} expression, \texttt{decltype(e)} yields \verb|T\&|.
-    \item If \verb|e| is an \emph{xvalue}, \texttt{decltype(e)} yields \verb|T&&|.
-    \item If \verb|e| is a \emph{prvalue}, \texttt{decltype(e)} yields \verb|T|.
+    \item If \verb|e| is an \textbf{lvalue} expression, \texttt{decltype(e)} yields \verb|T&|.
+    \item If \verb|e| is an \textbf{xvalue}, \texttt{decltype(e)} yields \verb|T&&|.
+    \item If \verb|e| is a \textbf{prvalue}, \texttt{decltype(e)} yields \verb|T|.
 \end{itemize}
 
 \verb|decltype(auto)| preserves the exact type of the initializer.
@@ -6095,8 +6072,13 @@ The Curiously Recurring Template Pattern (CRTP) is a C++ idiom in which a class 
 
 CRTP allows classes to achieve polymorphic behavior at compile time, combining interface abstraction, code reuse, and high performance. It is particularly suitable when runtime overhead of virtual functions is undesirable or when the set of derived classes is fixed at compile time.
 \sssc{get functions in include/tuple.hpp}
-Member functions of \verb|template <std::size_t I, class Head, class... Tail>
-struct _tuple_impl<I, Head, Tail...>|: \texttt{get<J>} member functions provide compile-time element access and are overloaded for all value categories: lvalue, const lvalue, rvalue, and const rvalue. The implementation uses \texttt{if constexpr} to check whether the requested index $J$ matches the current index $I$. This design allows efficient compile-time recursion to navigate tuple elements while preserving proper value category semantics without runtime overhead.
+\bit
+\item Member functions of
+\begin{lstlisting}[language=C++]
+template <std::size_t I, class Head, class... Tail>
+struct _tuple_impl<I, Head, Tail...>
+\end{lstlisting}
+: \texttt{get<J>} member functions provide compile-time element access and are overloaded for all value categories: lvalue, const lvalue, rvalue, and const rvalue. The implementation uses \texttt{if constexpr} to check whether the requested index $J$ matches the current index $I$. This design allows efficient compile-time recursion to navigate tuple elements while preserving proper value category semantics without runtime overhead.
 
 Line~211--253:
 \begin{lstlisting}[language=C++]
@@ -6143,7 +6125,7 @@ Line~211--253:
     }
   }
 \end{lstlisting}
-Member functions of \verb|template <class... Types> class tuple| The \texttt{tuple} class delegates all element access to its internal \texttt{\_tuple\_impl} member \texttt{\_impl}. All public \texttt{get<J>} member functions forward the access while preserving constness and value categories.
+\item Member functions of \verb|template <class... Types> class tuple|: The \texttt{tuple} class delegates all element access to its internal \texttt{\_tuple\_impl} member \texttt{\_impl}. All public \texttt{get<J>} member functions forward the access while preserving constness and value categories.
 
 Line~466--480:
 \begin{lstlisting}[language=C++]
@@ -6163,7 +6145,7 @@ Line~466--480:
     return std::move(_impl).template get<J>();
   }
 \end{lstlisting}
-Non-member functions and helpers: Non-member \texttt{get<I>} functions allow element access using ADL and provide interface for tuples complying with C++20 standard. Compile-time type traits, \texttt{\_count\_of\_type} and \texttt{\_index\_of\_type}, enable type-based element access for types that occur exactly once in the tuple. This guarantees type-safe retrieval while all computations occur at compile-time.
+\item Non-member functions and helpers: Non-member \texttt{get<I>} functions allow element access using ADL and provide interface for tuples complying with C++20 standard. Compile-time type traits, \texttt{\_count\_of\_type} and \texttt{\_index\_of\_type}, enable type-based element access for types that occur exactly once in the tuple. This guarantees type-safe retrieval while all computations occur at compile-time.
 
 Line~580--658:
 \begin{lstlisting}[language=C++]
@@ -6247,6 +6229,7 @@ constexpr decltype(auto) get(const mystd::tuple<Types...> &&t) noexcept
   return get<_index_of_type_v<T, Types...>>(std::move(t));
 }
 \end{lstlisting}
+\eit
 \ssc{2-D-1-1 演算法設計}
 \label{2-D-1-1}
 程式執⾏效率相關請參見 \hyperref[2-D-1-2]{\textbf{2-D-1-2 程式執⾏效率優化}}；指標相關請參見 \hyperref[2-B-1-2]{\textbf{2-B-1-2 指標成員處理}} 中之各 \textbf{描述}；依照 STL C++20 標準實作的部分及其優化與巧思請參見本報告各章節與程式碼檔案；以下僅就Heap 與 priority\_queue 資料結構與演算法及Quick sort 演算法進行描述。
@@ -6329,7 +6312,7 @@ Quick sort 的核心流程可分為三個步驟：
 
 \paragraph{演算法特性}
 \begin{itemize}
-  \irem 原地排序（in-place sort）：僅使用遞迴呼叫堆疊，不需額外輔助陣列。
+  \item 原地排序（in-place sort）：僅使用遞迴呼叫堆疊，不需額外輔助陣列。
   \item 非穩定排序：相等元素在排序後的相對順序不保證維持。
   \item Pivot 選擇策略簡單：本實作未引入 median-of-three 或隨機化 pivot，故在理論最壞情況下可能退化。
 \end{itemize}
@@ -6405,6 +6388,7 @@ Since C++20, many functions in STL is constexpr, notably many of the constructor
 \item definitions of variables of non-literal types
 \item definitions of variables of static or thread storage duration
 \eit
+\eit
 \item Except for instantiated constexpr functions, non-templated constexpr functions must be constexpr-suitable.
 \item For a non-constructor constexpr function that is neither defaulted nor templated, if no argument values exist such that an invocation of the function could be an evaluated subexpression of a core constant expression, the program is ill-formed, no diagnostic required.
 \item For a templated constexpr function, if no specialization of the function/class template would make the templated function constexpr-suitable when considered as a non-templated function, the program is ill-formed, no diagnostic required.
@@ -6422,10 +6406,11 @@ Since C++20, many functions in STL is constexpr, notably many of the constructor
 \item If the constructor is a non-delegating constructor, every constructor selected to initialize non-static data members and base class subobjects is a constexpr constructor.
 \eit
 \item The class does not have any virtual base class.
-\item For a constexpr constructor that is neither defaulted nor templated, if no argument values exist such that an invocation of the function could be an evaluated subexpression of the initialization full-expression of some object subject to constant expression, the program is ill-formed, no diagnostic required.
+\eit
+For a constexpr constructor that is neither defaulted nor templated, if no argument values exist such that an invocation of the function could be an evaluated subexpression of the initialization full-expression of some object subject to constant expression, the program is ill-formed, no diagnostic required.
 \item constexpr destructor: On top of the requirements of constexpr functions, a destructor also needs to satisfy all following conditions to be constexpr-suitable:
 \bit
-\itrm For every subobject of class type or (possibly multi-dimensional) array thereof, that class type has a constexpr destructor.
+\item For every subobject of class type or (possibly multi-dimensional) array thereof, that class type has a constexpr destructor.
 \item The class does not have any virtual base class.
 \eit
 \eit
@@ -6453,21 +6438,29 @@ Introduced in C++20, \texttt{[[no\_unique\_address]]} attribute allows empty mem
 
 利用 Git 的分支（branch）機制，我們可以針對不同功能、修正或實驗性功能建立獨立分支。每位組員可在自己的分支上進行開發，彼此的修改互不干擾，並避免直接影響主分支（main）的穩定性。完成開發後，透過 merge 或 rebase 將功能分支合併至主分支，Git 會自動檢測修改衝突，並提供差異比較工具以協助解決。
 
-Git 提供多種便利工具與指令以強化程式碼管理，包括：
+Git 提供多種便利工具與指令以強化程式碼管理，例如：
 \begin{itemize}
-  \item \verb|git diff|：比較不同提交、分支或檔案狀態的差異，方便檢查修改內容與追蹤錯誤。
-  \item \verb|git log|：查看提交歷史與作者訊息，便於審查程式碼變更及回溯先前版本。
-  \item \verb|git merge|：將多個分支修改合併到當前分支，Git 會自動檢測衝突。
-  \item \verb|git rebase|：將一個分支的提交基底移動到另一分支上，以保持提交歷史線性。
-  \item \verb|git push|：將本地提交推送到遠端倉庫，保持團隊同步。
-  \item \verb|git fetch|：從遠端獲取最新提交，但不自動合併。
-  \item \verb|git pull|：從遠端獲取最新提交並自動合併到本地分支。
-  \item \verb|git cherry-pick|：選取特定提交套用到另一分支，方便修正錯誤或搬移功能。
-  \item \verb|git branch|：查看、建立或刪除分支，管理開發線路。
-  \item \verb|git tag|：標記特定提交，用於版本發布與追蹤。
-  \item \verb|git status|：顯示工作目錄與暫存區的狀態，方便檢查修改與提交情況。
-  \item \verb|git stash|：暫存當前修改，清理工作目錄以切換分支或進行其他操作。
-  \item \verb|git commit|：提交修改至本地倉庫，生成版本歷史記錄。
+  \item \verb|git clone|：從遠端倉庫複製完整專案到本地，建立初始工作環境。
+  \item \verb|git status|：顯示工作目錄與暫存區的狀態，檢查檔案是否被修改、暫存或尚未追蹤。
+  \item \verb|git add|：將檔案變更加入暫存區，準備提交。
+  \item \verb|git mv|：重新命名或移動檔案，Git 會正確追蹤檔案變更歷史。
+  \item \verb|git rm|：刪除檔案並同步移出版本控制。
+  \item \verb|git commit|：將暫存區內容提交至本地倉庫，形成可追蹤的版本紀錄。
+  \item \verb|git diff|：比較不同提交、分支或檔案狀態的差異，協助檢查修改內容。
+  \item \verb|git log|：檢視提交歷史、作者與提交訊息，便於回溯版本與審查變更。
+  \item \verb|git grep|：在倉庫版本控制下的檔案中搜尋關鍵字，方便快速定位程式碼。
+  \item \verb|git branch|：查看、建立或刪除分支，管理不同開發線路。
+  \item \verb|git checkout|：切換分支或還原特定檔案至指定提交狀態。
+  \item \verb|git merge|：將其他分支的修改合併到目前分支，可能需要處理衝突。
+  \item \verb|git rebase|：將一個分支的提交重新套用到另一分支之上，使提交歷史保持線性。
+  \item \verb|git stash|：暫存尚未提交的修改，清理工作目錄以便切換分支或進行其他操作。
+  \item \verb|git reset|：重設 HEAD 或暫存區狀態，常用於取消暫存或回退提交（需謹慎使用）。
+  \item \verb|git revert|：建立一個新的提交以反向還原指定提交，安全地修正已發布的錯誤。
+  \item \verb|git cherry-pick|：選取特定提交套用到另一分支，常用於單一錯誤修正或功能移植。
+  \item \verb|git tag|：為特定提交建立標籤，常用於版本發布與里程碑標記。
+  \item \verb|git fetch|：從遠端倉庫取得最新提交資訊，但不自動合併。
+  \item \verb|git pull|：從遠端取得最新提交並自動合併到目前分支。
+  \item \verb|git push|：將本地提交推送至遠端倉庫，與團隊成員同步進度。
 \end{itemize}
 
 相較於傳統版本控制方式（如手動備份、單一中央儲存庫或共享網路磁碟），Git 的優勢十分明顯：
@@ -6816,16 +6809,5 @@ void gameOfLifeSettings(SDL_Renderer *renderer, TTF_Font *font, int screenWidth,
 \end{itemize}
 \ssc{2-D-2-2 音樂細節}
 本專題之音樂非自行創作，又本人不負責音樂處理；本人實作之部分與音樂或有關連者僅誤差修正系統，請參見 \hyperref[adjust]{\textbf{誤差修正系統}}。
-\ssc{Appendix I: PlantUML Code}
-\sssc{完整程式架構 class diagram}
-\lstinputlisting{diagram/full.puml}
-\sssc{不含 mystd class diagram}
-\lstinputlisting{diagram/exclude.puml}
-\sssc{mystd 不含 array class diagram}
-\lstinputlisting{diagram/mystd.puml}
-\sssc{array class diagram}
-\lstinputlisting{diagram/array.puml}
-\ssc{Appendix II: LaTeX Code}
-\lstinputlisting{report.tex}
 \end{document}
 
