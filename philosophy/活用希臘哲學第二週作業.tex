@@ -1,0 +1,99 @@
+\documentclass[a4paper,12pt]{article}
+\setcounter{secnumdepth}{5}
+\setcounter{tocdepth}{3}
+\newcounter{ZhRenew}
+\setcounter{ZhRenew}{1}
+\newcounter{SectionLanguage}
+\setcounter{SectionLanguage}{1}
+\input{/usr/share/LaTeX-ToolKit/template.tex}
+\begin{document}
+\title{活用希臘哲學第二週作業}
+\author{沈威宇}
+\date{\temtoday}
+\temdoc
+\section{問題一}
+\subsection{題目}
+希臘哲學是一種以思考為主的倫理學，其目的在於理解人的限制與求知欲的來源，或者簡單地說，在於追求真理。請問：什麼是真理？追求真理必須透過怎樣的過程？
+\subsection{答案}
+\subsubsection{核心論題：一個模型論的真理框架}
+我主張，真理（Aletheia）是可以透過模型論（model theory）定義的建立在經驗世界（empirical world）上的觀察和解釋。具體而言，真理是一類（class）經驗結構（structure）$\mathcal{O}$、形式語言（formal language）$\mathcal{L}$、理論（theory）$T$、解釋結構 $\mathcal{M}$ 與同態（homomorphism）$h$ 的五元組
+\[(\mathcal{O},\mathcal{L},T,\mathcal{M},h),\]
+下稱真理理論組（Aletheia-theoretic tuple），滿足：
+\begin{itemize}
+\item $\mathcal{O}$ 是一個經驗世界中的結構；
+\item $\mathcal{L}$ 是一個一階邏輯（first-order logic）的形式語言的擴展，令其函數符號和謂詞符號形成的簽名（signature）為 $\sigma$；
+\item $T$ 是一致的（consistent）；
+\item $\mathcal{M}$ 是一個結構，且其簽名為 $\sigma$；
+\item $\mathcal{M}$ 滿足（satisfies）$T$；
+\item $h$ 是一個從 $\mathcal{O}$ 到 $\mathcal{M}$ 的同態。
+\end{itemize}
+所謂「一類」是指所有滿足上述條件之真理理論組所構成的總體；不同的真理理論組對應於不同的觀察和解釋。
+\subsubsection{真理的追求：一個方法論的過程}
+在此真理框架下，追求真理可被理解為一種方法論上的建構與強化真理理論組的過程，而非對某一既定實體的單向發現。於此過程中，我們往往會對真理理論組提出若干理想化的期望；然而，這些期望既非該框架之定義條件，不同期望之間亦經常彼此牴觸，無法同時完全滿足。它們應被理解為評價與比較不同真理理論組時的規範性指引，而非對真理之約束。其主要面向可依下列方式區分：
+\begin{itemize}
+\item \textbf{邏輯簡單性}：可由弱至強排序如下：
+\begin{enumerate}
+\item 存在一個同構不變的（isomorpism-invariant）抽象邏輯（abstract logic）$(\mathcal{L},\mathscr{M})$ 使得 $\mathcal{M}\in\mathscr{M}$ 且 $(\mathcal{L},\mathscr{M})$ 具有緊緻性（compactness property）和向下 Löwenheim–Skolem 性（downward Löwenheim–Skolem property）。
+\item 上述抽象邏輯 $(\mathcal{L},\mathscr{M})$ 是經典邏輯（classical logic）。
+\end{enumerate}
+\item \textbf{演繹可行性}：可由弱至強排序如下：
+\begin{enumerate}
+\item （下稱存在演繹系統 $\Gamma$）存在一個在 $\mathcal{L}$ 上的合理的（sound）的演繹系統（deductive system）$\Gamma$ 使得其派生（derive）的理論為 $T$，其中所謂「合理」是指：
+\[\forall P\in\mathcal{L}\qty(\Gamma\vdash P\implies\mathcal{M}\vDash P),\]
+所謂「派生的理論」是指：
+\[T=\{P\in\mathcal{L}\mid\Gamma\vdash P\}.\]
+\item $\Gamma$ 的推理規則（rules of inference）為有限式的（finitary）。
+\item $\Gamma$ 為有限式的（finitary）。
+\item $\Gamma$ 的公理集（set of axioms）為遞歸可枚舉集（recursively enumerable set）。
+\end{enumerate}
+\item \textbf{語義對應性}：可由弱至強排序如下：
+\begin{enumerate}
+\item $h$ 為強同態（strong homomorphism）；
+\item $h$ 為嵌入（embedding）；
+\item $h$ 為同構（isomorphism）。
+\end{enumerate}
+\item \textbf{理論完整性}：
+\begin{itemize}
+\item 存在演繹系統 $\Gamma$ 且它是語義完整的（syntactically complete）；
+\item $T$ 完整理論（complete theory）。
+\end{itemize}
+\item \textbf{經驗充分性}：經驗結構 $\mathcal{O}$ 的勢（cardinality）盡可能大，以涵蓋更多經驗事實。
+\item \textbf{共識性}：語言 $\mathcal{L}$，以及用於描述真理理論組的其他語言資源（若有），應盡可能具有跨主體的可理解性與共識性。
+\item \textbf{演繹解釋性}：存在演繹系統 $\Gamma$ 且它盡可能強。
+\item \textbf{模型經濟性}：解釋結構 $\mathcal{M}$ 的勢盡可能小。
+\end{itemize}
+上述諸項期望往往彼此拉扯，例如：
+\begin{itemize}
+\item Lindström's 定理；
+\item Gödel's 不完整定理；
+\item 邏輯簡單性及語義對應性往往與演繹解釋性及經驗充分性存在張力；
+\item 演繹可行性與及模型經濟性往往與語義對應性及經驗充分性存在張力。
+\end{itemize}
+因此，追求真理不應被理解為滿足某一組固定標準，而是於這些方法論準則之間進行權衡與調整，產生不同的真理理論組。
+\subsubsection{哲學意涵：與各家論爭的對話}
+我的框架展現了對各家真理論爭的兼容與調和能力，拒斥排他性限制，並將各家核心主張形式化成一個廣泛且精確的分析平臺，使得真理理論組可以在多個層面上進行比較與權衡，並為真理的追求與應用奠定基礎。
+\begin{itemize}
+\item \textbf{與真理符應論（Correspondence Theory of Truth）}：符應論主張真理在於命題與事實之符合。本框架可視為對此立場的形式化與精緻化：透過區分經驗結構 $\mathcal{O}$ 與解釋結構 $\mathcal{M}$，並以同態 $h$ 與滿足關係 $\vDash$ 明確刻畫符應關係，使符應論不再停留於直覺層次，而能接受形式邏輯與模型論的分析與檢驗。
+\item \textbf{與真理融貫論（Coherence Theory of Truth）}：融貫論將真理奠基於信念或命題系統的內在融貫性。本框架承認句法一致性為必要條件，但否認其充分性；僅有句法一致而無模型滿足的理論，仍不足以構成真理。
+\item \textbf{與真理實用論（Pragmatic Theory of Truth）}：實用論傾向將真理與成功預測或實踐效果連結。本框架不以實用性作為真理的定義，而將其視為方法論期望。
+\item \textbf{與真理共識論（Consensus Theory of Truth）}：共識論認為真理奠基於理性主體間的最終共識。本框架僅在形式語言 $\mathcal{L}$ 的選擇與使用上承認共識的角色，但否認共識本身能構成真理條件或影響合理性。
+\item \textbf{與真理多元論（Pluralist Theory of Truth）、詭辯主義（Sophism）、真理相對主義（Alethic Relativism）與主觀主義（Subjectivism）}：本框架透過不同真理理論組的存在自然地容納不同領域、不同語言、不同觀察產生的多元性與相對性，但透過明確的形式約束拒斥對客觀真理的全面否定。
+\item \textbf{與建構經驗主義（Constructive Empiricism）}：本框架與建構經驗主義在「經驗充分性（empirical adequacy）」上高度相容，僅要求存在 $\mathcal{M}\supseteq\mathcal{O}$ 使 $\mathcal{M}\vDash T$。其差異在於，本框架允許但不強制對解釋結構做實在論承諾，而將之視為方法論期望。
+\item \textbf{與邏輯實證主義（Logical Positivism）}：本框架繼承邏輯實證主義對形式化與可檢驗性的重視，但拒斥其對形上學（metaphysics）的全面排除。形上學命題可被納入真理理論組，只要其位於 $\mathcal{O}$ 之外，並由 $\mathcal{M}$ 承擔，而不破壞經驗滿足。
+\item \textbf{與結構主義（Structuralism）}：本框架屬於明確的模型論式結構主義：真理不依賴於對個別對象的直接指涉，而依賴於經驗結構與解釋結構之間的同態。
+\item \textbf{與科學實在論（Scientific Realism）}：本框架支持一種溫和的實在論，將穩定的經驗結構視為反映世界的結構特徵；然而，對解釋結構中不可觀察之部分，仍保持開放而非必然的承諾或拒斥。
+\item \textbf{與柏拉圖（Plato）}：柏拉圖將真理奠基於理念世界（world of Forms）並貶抑感官經驗。本框架拒斥之，但允許真理理論組包含非經驗、形而上的成分，並將之形式化於解釋結構 $\mathcal{M}$ 中。
+\item \textbf{與亞里斯多德（Aristoe）}：亞里斯多德的普遍性理論（Aristotle's theory of universals）與符應論直覺於本框架中被形式化；其對邏輯與本體論（Ontology）的區分，也於本框架中轉化為句法—語義的區分。
+\item \textbf{與 Bertrand Russell 和早期 Wittgenstein}：本框架延續它們將語言結構映射至世界結構的思想，並吸收早期 Wittgenstein 的語言圖像論（Picture theory of language），但避免預設唯一且固定的邏輯。
+\item \textbf{與 Alfred Tarski}：本框架以 Tarski 的真理語義論（Semantic theory of truth）為技術基礎，並進一步區分經驗結構與解釋結構，使不同真理理論組得以解釋同一經驗結構。
+\item \textbf{與 Willard Van Orman Quine}：本框架繼承了它的確認整體論（Confirmation holism）、經驗論（Empiricism）、本體實在論（Ontological realism）與自然化認識論（Naturalized epistemology）工作，並引入證明論（proof theory）與模型論工具予以形式化；同時拒斥其對非經典邏輯的排他性立場，改而將之視為方法論期望。
+\end{itemize}
+\section{問題二}
+\subsection{題目}
+在米利都學派中，泰利斯認為「水」是萬物本源，為萬物的變動原料；阿那克希曼德認為「無限」才是萬物的本源；阿那克希曼尼提出「氣」才是萬物根源的主張。你認為，為何他們要追求萬物本源？他們又為何有不同觀點？
+\subsection{答案}
+\subsubsection{為何追求萬物本源？}
+米利都學派追求萬物本源，乃因他們試圖以理性取代宗教與神話，為多樣而變動的自然現象尋找一個統一且可理解的解釋原則。對本源的探問，即對宇宙本質與秩序的追求。
+\subsubsection{為何有不同觀點？}
+觀點不同源於他們對自然現象的觀察重點與哲學判斷各異：泰利斯從觀察到萬物之養分與種子皆為溼潤，且熱源於溼潤，故以「水」為本；阿那克希曼德認為具體元素不足以生成萬物，遂提出抽象的「無限」（Apeiron）作為本源，是無定形、無邊界、永恆不滅的原理；阿那克希曼尼則提出，無論個人的靈魂或整個世界，都遵循著相同的原則，即萬物的本源為「氣」，氣透過稀疏化和凝聚化改變型態形成萬物。
+\end{document}
