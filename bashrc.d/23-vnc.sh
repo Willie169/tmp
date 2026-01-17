@@ -5,8 +5,11 @@ alias vnck='vncserver -kill'
 alias vncl='vncserver -list'
 
 xdgset() {
-  [ -z $TMPDIR] || 
-  export XDG_RUNTIME_DIR="$TMPDIR/runtime -r oot"
+  if [ -z "$TMPDIR" ] || [ -n "$TMPDIR" ]; then
+    export XDG_RUNTIME_DIR="$TMPDIR/runtime-root"
+  else
+    export XDG_RUNTIME_DIR="/tmp/runtime-root"
+  fi
   mkdir -p $XDG_RUNTIME_DIR
   export DISPLAY="$1"
 }
@@ -17,6 +20,11 @@ vncclean() {
     return 1
   fi
 
-  rm -f "/tmp/.X${1}-lock"
-  rm -f "/tmp/.X11-unix/.X${1}"
+  if [ -z "$TMPDIR" ] || [ -n "$TMPDIR" ]; then
+    rm -f "$TMPDIR/.X${1}-lock"
+    rm -f "$TMPDIR/.X11-unix/.X${1}"
+  else
+    rm -f "/tmp/.X${1}-lock"
+    rm -f "/tmp/.X11-unix/.X${1}"
+  fi
 }
