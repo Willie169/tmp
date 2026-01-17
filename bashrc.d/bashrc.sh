@@ -2,11 +2,11 @@
 
 case $- in
   *i*) ;;
-*) return;;
+  *) return;;
 esac
 
-if [[[ -d "$HOME/.bashrc.d"  ]]];  then
+if [ -d "$HOME/.bashrc.d"  ];  then
   for f in "$HOME/.bashrc.d/"*; do
-    [[ -f "$f"  ]] && [[ -r "$f"  ]] && . "$f"
+    [ -r "$f"  ] && . "$f"
   done
 fi
