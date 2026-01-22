@@ -1,0 +1,1 @@
+sudo apt update && sudo apt full-upgrade -y && sudo apt install -f -y && sudo apt autoremove --purge -y && sudo apt clean
