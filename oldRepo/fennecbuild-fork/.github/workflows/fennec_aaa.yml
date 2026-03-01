@@ -1,0 +1,75 @@
+name: fennec_aaa
+on:
+  workflow_dispatch:
+jobs:
+  build:
+    timeout-minutes: 360
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build app
+        timeout-minutes: 360
+        run: |
+          export PACKAGE_NAME='fennec_aaa'
+          cd ~
+          export CARGO_BUILD_JOBS=2
+          export RUSTFLAGS="-C codegen-units=1"
+          export ANDROID_HOME="${HOME}/Android/Sdk"
+          export PATH="${HOME}/.local/bin:${ANDROID_HOME}/cmdline-tools/latest/bin:${ANDROID_HOME}/platform-tools:${PATH}"
+          mkdir -p ${HOME}/.local/bin
+          sudo apt update
+          sudo apt purge yq -y
+          sudo apt install curl git perl pipx unzip wget -y
+          NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+          eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv bash)"
+          brew install yq
+          git config --global user.email you@example.com
+          git config --global user.name your_name
+          git clone https://gitlab.com/fdroid/fdroiddata.git
+          cd fdroiddata
+          rm config.yml
+          touch config.yml
+          git add config.yml
+          cd metadata
+          export VERCODE=$(awk -F': *' '/^[[:space:]]*CurrentVersionCode:/ {print $2}' org.mozilla.fennec_fdroid.yml)
+          export COMMIT=$(git log --format='%H' -S"versionCode: $VERCODE" -- org.mozilla.fennec_fdroid.yml | head -n1)
+          export GIT_AUTHOR_DATE="$(git show -s --format=%aI "$COMMIT")"
+          export GIT_COMMITTER_DATE="$(git show -s --format=%cI "$COMMIT")"
+          export NDK=$(cat org.mozilla.fennec_fdroid.yml | grep -E '[[:space:]]*ndk:' | tail -1 | sed -E 's/.*ndk:[[:space:]]*([^[:space:]]+).*/\1/')
+          export SUDO="$(yq '.Builds[-1].sudo' org.mozilla.fennec_fdroid.yml | sed 's/^- //' | sed 's/^echo .* > \/etc\/apt\/sources\.list\.d\/.*$//' | sed 's/ -t bookworm//')"
+          sed -i "s/fennec_fdroid/$PACKAGE_NAME/" org.mozilla.fennec_fdroid.yml
+          sed -i 's/^    prebuild: \.\/prebuild\.sh \$\$VERSION\$\$ \$\$VERCODE\$\$/    prebuild:\n      - git grep -l "fennec_fdroid" -- . | xargs perl -pi -e "s\/fennec_fdroid\/'"$PACKAGE_NAME"'\/g"\n      - .\/prebuild.sh \$\$VERSION\$\$ \$\$VERCODE\$\$/' org.mozilla.fennec_fdroid.yml
+          mv org.mozilla.fennec_fdroid.yml "org.mozilla.$PACKAGE_NAME.yml"
+          mv org.mozilla.fennec_fdroid "org.mozilla.$PACKAGE_NAME"
+          git rm org.mozilla.fennec_fdroid.yml
+          git rm -r org.mozilla.fennec_fdroid
+          git add "org.mozilla.$PACKAGE_NAME.yml"
+          git add "org.mozilla.$PACKAGE_NAME"
+          git commit -m commit_message
+          cd ~
+          sudo bash <<< "$SUDO"
+          pipx install fdroidserver
+          wget --tries=100 --retry-connrefused --waitretry=5 -O studio.html https://developer.android.com/studio
+          export CMDLINETOOLS="$(awk '/<table class="download">/ { count++ }
+          count >= 2 {
+            if (match($0, /commandlinetools-linux-.*zip/)) {
+              print substr($0, RSTART, RLENGTH)
+              exit
+            }
+          }' studio.html)"
+          rm studio.html
+          wget --tries=100 --retry-connrefused --waitretry=5 "https://dl.google.com/android/repository/${CMDLINETOOLS}"
+          unzip "$CMDLINETOOLS"
+          mkdir -p ~/Android/Sdk/cmdline-tools/latest
+          mv cmdline-tools/* ~/Android/Sdk/cmdline-tools/latest
+          rm -r cmdline-tools*
+          cd ~/Android/Sdk/cmdline-tools/latest/bin
+          echo y | ./sdkmanager "platform-tools" "ndk;$NDK"
+          cd ~/fdroiddata
+          fdroid build "org.mozilla.$PACKAGE_NAME:$VERCODE" -v
+      - name: Upload APK artifact
+        timeout-minutes: 360
+        uses: actions/upload-artifact@v4
+        with:
+          name: fennec_apks
+          path: |
+            ~/fdroiddata/build/srclib/MozFennec/obj/gradle/build/mobile/android/fenix/app/outputs/apk/release/app-*-release-unsigned.apk
