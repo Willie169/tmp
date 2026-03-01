@@ -1,0 +1,10 @@
+Command format:
+setx NAME "VALUE"
+or
+setx NAME "VALUE1;VALUE2"
+Original value can be called as
+%NAMW%;
+e.g.
+setx CPLUS_INCLUDE_PATH "C:\boost_1_85_0;C:\Pycharm\Python310\Python\Lib\site-packages\pybind11"
+or
+setx CPLUS_INCLUDE_PATH "%CPLUS_INCLUDE_PATH%;C:\boost_1_85_0;C:\Pycharm\Python310\Python\Lib\site-packages\pybind11"
