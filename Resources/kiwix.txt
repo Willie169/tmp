@@ -1,0 +1,5 @@
+https://lb.download.kiwix.org/zim/wikipedia/wikipedia_en_chemistry_nopic_2026-07.zim
+https://lb.download.kiwix.org/zim/wikipedia/wikipedia_en_computer_nopic_2026-06.zim
+https://lb.download.kiwix.org/zim/wikipedia/wikipedia_en_mathematics_nopic_2026-06.zim
+https://lb.download.kiwix.org/zim/wikipedia/wikipedia_en_physics_nopic_2026-07.zim
+https://lb.download.kiwix.org/zim/other/archlinux_en_all_maxi_2026-07.zim

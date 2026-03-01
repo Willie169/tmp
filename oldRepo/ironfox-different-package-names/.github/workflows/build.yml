@@ -1,0 +1,23 @@
+name: build
+on:
+  workflow_dispatch:
+jobs:
+  build:
+    timeout-minutes: 360
+    runs-on: ubuntu-latest
+    steps:
+      - name: Prepare
+        timeout-minutes: 360
+        run: |
+          cd ~
+          sudo apt update
+          sudo DEBIAN_FRONTEND=noninteractive apt install curl git -y
+          source /etc/os-release
+          curl --retry 100 --retry-connrefused --retry-delay 5 -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo tee /etc/apt/trusted.gpg.d/docker.asc >/dev/null
+          echo "deb [arch=amd64] https://download.docker.com/linux/ubuntu $UBUNTU_CODENAME stable" | sudo tee /etc/apt/sources.list.d/docker.list >/dev/null
+          sudo apt update
+          sudo DEBIAN_FRONTEND=noninteractive apt install docker-ce -y
+          git clone https://github.com/Willie169/ironfox-different-package-names.git
+      - name: Build
+        timeout-minutes: 360
+        run: sudo docker run --rm -v "$HOME/ironfox-different-package-names/build.sh:/build.sh" registry.gitlab.com/ironfox-oss/ironfox:latest bash /build.sh
