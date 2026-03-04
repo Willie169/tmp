@@ -38,3 +38,5 @@ qemu-system-x86_64 \
   -chardev spicevmc,id=vdagent,name=vdagent \
   -device virtserialport,chardev=vdagent,name=com.redhat.spice.0 \
   -vnc :2,to=5
+## Connect SPICE
+remote-viewer spice://127.0.0.1:5930
