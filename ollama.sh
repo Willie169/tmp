@@ -1,6 +1,6 @@
-ollama pull gpt-oss:20b
-ollama pull phi4-reasoning:14b-plus-q4_K_M
-ollama pull phi4:14b
-ollama pull llama3.1:8b
-ollama pull llama3.2:3b
+ollama pull hf.co/unsloth/gpt-oss-20b-GGUF:Q4_K_M
+ollama pull qwen3.5:9b-q4_K_M
+ollama pull qwen3.5:4b-q4_K_M
+ollama pull qwen3.5:2b-q4_K_M
+ollama pull qwen3-coder-next:q4_K_M
 ollama pull nomic-embed-text:v1.5
