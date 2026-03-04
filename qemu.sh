@@ -10,7 +10,7 @@ qemu-system-x86_64 \
   -enable-kvm \
   -cpu host \
   -m 4G \
-  -smp 8 \
+  -smp $(nproc) \
   -boot d \
   -cdrom ~/iso/kubuntu-24.04.4-desktop-amd64.iso \
   -drive file=~/kubuntu-vm/kubuntu-vm.qcow2,format=qcow2,if=virtio \
@@ -27,7 +27,7 @@ qemu-system-x86_64 \
   -enable-kvm \
   -cpu host \
   -m 4G \
-  -smp 8 \
+  -smp $(nproc) \
   -boot c \
   -drive file=~/kubuntu-vm/kubuntu-vm.qcow2,format=qcow2,if=virtio \
   -netdev user,id=n1,net=10.0.3.0/24,hostfwd=tcp::2222-:22 \
