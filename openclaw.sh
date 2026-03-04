@@ -29,3 +29,4 @@ export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 nvm install 24
 curl -fsSL https://openclaw.ai/install.sh | bash
+curl -fsSL https://openclaw.ai/install.sh | bash
