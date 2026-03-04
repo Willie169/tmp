@@ -3,6 +3,8 @@ cd ~/iso
 wget https://cdimage.ubuntu.com/kubuntu/releases/24.04.3/release/kubuntu-24.04.4-desktop-amd64.iso
 mkdir ~/kubuntu-vm
 qemu-img create -f qcow2 ~/kubuntu-vm/kubuntu-vm.qcow2 50G
+sudo ufw insert 1 deny from 10.0.3.0/24
+sudo ufw insert 1 allow from 10.0.3.0/24 to any port 11434
 # Install
 qemu-system-x86_64 \
   -enable-kvm \
@@ -12,13 +14,14 @@ qemu-system-x86_64 \
   -boot d \
   -cdrom ~/iso/kubuntu-24.04.4-desktop-amd64.iso \
   -drive file=~/kubuntu-vm/kubuntu-vm.qcow2,format=qcow2,if=virtio \
-  -netdev user,id=n1,hostfwd=tcp::2222-:22,hostfwd=tcp::11434-:11434 \
+  -netdev user,id=n1,net=10.0.3.0/24,hostfwd=tcp::2222-:22 \
   -device virtio-net-pci,netdev=n1 \
   -spice port=5930,disable-ticketing=on \
   -vga qxl \
   -device virtio-serial \
   -chardev spicevmc,id=vdagent,name=vdagent \
   -device virtserialport,chardev=vdagent,name=com.redhat.spice.0
+  -vnc 2,to=5
 # Run
 qemu-system-x86_64 \
   -enable-kvm \
@@ -27,10 +30,11 @@ qemu-system-x86_64 \
   -smp 8 \
   -boot c \
   -drive file=~/kubuntu-vm/kubuntu-vm.qcow2,format=qcow2,if=virtio \
-  -netdev user,id=n1,hostfwd=tcp::2222-:22,hostfwd=tcp::11434-:11434 \
+  -netdev user,id=n1,net=10.0.3.0/24,hostfwd=tcp::2222-:22 \
   -device virtio-net-pci,netdev=n1 \
   -spice port=5930,disable-ticketing=on \
   -vga qxl \
   -device virtio-serial \
   -chardev spicevmc,id=vdagent,name=vdagent \
   -device virtserialport,chardev=vdagent,name=com.redhat.spice.0
+  -vnc 2,to=5
