@@ -34,5 +34,3 @@ qemu-system-x86_64 \
   -vga virtio \
   -device virtio-serial \
   -vnc :2,to=5
-## Connect SPICE
-remote-viewer spice://127.0.0.1:5930
