@@ -20,8 +20,8 @@ qemu-system-x86_64 \
   -vga qxl \
   -device virtio-serial \
   -chardev spicevmc,id=vdagent,name=vdagent \
-  -device virtserialport,chardev=vdagent,name=com.redhat.spice.0
-  -vnc 2,to=5
+  -device virtserialport,chardev=vdagent,name=com.redhat.spice.0 \
+  -vnc :2,to=5
 # Run
 qemu-system-x86_64 \
   -enable-kvm \
@@ -36,5 +36,5 @@ qemu-system-x86_64 \
   -vga qxl \
   -device virtio-serial \
   -chardev spicevmc,id=vdagent,name=vdagent \
-  -device virtserialport,chardev=vdagent,name=com.redhat.spice.0
-  -vnc 2,to=5
+  -device virtserialport,chardev=vdagent,name=com.redhat.spice.0 \
+  -vnc :2,to=5
