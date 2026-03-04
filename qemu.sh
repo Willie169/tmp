@@ -16,12 +16,9 @@ qemu-system-x86_64 \
   -drive file=~/kubuntu-vm/kubuntu-vm.qcow2,format=qcow2,if=virtio \
   -netdev user,id=n1,net=10.0.3.0/24,hostfwd=tcp::2222-:22 \
   -device virtio-net-pci,netdev=n1 \
-  -spice port=5930,disable-ticketing=on \
   -display sdl,gl=on \
   -vga virtio \
   -device virtio-serial \
-  -chardev spicevmc,id=vdagent,name=vdagent \
-  -device virtserialport,chardev=vdagent,name=com.redhat.spice.0 \
   -vnc :2,to=5
 # Run
 qemu-system-x86_64 \
@@ -33,12 +30,9 @@ qemu-system-x86_64 \
   -drive file=~/kubuntu-vm/kubuntu-vm.qcow2,format=qcow2,if=virtio \
   -netdev user,id=n1,net=10.0.3.0/24,hostfwd=tcp::2222-:22 \
   -device virtio-net-pci,netdev=n1 \
-  -spice port=5930,disable-ticketing=on \
   -display sdl,gl=on \
   -vga virtio \
   -device virtio-serial \
-  -chardev spicevmc,id=vdagent,name=vdagent \
-  -device virtserialport,chardev=vdagent,name=com.redhat.spice.0 \
   -vnc :2,to=5
 ## Connect SPICE
 remote-viewer spice://127.0.0.1:5930
