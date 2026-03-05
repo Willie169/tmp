@@ -1,14 +1,16 @@
 # myqemu_run ~/claw-kubuntu/claw-kubuntu.qcow2 10.0.3.0
 sudo apt update
-sudo apt install bash build-essential cmake curl git openssh-server neovim python-is-python3 python3-all-dev python3-neovim python3-pip python3-venv socat vim wget -y
+sudo apt install openssh-server -y
 sudo sed -i 's/^#\?PasswordAuthentication.*/PasswordAuthentication yes/' /etc/ssh/sshd_config
 sudo mkdir -p /run/sshd
 sudo chmod 0755 /run/sshd
 sudo chown root:root /run/sshd
-sudo systemctl enable ssh
+sudo systemctl enable --now ssh
 yes | sudo ufw enable
 sudo ufw allow ssh
-sudo apt install plasma-workspace-wayland -y
+# ssh can be used since now
+sudo apt upgrade -y
+sudo apt install bash build-essential cmake curl git neovim plasma-workspace-wayland python-is-python3 python3-all-dev python3-neovim python3-pip python3-venv socat vim wget -y
 # logout, select in the down left corner of the login page, choose Plasma (Wayland), and login
 sudo add-apt-repository ppa:mozillateam/ppa -y
 echo 'Package: firefox*
