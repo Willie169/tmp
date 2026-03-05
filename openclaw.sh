@@ -107,7 +107,6 @@ WantedBy=default.target
 EOF
 systemctl --user daemon-reload
 systemctl --user enable --now ollama-forward.service
-curl -fsSL https://openclaw.ai/install.sh | bash
-curl -fsSL https://openclaw.ai/install.sh | bash
+curl -fsSL https://openclaw.ai/install.sh | bash -s -- --install-method git --no-onboard
 openclaw doctor --fix
 
