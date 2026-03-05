@@ -94,7 +94,8 @@ sudo curl -fsSLo /etc/apt/sources.list.d/brave-browser-release.sources https://b
 sudo apt update
 sudo apt install brave-browser -y
 git clone --depth=1 https://github.com/Willie169/vimrc.git ~/.vim_runtime && sh ~/.vim_runtime/install_awesome_vimrc.sh
-cat > ~/.bashrc <<EOF
+cat >> ~/.bashrc <<EOF
+
 update_vimrc() {
   (
   cd ~/.vim_runtime
