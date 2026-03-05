@@ -140,8 +140,10 @@ systemctl --user daemon-reload
 systemctl --user enable --now litellm-forward.service
 systemctl --user enable --now ollama-forward.service
 ```
-Configures browsers etc. in it, and then poweroff.
-
+Configure browsers etc. in it, and then
+```
+sudo poweroff
+```
 In host, run:
 ```
 chmod -w ~/qcow2base/claw-kubuntu-base.qcow2
@@ -163,3 +165,4 @@ Install OpenClaw in it.
 curl -fsSL https://openclaw.ai/install.sh | bash -s -- --no-onboard
 openclaw doctor --fix
 ```
+
