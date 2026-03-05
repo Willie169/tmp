@@ -8,7 +8,7 @@ myqemu_install ~/iso/kubuntu-24.04.4-desktop-amd64.iso ~/qcow2base/kubuntu-24.04
 # install OS
 chmod -w ~/qcow2base/kubuntu-24.04.4-desktop-amd64-base.qcow2
 mkdir ~/claw-kubuntu
-qemu-img create -f qcow2 -b ~/qcow2base/kubuntu-24.04.4-desktop-amd64-base.qcow2 ~/claw-kubuntu/claw-kubuntu.qcow2
+qemu-img create -f qcow2 -b ~/qcow2base/kubuntu-24.04.4-desktop-amd64-base.qcow2 -F qcow2 ~/claw-kubuntu/claw-kubuntu.qcow2
 sudo ufw insert 1 deny from 10.0.3.0/24
 sudo ufw insert 1 allow from 10.0.3.0/24 to any port 11434
 myqemu_run ~/claw-kubuntu/claw-kubuntu.qcow2 10.0.3.0
