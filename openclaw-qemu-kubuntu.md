@@ -165,5 +165,8 @@ Install OpenClaw in it.
 ```
 curl -fsSL https://openclaw.ai/install.sh | bash -s -- --no-onboard
 openclaw doctor --fix
+openclaw config set gateway.mode "local"
+openclaw gateway stop
+openclaw gateway start
 ```
 
