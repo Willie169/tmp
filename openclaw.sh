@@ -1,6 +1,7 @@
+# myqemu_run ~/claw-kubuntu/claw-kubuntu.qcow2 10.0.3.0
 sudo apt update
-sudo apt install bash curl git openssh-server neovim python-is-python3 python3-all-dev python3-neovim python3-pip python3-venv socat vim -y
-sudo sed -i -e 's/^#\?PasswordAuthentication.*/PasswordAuthentication yes/' -e 's/^Subsystem\s*sftp.*/Subsystem sftp internal-sftp/' /etc/ssh/sshd_config
+sudo apt install bash build-essential cmake curl git openssh-server neovim python-is-python3 python3-all-dev python3-neovim python3-pip python3-venv socat vim wget -y
+sudo sed -i 's/^#\?PasswordAuthentication.*/PasswordAuthentication yes/' /etc/ssh/sshd_config
 sudo mkdir -p /run/sshd
 sudo chmod 0755 /run/sshd
 sudo chown root:root /run/sshd
