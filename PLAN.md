@@ -1,28 +1,18 @@
 # PLAN.md
 
-## IME-Aware Terminal Frontend for Termux
+## IME-Aware Terminal
 
 ## 1. Project Overview
 
-This project builds a **custom Android terminal application** designed specifically for **modal editors (Vim/Neovim)** and **multilingual input workflows**.
+This project builds a **custom Android terminal application**, **IME-Aware Terminal**, designed specifically for **multilingual input workflows** and **modal editors (Vim/Neovim)**.
 
-The terminal app will function as a **frontend UI** while delegating all command execution to the existing **Termux environment**.
+The **IME-Aware Terminal** app will function as a **frontend UI** while delegating all command execution to either:
+* the existing **Termux environment** by connecting to a **dedicated local SSH server running inside Termux** initiated with `com.termux.RUN_COMMAND` intent, or
+* other **SSH sessions**.
 
-Execution is performed by connecting to a **dedicated local SSH server running inside Termux**, ensuring:
-
-* no modification of Termux
-* full compatibility with existing Termux packages
-* complete control over the terminal UI and Android IME behavior
-
-The primary goal is to enable **IME-aware editing workflows**, allowing the terminal to automatically suggest keyboard language changes depending on Vim mode.
-
-Example:
-
-| Vim Mode | Suggested Keyboard     |
-| -------- | ---------------------- |
-| Insert   | User’s native language |
-| Normal   | English                |
-| Command  | English                |
+The primary goal is to enable **IME-aware editing workflows**:
+* allowing non-English language be typed directly into the terminal, and
+* allowing the terminal to automatically suggest keyboard language changes, e.g., keep and restore IME language for each buffer separately when leaving/re-entering insert mode or search mode and suggest English when entering normal node or command mode, inspired by [**fcitx.vim**](https://github.com/lilydjwg/fcitx.vim).
 
 ---
 
@@ -31,16 +21,17 @@ Example:
 ## Functional Goals
 
 * Provide a **modern terminal emulator UI on Android**
-* Seamlessly use the **Termux runtime**
-* Support **Vim/Neovim modal editing workflows**
-* Provide **automatic IME language suggestions**
-* Enable **external signaling from Vim plugins**
+* Seamlessly use the **Termux runtime** by initiating SSH server with `com.termux.RUN_COMMAND` intent
 * Allow **multiple terminal sessions**
+* Provide **intent, unix domain socket (UDS), and TCP/IP socket approach for user to store and suggest IME language**
+* Support **automatic IME language suggestions in Vim/Neovim modal editing workflows** via plugin
 
 ## Non-Functional Goals
 
 * No modification of Termux core
+* Compatible with any SSH session
 * Secure by default
+* Automatic connection
 * Low latency
 * Modular architecture
 * Easily extensible
@@ -51,26 +42,26 @@ Example:
 
 ```
 +------------------------------------+
-| Android Terminal App               |
+| IME-Aware Terminal app             |
 |------------------------------------|
 | Terminal Renderer                  |
 | IME Controller                     |
 | Session Manager                    |
 | SSH Client                         |
 | Intent Receiver                    |
-| Plugin API                         |
 +------------------+-----------------+
                    |
-                   | SSH (127.0.0.1)
+                   | SSH
                    |
 +------------------v-----------------+
-| Termux Runtime                      |
+| Termux/Other Runtime               |
 |------------------------------------|
-| Dedicated sshd instance             |
+| sshd instance                      |
 | PTY                                |
-| bash/zsh                           |
+| shell                              |
 | vim / neovim                       |
 | packages                           |
+| …                                  |
 +------------------------------------+
 ```
 
@@ -78,16 +69,14 @@ Example:
 
 # 4. Execution Model
 
-Execution occurs entirely inside Termux.
-
-The frontend app connects via SSH:
+Execution occurs entirely inside sshd server side.
 
 ```
-Terminal UI
+IME-Aware Terminal
     ↓
 SSH channel
     ↓
-Termux sshd
+Termux/other sshd
     ↓
 PTY
     ↓
@@ -108,28 +97,17 @@ This avoids:
 
 The project will launch a **separate SSH daemon instance** to avoid interfering with existing Termux SSH setups.
 
-Example configuration:
+Configuration file:
 
 ```
-~/.termuxvim/sshd_config
+~/.ime_aware_terminal/sshd_config
 ```
 
 Key properties:
 
-| Setting                | Value     |
-| ---------------------- | --------- |
-| Port                   | 8023      |
-| ListenAddress          | 127.0.0.1 |
-| PasswordAuthentication | no        |
-| PubkeyAuthentication   | yes       |
-
-Example config:
-
 ```
-Port 8023
+Port 8021 # customizable
 ListenAddress 127.0.0.1
-
-HostKey ~/.ssh/ssh_host_ed25519_key
 
 PasswordAuthentication no
 PubkeyAuthentication yes
@@ -148,8 +126,8 @@ PermitTTY yes
 A dedicated keypair will be used for authentication.
 
 ```
-~/.termuxvim/app_key
-~/.termuxvim/app_key.pub
+~/.ime_aware_terminal/ssh_key
+~/.ime_aware_terminal/ssh_key.pub
 ```
 
 The public key is added to:
