@@ -50,7 +50,7 @@ Automatically start and stop server via `com.termux.RUN_COMMAND` intent.
 
 ### Terminal Renderer
 
-Reuse Termux's code but with better support for non-Enlgish language.
+Reuse existing projects but with better support for non-Enlgish language.
 
 ### SSH Client
 
@@ -58,7 +58,7 @@ Use **sshj** library.
 
 ### Session Manager
 
-Reuse Termux's code but a new session is a new SSH connection.
+Reuse existing projects. Each session is a SSH connection.
 
 ### IME Controller
 
@@ -76,9 +76,13 @@ getCurrentInputMethodSubtype().getLanguageTag()
 
 Keep locale memory for external processes to read.
 
+Only work with keyboard that respect these API, such as Gboard.
+
 ### Intent Receiver and Socket Listener
 
 Receives signals from external processes to store and suggest IME languages, control terminal behavior, adjust app configurations, initiate SSH connections etc.
+
+---
 
 ## ime\_android.vim Vim Plugin
 
