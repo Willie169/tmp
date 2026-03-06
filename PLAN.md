@@ -11,7 +11,7 @@
 * Configurable app behavior.
 * Automatically initiate SSH server on Termux with `com.termux.RUN_COMMAND` intent.
 * Provide intents and socket for user to view IME languages history, suggest IME languages, control session toggles, adjust app configurations, initiate SSH connections etc.
-* Work with **android\_ime\_aware\_terminal.vim** to keep and restore IME language for each buffer separately when leaving/re-entering insert mode or search mode and suggest English to IME when entering normal node, visual mode, or command line mode, in Vim and Neovim.
+* Work with **android\_ime\_aware\_terminal.vim** to achieve IME language switching similar to [fcitx.vim](https://github.com/lilydjwg/fcitx.vim) in Vim/Neovim.
 
 ## Termux Integration
 
@@ -31,17 +31,21 @@ User can configure the app to send specific `com.termux.RUN_COMMAND` intents on 
 
 ## App Architecture
 
-### Terminal Renderer
+### Terminal
 
-Provide different Terminal mode
+Based on Termux `terminal-view` and `terminal-emulator`.
 
 ### SSH Client
 
-Reuse [ConnectBot](https://github.com/connectbot/connectbot).
+Based on [ConnectBot](https://github.com/connectbot/connectbot).
 
-### Session Manager
-
-Reuse existing projects such as Termux.
+User can configure commands to run on SSH session start. By default, the following environmental variables are injected at a SSH session start:
+- `IME_AWARE_TERMINAL_VERSION`: Current IME-Aware Terminal app version string.
+- `IME_AWARE_TERMINAL_CODE`: Current IME-Aware Terminal app version code.
+- `IME_AWARE_TERMINAL_SOCKET`: Listening socket.
+- `IME_AWARE_TERMINAL_SESSION_UUID`: The uuid of current session, no changes in the entire session, can be used in intent and socket to specify sessions.
+- `IME_AWARE_TERMINAL_SESSION_NUMBER`: The number of current session (1 means first and so on), can change during session, can be used in intent and socket to specify sessions.
+- `IME_AWARE_TERMINAL_SESSION_DISTINATION`: The SSH destination of current session.
 
 ### IME Controller
 
@@ -72,7 +76,7 @@ Listen to external requests to Unix domain socket or TCP socket.
 ### Fast Finish
 
 Fast finish if either:
-* Environmental variable `IME_AWARE_TERMINAL_VERSION` (injected as current IME-Aware Terminal version string on SSH session start by default) is not set.
+* Environmental variable `IME_AWARE_TERMINAL_VERSION` is not set.
 * Vim variable `g:android_ime_aware_terminal` (set to 1 by the plugin if not exists) is set to 0.
 * Intent, Unix socket, and TCP socket are all unavailable.
 
@@ -80,12 +84,11 @@ Fast finish if either:
 
 Use Vim autocmd to detect mode change events and
 - Send intent (Termux only) or
-- Send to socket (any SSH connection).
+- Send to TCP socket (any SSH connection).
 
 ### Behavior
 
-* Re-enter insert mode: Restore precious insert mode language.
-* Leave insert mode: Keep current insert mode language.
-* Re-enter search mode: Restore precious search mode language.
-* Leave search mode: Keep current search mode language.
+* First enter insert or search mode: Suggest a default language if set by user, do nothing otherwise.
+* Re-enter insert or search mode: Restore previous language.
+* Leave insert or search mode: Keep current language.
 * Enter normal, visual, or command line mode: Suggest English.
