@@ -1,5 +1,14 @@
 mkdir ~/.litellm
 cd ~/.litellm
+cat ~/API_KEY.sh | grep LITELLM_MASTER_KEY > .env
+cat ~/API_KEY.sh | grep LITELLM_SALT_KEY >> .env
+cat ~/API_KEY.sh | grep OPENAI_API_KEY >> .env
+cat ~/API_KEY.sh | grep ANTHROPIC_API_KEY >> .env
+cat ~/API_KEY.sh | grep GEMINI_API_KEY >> .env
+cat ~/API_KEY.sh | grep DEEPSEEK_API_KEY >> .env
+cat ~/API_KEY.sh | grep OPENROUTER_API_KEY >> .env
+cat ~/API_KEY.sh | grep MISTRAL_API_KEY >> .env
+source .env
 curl -O https://raw.githubusercontent.com/BerriAI/litellm/refs/heads/main/prometheus.yml
 cat > docker-compose.yml <<'EOF'
 services:
@@ -68,20 +77,52 @@ volumes:
   postgres_data:
     name: litellm_postgres_data # Named volume for Postgres data persistence
 EOF
-cat ~/API_KEY.sh | grep LITELLM_MASTER_KEY > .env
-cat ~/API_KEY.sh | grep LITELLM_SALT_KEY >> .env
-cat ~/API_KEY.sh | grep OPENAI_API_KEY >> .env
-cat ~/API_KEY.sh | grep ANTHROPIC_API_KEY >> .env
-cat ~/API_KEY.sh | grep GEMINI_API_KEY >> .env
-cat ~/API_KEY.sh | grep DEEPSEEK_API_KEY >> .env
-cat ~/API_KEY.sh | grep OPENROUTER_API_KEY >> .env
-cat ~/API_KEY.sh | grep MISTRAL_API_KEY >> .env
+cat > ~/.litellm/config.yaml <<'EOF'
+environment_variables:
+    LITELLM_SALT_KEY: os.environ/LITELLM_SALT_KEY
+
+model_list:
+    - model_name: openai/*
+      litellm_params:
+        model: openai/*
+        api_key: os.environ/OPENAI_API_KEY
+    - model_name: anthropic/*
+      litellm_params:
+        model: anthropic/*
+        api_key: os.environ/ANTHROPIC_API_KEY
+    - model_name: gemini/*
+      litellm_params:
+        model: gemini/*
+        api_key: os.environ/GEMINI_API_KEY
+    - model_name: deepseek/*
+      litellm_params:
+        model: deepseek/*
+        api_key: os.environ/DEEPSEEK_API_KEY
+    - model_name: openrouter/*
+      litellm_params:
+        model: openrouter/*
+        api_key: os.environ/OPENROUTER_API_KEY
+    - model_name: mistral/*
+      litellm_params:
+        model: mistral/*
+        api_key: os.environ/MISTRAL_API_KEY
+
+litellm_settings:
+    check_provider_endpoint: true
+
+general_settings: 
+    master_key: os.environ/LITELLM_MASTER_KEY
+EOF
 docker compose up -d
-source .env
+curl 'http://localhost:4000/models?return_wildcard_routes=false&include_model_access_groups=false&only_model_access_groups=false&include_metadata=false' \
+-H "Authorization: Bearer $LITELLM_MASTER_KEY" \
+-H "Content-Type: application/json"
 curl http://localhost:4000/v1/chat/completions \
 -H "Authorization: Bearer $LITELLM_MASTER_KEY" \
 -H "Content-Type: application/json" \
 -d '{
-  "model": "qwen-4b",
-  "messages": [{"role":"user","content":"hello"}]
+  "model": "openrouter/openrouter/free",
+  "messages": [
+    {"role":"user","content":"Hello"}
+  ]
 }'
