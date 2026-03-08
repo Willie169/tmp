@@ -170,3 +170,15 @@ openclaw gateway stop
 openclaw gateway start
 ```
 
+## LiteLLM
+
+Export `LITELLM_API_KEY` as your LiteLLM virtual key in `~/.bashrc` and let LiteLLM be available at `localhost:4000`.
+
+```
+openclaw onboard --auth-choice litellm-api-key
+```
+
+## Ollama
+
+Export `OLLAMA_API_KEY` as any value (e.g. `ollama-local`) in `~/.bashrc` and let Ollama be available at `localhost:11434`.
+
