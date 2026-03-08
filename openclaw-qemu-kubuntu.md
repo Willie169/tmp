@@ -182,3 +182,7 @@ openclaw onboard --auth-choice litellm-api-key
 
 Export `OLLAMA_API_KEY` as any value (e.g. `ollama-local`) in `~/.bashrc` and let Ollama be available at `localhost:11434`.
 
+## Edit Config
+
+Edit `.openclaw/openclaw.json`.
+
