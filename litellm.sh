@@ -110,19 +110,29 @@ model_list:
 litellm_settings:
     check_provider_endpoint: true
 
-general_settings: 
+general_settings:
     master_key: os.environ/LITELLM_MASTER_KEY
 EOF
 docker compose up -d
-curl 'http://localhost:4000/models?return_wildcard_routes=false&include_model_access_groups=false&only_model_access_groups=false&include_metadata=false' \
--H "Authorization: Bearer $LITELLM_MASTER_KEY" \
--H "Content-Type: application/json"
-curl http://localhost:4000/v1/chat/completions \
--H "Authorization: Bearer $LITELLM_MASTER_KEY" \
--H "Content-Type: application/json" \
--d '{
-  "model": "openrouter/openrouter/free",
-  "messages": [
-    {"role":"user","content":"Hello"}
-  ]
-}'
+mkdir -p ~/.config/systemd/user
+cat > ~/.config/systemd/user/litellm.service <<EOF
+[Unit]
+Description=LiteLLM
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=$HOME/.litellm
+ExecStart=/usr/bin/docker compose up -d
+ExecStop=/usr/bin/docker compose down
+RemainAfterExit=yes
+
+[Install]
+WantedBy=default.target
+EOF
+systemctl --user daemon-reload
+systemctl --user enable --now litellm
+# curl 'http://localhost:4000/models?return_wildcard_routes=false&include_model_access_groups=false&only_model_access_groups=false&include_metadata=false' -H "Authorization: Bearer $LITELLM_MASTER_KEY" -H "Content-Type: application/json"
+# curl http://localhost:4000/v1/chat/completions -H "Authorization: Bearer $LITELLM_MASTER_KEY" -H "Content-Type: application/json" -d '{"model":"openrouter/openrouter/free","messages":[{"role":"user","content":"Hello"}]}'
+
