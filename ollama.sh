@@ -1,5 +1,12 @@
-ollama pull hf.co/unsloth/gpt-oss-20b-GGUF:Q4_K_M
 ollama pull qwen3.5:9b-q4_K_M
 ollama pull qwen3.5:4b-q4_K_M
 ollama pull qwen3.5:2b-q4_K_M
+olllma pull qwen3-vl:8b-instruct-q4_K_M
+olllma pull qwen3-vl:4b-instruct-q4_K_M
+olllma pull qwen3-vl:2b-instruct-q4_K_M
+ollama pull hf.co/unsloth/gpt-oss-20b-GGUF:Q4_K_M
+ollama pull deepseek-coder:6.7b-instruct-q4_K_M
+ollama pull deepseek-coder:1.3b-instruct-q4_K_M
+ollama pull starcoder2:7b-q4_K_M
+ollama pull starcoder2:3b-q4_K_M
 ollama pull nomic-embed-text:v1.5
