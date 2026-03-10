@@ -4,7 +4,7 @@ ollama pull qwen3.5:2b-q4_K_M
 ollama pull hf.co/unsloth/gpt-oss-20b-GGUF:Q4_K_M
 ollama pull qwen2.5-coder:7b-instruct-q4_K_M
 ollama pull qwen2.5-coder:3b-instruct-q4_K_M
-ollma pull qwen3-vl:8b-instruct-q4_K_M
-ollma pull qwen3-vl:4b-instruct-q4_K_M
-ollma pull qwen3-vl:2b-instruct-q4_K_M
+ollama pull qwen3-vl:8b-instruct-q4_K_M
+ollama pull qwen3-vl:4b-instruct-q4_K_M
+ollama pull qwen3-vl:2b-instruct-q4_K_M
 ollama pull nomic-embed-text:v1.5
