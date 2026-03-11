@@ -4,12 +4,29 @@ from typing import Tuple, List, Dict
 import math
 import csv
 
+def ceil_to(x, digits=0):
+    factor = 10 ** digits
+    return math.ceil(x * factor) / factor
+
 def round_to_uncertainty(value: float, uncertainty: float) -> float:
     if uncertainty <= 0 or not np.isfinite(uncertainty):
         return value
 
-    ndigits = 1 - int(np.floor(np.log10(np.abs(uncertainty))))
+    exponent = int(np.floor(np.log10(abs(uncertainty))))
+    first_digit = int(abs(uncertainty) / 10**exponent)
+    sig = 2 if first_digit in (1, 2) else 1
+    digits = sig - 1 - exponent
     return round(value, ndigits)
+
+def ceil_to_uncertainty(value: float, uncertainty: float) -> float:
+    if uncertainty <= 0 or not np.isfinite(uncertainty):
+        return value
+
+    exponent = int(np.floor(np.log10(abs(uncertainty))))
+    first_digit = int(abs(uncertainty) / 10**exponent)
+    sig = 2 if first_digit in (1, 2) else 1
+    digits = sig - 1 - exponent
+    return ceil_to(value, digits)
 
 def calculate_type_a_uncertainty(measurements: np.ndarray) -> Tuple[float, float]:
     n = len(measurements)
@@ -183,9 +200,9 @@ def process_data(
 
         y_bar_rounded = round_to_uncertainty(stats['y_bar'], stats['u'])
         y_corr_rounded = round_to_uncertainty(stats['y_bar_minus_y0'], stats['u'])
-        s_y_rounded = round_to_uncertainty(stats['s_y'], stats['s_y']) if stats['s_y'] > 0 else 0
-        u_A_rounded = round_to_uncertainty(stats['u_A'], stats['u_A']) if stats['u_A'] > 0 else 0
-        u_rounded = round_to_uncertainty(stats['u'], stats['u'])
+        s_y_rounded = ceil_to_uncertainty(stats['s_y'], stats['s_y']) if stats['s_y'] > 0 else 0
+        u_A_rounded = ceil_to_uncertainty(stats['u_A'], stats['u_A']) if stats['u_A'] > 0 else 0
+        u_rounded = ceil_to_uncertainty(stats['u'], stats['u'])
 
         out_row = {
             'x': row['x'],
@@ -216,11 +233,11 @@ def process_data(
         writer.writerow([])
 
         m_rounded = round_to_uncertainty(fit_results['slope'], fit_results['slope_unc'])
-        um_rounded = round_to_uncertainty(fit_results['slope_unc'], fit_results['slope_unc'])
+        um_rounded = ceil_to_uncertainty(fit_results['slope_unc'], fit_results['slope_unc'])
         writer.writerow(['Slope', m_rounded, 'uncertainty', um_rounded])
 
         b_rounded = round_to_uncertainty(fit_results['intercept'], fit_results['intercept_unc'])
-        ub_rounded = round_to_uncertainty(fit_results['intercept_unc'], fit_results['intercept_unc'])
+        ub_rounded = ceil_to_uncertainty(fit_results['intercept_unc'], fit_results['intercept_unc'])
         writer.writerow(['Intercept', b_rounded, 'uncertainty', ub_rounded])
 
         writer.writerow([])
