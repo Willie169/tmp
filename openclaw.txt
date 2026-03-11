@@ -1,2 +1,4 @@
 https://github.com/cft0808/edict
 https://github.com/tanweai/pua
+
+https://github.com/HKUDS/CLI-Anything
