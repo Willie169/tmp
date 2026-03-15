@@ -1,0 +1,34 @@
+#!/bin/bash
+for dir in */; do
+  cd "$dir" || continue
+  for tex_file in *.tex; do
+    if [[ -f "$tex_file" ]]; then
+      echo "Processing $tex_file in $dir"
+      xelatex "$tex_file" && xelatex "$tex_file"
+    else
+      echo "No .tex files in $dir"
+    fi
+  done
+  cd - || exit
+done
+
+
+sed -i 's/\xE2\x80\x8B//g' *.tex
+
+
+find */ -type f -name "*.pdf" -exec cp {} ../b/ \;
+
+
+xelatex *.tex && xelatex *.tex
+
+
+#!/bin/bash
+shopt -s nullglob
+start_dir=$(pwd)
+for dir in */; do
+  cd "$dir" || continue
+  rm -f *.aux *.log *.out *.toc
+  cd "$start_dir" || exit
+done
+shopt -u nullglob
+
