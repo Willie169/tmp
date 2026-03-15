@@ -21,8 +21,14 @@ sudo apt install swtpm swtpm-tools -y
 sudo apt install -f
 sudo apt install qemu-kvm libvirt-daemon-system libvirt-clients virt-manager ovmf bridge-utils -y
 qemu-img create -f qcow2 "$QCOW2" 100G
+swtpm_setup \
+  --tpm2 \
+  --tpmstate "$TPM/tpm" \
+  --create-ek-cert \
+  --create-platform-cert \
+  --lock-nvram
 swtpm socket --tpm2 \
-  --tpmstate dir="$TPM/tpm" \
+  --tpmstate "$TPM/tpm" \
   --ctrl type=unixio,path="$TPM/swtpm-sock" &
 sudo qemu-system-x86_64 \
   -enable-kvm \
