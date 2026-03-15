@@ -23,13 +23,13 @@ sudo apt install qemu-kvm libvirt-daemon-system libvirt-clients virt-manager ovm
 qemu-img create -f qcow2 "$QCOW2" 100G
 swtpm_setup \
   --tpm2 \
-  --tpmstate dir="$TPM/tpm" \
+  --tpmstate dir="$TPM" \
   --create-ek-cert \
   --create-platform-cert \
   --lock-nvram
 swtpm socket --tpm2 \
-  --tpmstate dir="$TPM/tpm" \
-  --ctrl type=unixio,path="$TPM/swtpm-sock" &
+  --tpmstate dir="$TPM" \
+  --ctrl type=unixio,path="/tmp/swtpm-sock" &
 sudo qemu-system-x86_64 \
   -enable-kvm \
   -cpu host \
@@ -47,7 +47,7 @@ sudo qemu-system-x86_64 \
   -device virtio-serial \
   -device virtserialport \
   -device virtio-balloon-pci \
-  -chardev socket,id=chrtpm,path="$TPM/swtpm-sock" \
+  -chardev socket,id=chrtpm,path="/tmp/swtpm-sock" \
   -tpmdev emulator,id=tpm0,chardev=chrtpm \
   -device tpm-tis,tpmdev=tpm0 \
   -vnc :2
