@@ -40,8 +40,8 @@ sudo qemu-system-x86_64 \
   -cdrom "$WIN_ISO" \
   -netdev user,id=n1,hostfwd=tcp::3222-:22 \
   -device virtio-net-pci,netdev=n1 \
-  -display sdl,gl=on \
-  -device virtio-vga,virgl=on \
+  -display sdl \
+  -vga qxl \
   -device virtio-serial \
   -device virtserialport \
   -device virtio-balloon-pci \
