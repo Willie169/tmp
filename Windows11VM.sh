@@ -44,7 +44,7 @@ sudo qemu-system-x86_64 \
   -chardev socket,id=chrtpm,path="$TPM/swtpm-sock" \
   -tpmdev emulator,id=tpm0,chardev=chrtpm \
   -device tpm-tis,tpmdev=tpm0 \
-  -audiodev alsa,id=snd0 \
+  -audiodev pa,id=snd0 \
   -device ich9-intel-hda \
   -device hda-duplex,audiodev=snd0 \
   -vnc :2
