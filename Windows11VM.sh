@@ -41,7 +41,7 @@ sudo qemu-system-x86_64 \
   -netdev user,id=n1,hostfwd=tcp::3222-:22 \
   -device virtio-net-pci,netdev=n1 \
   -display sdl,gl=on \
-  -vga virtio \
+  -device virtio-vga,virgl=on \
   -device virtio-serial \
   -device virtserialport \
   -device virtio-balloon-pci \
