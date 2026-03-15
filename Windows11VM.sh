@@ -24,8 +24,6 @@ qemu-img create -f qcow2 "$QCOW2" 100G
 swtpm_setup \
   --tpm2 \
   --tpmstate dir="$TPM" \
-  --create-ek-cert \
-  --create-platform-cert \
   --lock-nvram
 swtpm socket --tpm2 \
   --tpmstate dir="$TPM" \
