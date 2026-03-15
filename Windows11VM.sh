@@ -23,10 +23,10 @@ sudo apt install qemu-kvm libvirt-daemon-system libvirt-clients virt-manager ovm
 qemu-img create -f qcow2 "$QCOW2" 100G
 swtpm_setup \
   --tpm2 \
-  --tpmstate dir="$TPM" \
+  --tpmstate "$TPM" \
   --lock-nvram
 swtpm socket --tpm2 \
-  --tpmstate dir="$TPM" \
+  --tpmstate "$TPM" \
   --ctrl type=unixio,path="/tmp/swtpm-sock" &
 sudo qemu-system-x86_64 \
   -enable-kvm \
