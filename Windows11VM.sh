@@ -30,8 +30,8 @@ qemu-system-x86_64 \
   -m 4G \
   -smp 4 \
   -machine q35 \
-  -drive if=pflash,format=raw,readonly=on,file=OVMF_CODE.fd \
-  -drive if=pflash,format=raw,file=OVMF_VARS.fd \
+  -drive if=pflash,format=raw,readonly=on,file=/usr/share/OVMF/OVMF_CODE_4M.ms.fd \
+  -drive if=pflash,format=raw,file=/usr/share/OVMF/OVMF_VARS_4M.ms.fd \
   -drive file="$QCOW2",if=virtio \
   -cdrom "$WIN_ISO" \
   -netdev user,id=n1,hostfwd=tcp::3222-:22 \
