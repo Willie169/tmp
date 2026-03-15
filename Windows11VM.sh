@@ -20,7 +20,7 @@ sudo apt update
 sudo apt install swtpm swtpm-tools -y
 sudo apt install -f
 sudo apt install qemu-kvm libvirt-daemon-system libvirt-clients virt-manager ovmf bridge-utils -y
-qemu-img create -f qcow2 -b "$QCOW2"
+qemu-img create -f qcow2 "$QCOW2" 100G
 swtpm socket --tpm2 \
   --tpmstate dir="$TPM/tpm" \
   --ctrl type=unixio,path="$TPM/swtpm-sock" &
