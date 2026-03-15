@@ -1,3 +1,11 @@
+## References
+# https://undus.net/archives/qemu-install-windows11-guest
+# https://getcyber.me/posts/pen-test-lab-part-2-installing-a-windows-vm-on-qemukvm
+# https://computingforgeeks.com/enable-tpm-on-kvm-and-install-windows
+# https://macroform-node.medium.com/building-a-windows-11-vm-with-qemu-using-tpm-emulation-for-research-malware-analysis-part-1-8846378b9582
+# https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/archive-virtio/virtio-win-0.1.285-1
+# https://ppa.launchpadcontent.net/stefanberger
+
 # Download Windows 11 Disk Image (ISO) from
 # https://www.microsoft.com/en-us/software-download/windows11
 # Windows 11 ISO 7.75 GB
