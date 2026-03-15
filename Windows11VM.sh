@@ -24,7 +24,7 @@ qemu-img create -f qcow2 "$QCOW2" 100G
 swtpm socket --tpm2 \
   --tpmstate dir="$TPM/tpm" \
   --ctrl type=unixio,path="$TPM/swtpm-sock" &
-qemu-system-x86_64 \
+sudo qemu-system-x86_64 \
   -enable-kvm \
   -cpu host \
   -m 4G \
@@ -44,7 +44,7 @@ qemu-system-x86_64 \
   -chardev socket,id=chrtpm,path="$TPM/swtpm-sock" \
   -tpmdev emulator,id=tpm0,chardev=chrtpm \
   -device tpm-tis,tpmdev=tpm0 \
-  -audiodev pipewire,id=audio0 \
+  -audiodev alsa,id=snd0 \
   -device ich9-intel-hda \
-  -device hda-duplex,audiodev=audio0 \
+  -device hda-duplex,audiodev=snd0 \
   -vnc :2
