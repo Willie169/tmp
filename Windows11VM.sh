@@ -24,6 +24,9 @@ qemu-img create -f qcow2 "$QCOW2" 100G
 swtpm socket --tpm2 \
   --tpmstate dir="$TPM/tpm" \
   --ctrl type=unixio,path="$TPM/swtpm-sock" &
+XDG_RUNTIME_DIR="/tmp/runtime-root"
+mkdir -p $XDG_RUNTIME_DIR
+chmod 700 $XDG_RUNTIME_DIR
 sudo qemu-system-x86_64 \
   -enable-kvm \
   -cpu host \
