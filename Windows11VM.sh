@@ -30,7 +30,7 @@ qemu-system-x86_64 \
   -m 4G \
   -smp 4 \
   -machine q35 \
-  --boot loader=/usr/share/OVMF/OVMF_CODE.secboot.fd,loader_ro=yes,loader_type=pflash,nvram_template=/usr/share/OVMF/OVMF_VARS.ms.fd \
+  -boot loader=/usr/share/OVMF/OVMF_CODE.secboot.fd,loader_ro=yes,loader_type=pflash,nvram_template=/usr/share/OVMF/OVMF_VARS.ms.fd \
   -drive file="$QCOW2",if=virtio \
   -cdrom "$WIN_ISO" \
   -netdev user,id=n1,hostfwd=tcp::3222-:22 \
