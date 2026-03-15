@@ -26,7 +26,7 @@ swtpm_setup \
   --tpmstate "$TPM" \
   --lock-nvram
 swtpm socket --tpm2 \
-  --tpmstate "$TPM" \
+  --tpmstate dir="$TPM" \
   --ctrl type=unixio,path="/tmp/swtpm-sock" &
 sudo qemu-system-x86_64 \
   -enable-kvm \
