@@ -5,6 +5,8 @@
 # https://macroform-node.medium.com/building-a-windows-11-vm-with-qemu-using-tpm-emulation-for-research-malware-analysis-part-1-8846378b9582
 # https://fedorapeople.org/groups/virt/virtio-win/direct-downloads/archive-virtio/virtio-win-0.1.285-1
 # https://ppa.launchpadcontent.net/stefanberger
+# https://virtio-win.github.io/Knowledge-Base/Windows-arm64-vm-using-qemu.html
+# https://std.rocks/virtualization_qemu_windows11.html
 
 # Download Windows 11 Disk Image (ISO) from
 # https://www.microsoft.com/en-us/software-download/windows11
@@ -44,14 +46,16 @@ qemu-system-x86_64 \
   -drive if=pflash,format=raw,file="$HOME/win11_vm/OVMF_VARS_4M.ms.fd" \
   -drive file="$HOME/qcow2base/win11.qcow2",if=virtio \
   -cdrom "$HOME/iso/Win11_25H2_EnglishInternational_x64.iso" \
-  -netdev user,id=n1,hostfwd=tcp::3222-:22 \
+  -drive if=none,format=raw,media=cdrom,file="$HOME/iso/virtio-win.iso" \
+  -netdev user,id=n1 \
   -device virtio-net-pci,netdev=n1 \
-  -display sdl \
-  -vga qxl \
-  -device virtio-serial \
-  -device virtserialport \
+  -display sdl,gl=on \
+  -device virtio-vga-gl \
   -device virtio-balloon-pci \
   -chardev socket,id=chrtpm,path="/tmp/swtpm-sock" \
   -tpmdev emulator,id=tpm0,chardev=chrtpm \
   -device tpm-tis,tpmdev=tpm0 \
+  -audiodev pipewire,id=audio0 \
+  -device ich9-intel-hda \
+  -device hda-duplex,audiodev=audio0 \
   -vnc :2
