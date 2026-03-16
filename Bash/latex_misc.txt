@@ -32,3 +32,43 @@ for dir in */; do
 done
 shopt -u nullglob
 
+
+#!/usr/bin/env bash
+
+shopt -s nullglob
+
+for dir in ./*/; do
+    cd "$dir" || continue
+
+    pdfs=( *.pdf )
+    texs=( *.tex )
+
+    if (( ${#pdfs[@]} > 0 )); then
+        echo "[$dir] PDF exists, skipping."
+        cd - > /dev/null
+        continue
+    fi
+
+    if (( ${#texs[@]} > 0 )); then
+        tex="${texs[0]}"
+
+        read -rp "[$dir] Compile $tex ? (y/n): " ans
+
+        if [[ "$ans" == "y" || "$ans" == "Y" ]]; then
+            echo "Compiling $tex..."
+
+            xelatex "$tex"
+            xelatex "$tex"
+
+            rm -f *.aux *.log *.toc *.out *.nav *.snm *.fls *.fdb_latexmk *.synctex.gz
+
+            echo "Done."
+        else
+            echo "Skipped."
+        fi
+    else
+        echo "[$dir] No .tex file."
+    fi
+
+    cd - > /dev/null
+done
