@@ -20,12 +20,12 @@
 2. Wait for the deployment to end.
 2. Go to `Activate` from the sidebar.
 2. Pull down the `Licenses management`, click `Install licenses > Install`, and select the product you selected in `Deploy > Products > Add product`.
-2. Visit [https://www.coolhub.top/tech-articles/kms_list.html](https://www.coolhub.top/tech-articles/kms_list.html), pick a `KMS Host` with higher success rate and lower average time, and copy the link.
+2. Visit [https://www.coolhub.top/tech-articles/kms_list.html](https://www.coolhub.top/tech-articles/kms_list.html) in a browser, copy a `KMS Host` with higher success rate and lower average time.
 2. Go back to `Office Tool Plus.exe`'s `Activate` tab.
 2. Paste the link you copied to the grey blank in `KMS management > KMS host`.
 2. Click `KMS management > Set host`.
 2. Click `Licenses management > Activate`.
-2. If `Product activation successful`, congratulations; otherwise, go back to the 17th step, i.e. copy `KMS Host`.
+2. If `Product activation successful`, congratulations; otherwise, choose another `KMS Host` and repeat the steps.
 
 ### KMS Host Table
 KMS host table of [https://www.coolhub.top/tech-articles/kms_list.html](https://www.coolhub.top/tech-articles/kms_list.html) is as below, retrieved on Feb. 6, 2025.
