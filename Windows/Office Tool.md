@@ -2,28 +2,30 @@
 
 ### Usage Step
 
-1. Download the latest Office Tool of your architecture from [https://github.com/YerongAI/Office-Tool](https://github.com/YerongAI/Office-Tool)'s latest release.
+1. Download the latest Office Tool with runtime of your architecture from [https://github.com/YerongAI/Office-Tool](https://github.com/YerongAI/Office-Tool)'s latest release.
+2. Extract it.
 2. Open the `Office Tool Plus.exe`.
-3. Go to `Toolbox` from the sidebar.
-4. Click `Office tools > Remove Office > Remove`.
-5. Go to `Deploy` from the sidebar.
-6. Configure `Deploy Office > Architecture`. 
-7. In `Deploy Office > Update channel`, `Office <year> Perpetual Channel` is recommended.
-8. In `Deploy Office > Installation module`, select `Office Deployment Tool`.
-9. Toggle on `Deploy Office > Create desktop shortcuts` if you want.
-10. Click `Deploy > Products > Add product`, and select the product you want, `Office LTSC Profession Plus <year> - Volume License` recommended.
-11. Under `Deploy > Products`, toggle on the applications you want.
-12. Click `Deploy > Languages > Add languages`, and select the languages you want.
-13. Click `Deploy Office > Start deploy`.
-14. Wait for the deployment to end.
-15. Go to `Activate` from the sidebar.
-16. Pull down the `Licenses management`, click `Install licenses > Install`, and select the product you selected in `Deploy > Products > Add product`.
-17. Open a browser, go to [https://www.coolhub.top/tech-articles/kms_list.html](https://www.coolhub.top/tech-articles/kms_list.html), pick a `KMS Host` with higher success rate and lower average time, and copy the link.
-18. Go back to `Office Tool Plus.exe`'s `Activate` tab.
-19. Paste the link you copied to the grey blank in `KMS management > KMS host`.
-20. Click `KMS management > Set host`.
-21. Click `Licenses management > Activate`.
-22. If `Product activation successful`, congratulations; otherwise, go back to the 17th step, i.e. copy `KMS Host`.
+2. Go to `Toolbox` from the sidebar.
+2. Click `Office tools > Remove Office > Remove` and click `Yes`.
+2. Go to `Deploy` from the sidebar.
+2. Configure `Deploy Office > Deployment mode` to `Install`.
+2. Configure `Deploy Office > Architecture` to your architecture.
+2. Configure `Deploy Office > Update channel` to latest `Office <year> Perpetual Channel`.
+2. Configure `Deploy Office > Installation module` to `Office Deployment Tool`.
+2. Toggle on `Deploy Office > Create desktop shortcuts` if you want.
+2. Click `Deploy > Products > Add product`, and select the product you want, latest `Office LTSC Profession Plus <year> - Volume License` is recommended.
+2. Under `Deploy > Products`, toggle on the applications you want.
+2. Click `Deploy > Languages > Add languages`, and select the languages you want.
+2. Click `Deploy Office > Start deploy`.
+2. Wait for the deployment to end.
+2. Go to `Activate` from the sidebar.
+2. Pull down the `Licenses management`, click `Install licenses > Install`, and select the product you selected in `Deploy > Products > Add product`.
+2. Visit [https://www.coolhub.top/tech-articles/kms_list.html](https://www.coolhub.top/tech-articles/kms_list.html), pick a `KMS Host` with higher success rate and lower average time, and copy the link.
+2. Go back to `Office Tool Plus.exe`'s `Activate` tab.
+2. Paste the link you copied to the grey blank in `KMS management > KMS host`.
+2. Click `KMS management > Set host`.
+2. Click `Licenses management > Activate`.
+2. If `Product activation successful`, congratulations; otherwise, go back to the 17th step, i.e. copy `KMS Host`.
 
 ### KMS Host Table
 KMS host table of [https://www.coolhub.top/tech-articles/kms_list.html](https://www.coolhub.top/tech-articles/kms_list.html) is as below, retrieved on Feb. 6, 2025.
