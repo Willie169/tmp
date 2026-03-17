@@ -8,9 +8,11 @@ quickemu --vm windows-11.conf
 # You can use
 # ./windows-11/disk.qcow2
 # as base image, e.g.
-chmod -w ./windows-11/disk.qcow2
-qemu-img create -f qcow2 -b ./windows-11/disk.qcow2 -F qcow2 ./windows-11/office.qcow2
-cp windows-11.conf office.conf
-sed -i 's/disk.qcow2/office.qcow2/' office.conf
+cd windows-11
+chmod -w disk.qcow2
+qemu-img create -f qcow2 -b disk.qcow2 -F qcow2 office.qcow2
+cd ..
+cp windows-11.conf windows-11-office.conf
+sed -i 's/disk.qcow2/office.qcow2/' windows-11-office.conf
 # This can be booted with
-quickemu --vm office.conf
+quickemu --vm windows-11-office.conf
