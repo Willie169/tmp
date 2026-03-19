@@ -2,3 +2,4 @@ https://github.com/cft0808/edict
 https://github.com/tanweai/pua
 https://github.com/volcengine/OpenViking
 https://github.com/HKUDS/CLI-Anything
+https://github.com/assafelovic/gpt-researcher
