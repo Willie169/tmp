@@ -3,3 +3,4 @@ https://github.com/tanweai/pua
 https://github.com/volcengine/OpenViking
 https://github.com/HKUDS/CLI-Anything
 https://github.com/assafelovic/gpt-researcher
+https://github.com/mvanhorn/last30days-skill
