@@ -10,7 +10,7 @@
 2. Go to `Deploy` from the sidebar.
 2. Configure `Deploy Office > Deployment mode` to `Install`.
 2. Configure `Deploy Office > Architecture` to your architecture.
-2. Configure `Deploy Office > Update channel` to latest `Office <year> Perpetual Channel`.
+2. Configure `Deploy Office > Update channel` to latest `Office <year> Perpetual Enterprise`.
 2. Configure `Deploy Office > Installation module` to `Office Deployment Tool`.
 2. Toggle on `Deploy Office > Create desktop shortcuts` if you want.
 2. Click `Deploy > Products > Add product`, and select the product you want, latest `Office LTSC Profession Plus <year> - Volume License` is recommended.
