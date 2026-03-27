@@ -4,3 +4,6 @@ https://github.com/volcengine/OpenViking
 https://github.com/HKUDS/CLI-Anything
 https://github.com/assafelovic/gpt-researcher
 https://github.com/mvanhorn/last30days-skill
+https://github.com/Yeachan-Heo/oh-my-claudecode
+https://github.com/virattt/dexter
+https://github.com/bytedance/deer-flow
