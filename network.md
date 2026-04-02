@@ -29,6 +29,8 @@ Here's my current Android phone network connection configuration.
 
 ## With Tor
 
+Note: UDP wont't work typically.
+
 - Personal Profile UDP or TCP requests at port 53 -> TrackerControl UDP port forwarding to port 5354 -> InviZible Pro DNS server at port 5354 outbound through Socks5 proxy at port 9051 -> InviZible Pro Tor Socks5 server at port 9051 outbound through Socks5 proxy at port 1080 -> Socks5 Sock5 server at port 1080 -> Tailscale -> DNS resolved
 - Personal Profile other requests -> TrackerControl outbound through Socks5 proxy at port 9051 -> InviZible Pro Tor Socks5 server at port 9051 outbound through Socks5 proxy at port 1080 -> Socks5 Sock5 server at port 1080 -> Tailscale -> Outbound
 - Work Profile requests -> Tailscale -> Outbound
