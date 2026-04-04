@@ -13,6 +13,7 @@ https://github.com/bytedance/deer-flow
 https://github.com/microsoft/VibeVoice
 https://github.com/666ghj/MiroFish
 https://github.com/agentscope-ai/agentscope
+https://github.com/tzengyuxio/skills
 https://github.com/drona23/claude-token-efficient
 https://my.feishu.cn/docx/P6zsdsgYco6i4XxLeIccvlpvnQe
 https://my.feishu.cn/wiki/THLNw1vWCiXJD6kvomlcYpu5nRe?from=from_copylink
