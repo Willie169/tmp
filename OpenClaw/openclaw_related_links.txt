@@ -18,4 +18,6 @@ https://github.com/drona23/claude-token-efficient
 https://my.feishu.cn/docx/P6zsdsgYco6i4XxLeIccvlpvnQe
 https://github.com/ink1ing/anti-api
 https://github.com/NoeFabris/opencode-antigravity-auth
+https://github.com/badrisnarayanan/antigravity-claude-proxy
 https://my.feishu.cn/wiki/THLNw1vWCiXJD6kvomlcYpu5nRe?from=from_copylink
+
