@@ -53,8 +53,7 @@ sudo apt install plasma-workspace-wayland -y
 Log out, select `Plasma (Wayland)` in the down left corner of the login page, and login.
 ```
 sudo apt upgrade -y
-sudo apt install bash build-essential bzip2 cmake curl dbus dnsutils fcitx5 fcitx5-* gcc git gnupg gzip iproute2 make nano netcat-openbsd ninja-build openssl python-is-python3 python3 python3-pip python3-venv socat tar update-manager-core vim wget wl-clipboard -y
-sudo mkdir -p /usr/share/codeblocks/docs
+sudo apt install bash curl dbus dnsutils fcitx5 fcitx5-* gcc git gnupg iproute2 nano netcat-openbsd openssl python-is-python3 python3 python3-pip python3-venv socat tar update-manager-core vim wget wl-clipboard -y
 im-config -n fcitx5
 cat > ~/.xprofile <<'EOF'
 export GTK_IM_MODULE=fcitx
@@ -63,8 +62,6 @@ export XMODIFIERS=@im=fcitx
 export INPUT_METHOD=fcitx
 EOF
 source ~/.xprofile
-sudo add-apt-repository ppa:zhangsongcui3371/fastfetch -y
-sudo apt install fastfetch -y
 sudo add-apt-repository ppa:mozillateam/ppa -y
 echo 'Package: firefox*
 Pin: release o=LP-PPA-mozillateam

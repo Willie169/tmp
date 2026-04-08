@@ -21,7 +21,7 @@ qemu-system-x86_64 \
     -device intel-hda \
     -device hda-micro,audiodev=audio0 \
     -device virtio-net-pci,netdev=nic \
-    -netdev user,hostfwd=tcp::22220-:22,id=nic \
+    -netdev user,net=10.0.3.0/24,hostfwd=tcp::22220-:22,id=nic \
     -global driver=cfi.pflash01,property=secure,value=on \
     -drive if=pflash,format=raw,unit=0,file=/usr/share/OVMF/OVMF_CODE_4M.fd,readonly=on \
     -drive if=pflash,format=raw,unit=1,file=OVMF_VARS.fd \
