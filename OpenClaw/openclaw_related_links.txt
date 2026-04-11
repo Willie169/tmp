@@ -20,4 +20,9 @@ https://github.com/ink1ing/anti-api
 https://github.com/NoeFabris/opencode-antigravity-auth
 https://github.com/badrisnarayanan/antigravity-claude-proxy
 https://my.feishu.cn/wiki/THLNw1vWCiXJD6kvomlcYpu5nRe?from=from_copylink
+https://github.com/huggingface/transformers
+https://github.com/langflow-ai/langflow
+https://github.com/langchain-ai/langchain
+https://github.com/langgenius/dify
+https://github.com/infiniflow/ragflow
 
