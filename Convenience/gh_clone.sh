@@ -13,6 +13,7 @@ gh repo clone add-search-engines
 gh repo clone dual-boot-windows-linux-and-recovery
 gh repo clone format-converter
 gh repo clone homebrew-tap
+gh repo clone metasploit_in_termux
 gh repo clone physics-patch
 gh repo clone switch-firefox-from-snap-to-deb
 gh repo clone termux-sh
