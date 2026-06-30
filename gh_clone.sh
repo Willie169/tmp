@@ -15,6 +15,7 @@ gh repo clone fennecbuild-fork
 gh repo clone format-converter
 gh repo clone physics-patch
 gh repo clone switch-firefox-from-snap-to-deb
+gh repo clone termux-android-sdk-ndk
 gh repo clone termux-sh
 gh repo clone ubuntu-setup-with-vnc-and-gpu
 gh repo clone vimrc
