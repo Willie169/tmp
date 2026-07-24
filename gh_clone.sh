@@ -20,5 +20,6 @@ gh repo clone switch-firefox-from-snap-to-deb
 gh repo clone termux-android-sdk-ndk
 gh repo clone termux-sh
 gh repo clone ubuntu-setup-with-vnc-and-gpu
+gh repo clone verilog-modules
 gh repo clone vimrc
 gh repo clone willie169-ckhs-ntuee-notes
