@@ -27,6 +27,7 @@ gh repo clone luanti-misc
 gh repo clone morphe-patch-selections
 gh repo clone nvim-config
 gh repo clone physics-patch
+( cd physics-patch && git checkout dev; )
 gh repo clone switch-firefox-from-snap-to-deb
 gh repo clone termux-android-sdk-ndk
 gh repo clone termux-sh
