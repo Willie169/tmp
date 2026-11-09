@@ -25,14 +25,16 @@ gh repo clone invizible-pro-dnscrypt-blocklist-generator
 gh repo clone local-ai-setup
 gh repo clone luanti-misc
 gh repo clone morphe-patch-selections
+gh repo clone my-standard-template-library
 gh repo clone nvim-config
 gh repo clone physics-patch
-( cd physics-patch && git checkout dev; )
 gh repo clone switch-firefox-from-snap-to-deb
 gh repo clone termux-android-sdk-ndk
 gh repo clone termux-sh
 gh repo clone ubuntu-setup
+gh repo clone unciv-maps
 gh repo clone verilog-modules
 gh repo clone vim-config
 gh repo clone willie169-ckhs-ntuee-notes
 gh repo clone willieshen-media
+(cd physics-patch && git checkout dev)
